@@ -40,22 +40,67 @@ export const TIME_PERIODS: TimePeriod[] = [
     description: "Experience knights and castles!"
   },
   {
+    id: "renaissance",
+    name: "Renaissance",
+    era: "1500 AD",
+    baseFare: 75,
+    unlockCost: 5000,
+    color: "#e67e22",
+    description: "Witness the rebirth of art and science!"
+  },
+  {
+    id: "industrial",
+    name: "Industrial Revolution",
+    era: "1850 AD",
+    baseFare: 100,
+    unlockCost: 10000,
+    color: "#95a5a6",
+    description: "See the age of steam and steel!"
+  },
+  {
     id: "wildwest",
     name: "Wild West",
     era: "1880 AD",
-    baseFare: 100,
-    unlockCost: 10000,
+    baseFare: 125,
+    unlockCost: 20000,
     color: "#e74c3c",
     description: "Live the cowboy adventure!"
+  },
+  {
+    id: "roaring20s",
+    name: "Roaring Twenties",
+    era: "1925 AD",
+    baseFare: 175,
+    unlockCost: 35000,
+    color: "#f1c40f",
+    description: "Dance through the jazz age!"
+  },
+  {
+    id: "spaceage",
+    name: "Space Age",
+    era: "1969 AD",
+    baseFare: 225,
+    unlockCost: 50000,
+    color: "#3498db",
+    description: "Join the race to the moon!"
   },
   {
     id: "future",
     name: "Future City",
     era: "2500 AD",
-    baseFare: 250,
-    unlockCost: 50000,
-    color: "#3498db",
+    baseFare: 300,
+    unlockCost: 75000,
+    color: "#1abc9c",
     description: "See the world of tomorrow!"
+  },
+  {
+    id: "farfuture",
+    name: "Far Future",
+    era: "5000 AD",
+    baseFare: 500,
+    unlockCost: 150000,
+    color: "#9b59b6",
+    description: "Explore the distant future!"
   }
 ];
 
@@ -88,6 +133,7 @@ interface IdleGameState {
   activeBoosts: AdBoost[];
   
   lastUpdateTime: number;
+  lastPlayTime: number;
   
   addChronocoins: (amount: number) => void;
   spendChronocoins: (amount: number) => boolean;
@@ -106,15 +152,18 @@ interface IdleGameState {
   
   prestige: () => void;
   
-  update: (deltaTime: number) => void;
+  calculateOfflineEarnings: () => number;
+  claimOfflineEarnings: () => void;
+  
+  update: (deltaTime: number, managerBonuses?: {customerRate: number, speed: number, revenue: number}) => void;
   
   getTimeMachineUpgradeCost: () => number;
   getCapacityUpgradeCost: () => number;
   getSpeedUpgradeCost: () => number;
   getCustomerRateUpgradeCost: () => number;
   
-  getRevenueMultiplier: () => number;
-  getSpeedMultiplier: () => number;
+  getRevenueMultiplier: (managerBonus?: number) => number;
+  getSpeedMultiplier: (managerBonus?: number) => number;
   
   getCurrentFare: () => number;
 }
@@ -143,6 +192,7 @@ export const useIdleGame = create<IdleGameState>()(
     activeBoosts: [],
     
     lastUpdateTime: Date.now(),
+    lastPlayTime: Date.now(),
     
     addChronocoins: (amount) => {
       set((state) => ({
@@ -293,9 +343,34 @@ export const useIdleGame = create<IdleGameState>()(
       });
     },
     
-    getRevenueMultiplier: () => {
+    calculateOfflineEarnings: () => {
       const state = get();
-      let multiplier = 1 + (state.prestigePoints * 0.1);
+      const now = Date.now();
+      const timeAway = now - state.lastPlayTime;
+      const minutesAway = timeAway / 1000 / 60;
+      
+      if (minutesAway < 1) return 0;
+      
+      const maxMinutes = Math.min(minutesAway, 120);
+      
+      const fare = state.getCurrentFare();
+      const baseRevenuePerMinute = (fare * state.timeMachineCapacity * state.customerGenerationRate * 0.5 * 60) / (3000 / 1000);
+      const revenueMultiplier = 1 + (state.prestigePoints * 0.1);
+      
+      return Math.floor(baseRevenuePerMinute * maxMinutes * revenueMultiplier * 0.5);
+    },
+    
+    claimOfflineEarnings: () => {
+      const earnings = get().calculateOfflineEarnings();
+      if (earnings > 0) {
+        get().addChronocoins(earnings);
+        set({ lastPlayTime: Date.now() });
+      }
+    },
+    
+    getRevenueMultiplier: (managerBonus = 0) => {
+      const state = get();
+      let multiplier = 1 + (state.prestigePoints * 0.1) + managerBonus;
       
       const now = Date.now();
       state.activeBoosts.forEach(boost => {
@@ -307,9 +382,9 @@ export const useIdleGame = create<IdleGameState>()(
       return multiplier;
     },
     
-    getSpeedMultiplier: () => {
+    getSpeedMultiplier: (managerBonus = 0) => {
       const state = get();
-      let multiplier = 1;
+      let multiplier = 1 + managerBonus;
       
       const now = Date.now();
       state.activeBoosts.forEach(boost => {
@@ -329,25 +404,27 @@ export const useIdleGame = create<IdleGameState>()(
       return Math.floor(destination.baseFare * state.timeMachineLevel);
     },
     
-    update: (deltaTime) => {
+    update: (deltaTime, managerBonuses) => {
       const state = get();
       const now = Date.now();
+      
+      const bonuses = managerBonuses || {customerRate: 0, speed: 0, revenue: 0};
       
       set({
         activeBoosts: state.activeBoosts.filter(boost => boost.endsAt > now)
       });
       
-      const customerGenRate = state.customerGenerationRate * 0.5;
+      const customerGenRate = state.customerGenerationRate * 0.5 * (1 + bonuses.customerRate);
       const newCustomers = customerGenRate * (deltaTime / 1000);
       
-      const travelTime = 3000 / (state.timeMachineSpeed * state.getSpeedMultiplier());
+      const travelTime = 3000 / (state.timeMachineSpeed * state.getSpeedMultiplier(bonuses.speed));
       const capacity = state.timeMachineCapacity;
       
       let waitingCustomers = state.waitingCustomers + newCustomers;
       
       if (state.tripEndTime !== null && now >= state.tripEndTime) {
         const fare = state.getCurrentFare();
-        const revenue = fare * state.processingCustomers * state.getRevenueMultiplier();
+        const revenue = fare * state.processingCustomers * state.getRevenueMultiplier(bonuses.revenue);
         
         state.addChronocoins(revenue);
         set({

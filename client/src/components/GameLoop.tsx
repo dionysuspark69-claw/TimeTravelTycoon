@@ -1,8 +1,10 @@
 import { useEffect } from "react";
 import { useIdleGame } from "@/lib/stores/useIdleGame";
+import { useManagers } from "@/lib/stores/useManagers";
 
 export function GameLoop() {
   const update = useIdleGame(state => state.update);
+  const { getCustomerRateBonus, getSpeedBonus, getRevenueBonus } = useManagers();
   
   useEffect(() => {
     let lastTime = Date.now();
@@ -13,7 +15,13 @@ export function GameLoop() {
       const deltaTime = currentTime - lastTime;
       lastTime = currentTime;
       
-      update(deltaTime);
+      const bonuses = {
+        customerRate: getCustomerRateBonus(),
+        speed: getSpeedBonus(),
+        revenue: getRevenueBonus()
+      };
+      
+      update(deltaTime, bonuses);
       
       animationFrameId = requestAnimationFrame(gameLoop);
     };
@@ -25,7 +33,7 @@ export function GameLoop() {
         cancelAnimationFrame(animationFrameId);
       }
     };
-  }, [update]);
+  }, [update, getCustomerRateBonus, getSpeedBonus, getRevenueBonus]);
   
   return null;
 }

@@ -5,6 +5,8 @@ import { GameUI } from "./components/GameUI";
 import { UpgradePanel } from "./components/UpgradePanel";
 import { GameLoop } from "./components/GameLoop";
 import { SoundManager } from "./components/SoundManager";
+import { OfflineEarningsDialog } from "./components/OfflineEarningsDialog";
+import { AchievementChecker } from "./components/AchievementChecker";
 
 function App() {
   const [showGame, setShowGame] = useState(false);
@@ -30,6 +32,8 @@ function App() {
       
       <UpgradePanel />
       
+      <OfflineEarningsDialog />
+      <AchievementChecker />
       <GameLoop />
       <SoundManager />
     </div>

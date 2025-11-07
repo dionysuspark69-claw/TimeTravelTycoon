@@ -3,6 +3,8 @@ import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { ArrowUp, MapPin } from "lucide-react";
+import { ManagersPanel } from "./ManagersPanel";
+import { AchievementsPanel } from "./AchievementsPanel";
 
 export function UpgradePanel() {
   const {
@@ -36,9 +38,11 @@ export function UpgradePanel() {
   return (
     <div className="w-full bg-black/80 backdrop-blur-sm border-t border-cyan-500/30 p-4">
       <Tabs defaultValue="upgrades" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 bg-gray-900">
+        <TabsList className="grid w-full grid-cols-4 bg-gray-900">
           <TabsTrigger value="upgrades">Upgrades</TabsTrigger>
+          <TabsTrigger value="managers">Managers</TabsTrigger>
           <TabsTrigger value="destinations">Destinations</TabsTrigger>
+          <TabsTrigger value="achievements">Achievements</TabsTrigger>
         </TabsList>
         
         <TabsContent value="upgrades" className="space-y-2 mt-4">
@@ -113,6 +117,14 @@ export function UpgradePanel() {
               </Button>
             </div>
           </Card>
+        </TabsContent>
+        
+        <TabsContent value="managers" className="space-y-2 mt-4">
+          <ManagersPanel />
+        </TabsContent>
+        
+        <TabsContent value="achievements" className="space-y-2 mt-4">
+          <AchievementsPanel />
         </TabsContent>
         
         <TabsContent value="destinations" className="space-y-2 mt-4">
