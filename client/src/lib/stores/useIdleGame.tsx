@@ -190,6 +190,7 @@ interface IdleGameState {
   timeMachineLevel: number;
   timeMachineCapacity: number;
   timeMachineSpeed: number;
+  timeMachineCount: number;
   
   customerGenerationRate: number;
   waitingCustomers: number;
@@ -220,6 +221,7 @@ interface IdleGameState {
   upgradeCapacity: () => boolean;
   upgradeSpeed: () => boolean;
   upgradeCustomerRate: () => boolean;
+  buyTimeMachine: () => boolean;
   
   unlockDestination: (destinationId: string) => boolean;
   setDestination: (destinationId: string) => void;
@@ -244,6 +246,7 @@ interface IdleGameState {
   getCapacityUpgradeCost: () => number;
   getSpeedUpgradeCost: () => number;
   getCustomerRateUpgradeCost: () => number;
+  getTimeMachineBuyCost: () => number;
   
   getRevenueMultiplier: (managerBonus?: number) => number;
   getSpeedMultiplier: (managerBonus?: number) => number;
@@ -262,6 +265,7 @@ export const useIdleGame = create<IdleGameState>()(
     timeMachineLevel: 1,
     timeMachineCapacity: 1,
     timeMachineSpeed: 1,
+    timeMachineCount: 1,
     
     customerGenerationRate: 1,
     waitingCustomers: 0,
@@ -321,6 +325,11 @@ export const useIdleGame = create<IdleGameState>()(
       return Math.floor(200 * Math.pow(1.6, state.customerGenerationRate - 1));
     },
     
+    getTimeMachineBuyCost: () => {
+      const state = get();
+      return Math.floor(10000 * Math.pow(2, state.timeMachineCount - 1));
+    },
+    
     upgradeTimeMachine: () => {
       const state = get();
       const cost = state.getTimeMachineUpgradeCost();
@@ -356,6 +365,16 @@ export const useIdleGame = create<IdleGameState>()(
       const cost = state.getCustomerRateUpgradeCost();
       if (state.spendChronocoins(cost)) {
         set({ customerGenerationRate: state.customerGenerationRate + 1 });
+        return true;
+      }
+      return false;
+    },
+    
+    buyTimeMachine: () => {
+      const state = get();
+      const cost = state.getTimeMachineBuyCost();
+      if (state.spendChronocoins(cost)) {
+        set({ timeMachineCount: state.timeMachineCount + 1 });
         return true;
       }
       return false;
@@ -426,6 +445,7 @@ export const useIdleGame = create<IdleGameState>()(
         timeMachineLevel: 1,
         timeMachineCapacity: 1,
         timeMachineSpeed: 1,
+        timeMachineCount: 1,
         customerGenerationRate: 1,
         waitingCustomers: 0,
         processingCustomers: 0,
@@ -449,7 +469,7 @@ export const useIdleGame = create<IdleGameState>()(
       const maxMinutes = Math.min(minutesAway, 120);
       
       const fare = state.getCurrentFare();
-      const baseRevenuePerMinute = (fare * state.timeMachineCapacity * state.customerGenerationRate * 0.5 * 60) / (3000 / 1000);
+      const baseRevenuePerMinute = (fare * state.timeMachineCapacity * state.timeMachineCount * state.customerGenerationRate * 0.5 * 60) / (3000 / 1000);
       const revenueMultiplier = 1 + (state.prestigePoints * 0.1);
       
       return Math.floor(baseRevenuePerMinute * maxMinutes * revenueMultiplier * 0.5);
@@ -646,7 +666,7 @@ export const useIdleGame = create<IdleGameState>()(
       const newCustomers = customerGenRate * (deltaTime / 1000);
       
       const travelTime = 3000 / (state.timeMachineSpeed * state.getSpeedMultiplier(bonuses.speed));
-      const capacity = state.timeMachineCapacity;
+      const capacity = state.timeMachineCapacity * state.timeMachineCount;
       
       let waitingCustomers = state.waitingCustomers + newCustomers;
       

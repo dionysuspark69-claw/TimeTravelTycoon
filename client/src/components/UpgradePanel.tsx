@@ -16,6 +16,7 @@ export function UpgradePanel() {
     timeMachineLevel,
     timeMachineCapacity,
     timeMachineSpeed,
+    timeMachineCount,
     customerGenerationRate,
     unlockedDestinations,
     currentDestination,
@@ -24,6 +25,7 @@ export function UpgradePanel() {
     upgradeCapacity,
     upgradeSpeed,
     upgradeCustomerRate,
+    buyTimeMachine,
     unlockDestination,
     setDestination,
     
@@ -31,6 +33,7 @@ export function UpgradePanel() {
     getCapacityUpgradeCost,
     getSpeedUpgradeCost,
     getCustomerRateUpgradeCost,
+    getTimeMachineBuyCost,
   } = useIdleGame();
   
   const formatNumber = (num: number) => {
@@ -162,6 +165,27 @@ export function UpgradePanel() {
               >
                 <ArrowUp className="w-4 h-4 mr-1" />
                 {formatNumber(getCustomerRateUpgradeCost())}
+              </Button>
+            </div>
+          </Card>
+          
+          <Card className="bg-purple-900/50 border-purple-500/30 p-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-white font-semibold flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-purple-400" />
+                  Time Machines
+                </div>
+                <div className="text-gray-400 text-sm">Own {timeMachineCount} - {timeMachineCount * timeMachineCapacity} total capacity</div>
+              </div>
+              <Button
+                onClick={buyTimeMachine}
+                disabled={chronocoins < getTimeMachineBuyCost()}
+                size="sm"
+                className="bg-purple-600 hover:bg-purple-700"
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                {formatNumber(getTimeMachineBuyCost())}
               </Button>
             </div>
           </Card>

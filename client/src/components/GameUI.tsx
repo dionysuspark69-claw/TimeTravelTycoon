@@ -141,67 +141,76 @@ export function GameUI() {
           </div>
         </div>
         
-        <div className="flex gap-2 pointer-events-auto">
-          <Card className="bg-black/80 backdrop-blur-sm border-cyan-500/30 p-3 flex-1">
-            <div className="text-cyan-400 text-xs mb-1">Waiting</div>
-            <div className="text-white text-xl font-bold">{Math.floor(waitingCustomers)}</div>
-          </Card>
-          <Card className="bg-black/80 backdrop-blur-sm border-cyan-500/30 p-3 flex-1">
-            <div className="text-green-400 text-xs mb-1">Traveling</div>
-            <div className="text-white text-xl font-bold">{processingCustomers}</div>
-          </Card>
-          <Card className="bg-black/80 backdrop-blur-sm border-cyan-500/30 p-3 flex-1">
-            <div className="text-purple-400 text-xs mb-1">Served</div>
-            <div className="text-white text-xl font-bold">{formatNumber(totalCustomersServed)}</div>
-          </Card>
-        </div>
-        
         <div className="flex-1" />
         
-        <div className="grid grid-cols-3 gap-2 pointer-events-auto">
+        <div className="flex gap-2 items-end pointer-events-auto">
+          <div className="flex gap-1 items-center bg-black/20 backdrop-blur-sm border border-white/10 rounded-full px-2 py-1">
+            <div className="text-cyan-400 text-[10px]">Wait:</div>
+            <div className="text-white text-sm font-bold">{Math.floor(waitingCustomers)}</div>
+          </div>
+          <div className="flex gap-1 items-center bg-black/20 backdrop-blur-sm border border-white/10 rounded-full px-2 py-1">
+            <div className="text-green-400 text-[10px]">Trip:</div>
+            <div className="text-white text-sm font-bold">{processingCustomers}</div>
+          </div>
+          <div className="flex gap-1 items-center bg-black/20 backdrop-blur-sm border border-white/10 rounded-full px-2 py-1">
+            <div className="text-purple-400 text-[10px]">Done:</div>
+            <div className="text-white text-sm font-bold">{formatNumber(totalCustomersServed)}</div>
+          </div>
+        </div>
+        
+        <div className="flex gap-1 pointer-events-auto">
           <Button
             onClick={() => handleWatchAd("revenue")}
             disabled={adCooldowns["revenue"] > 0}
-            className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 h-auto py-3 flex flex-col"
+            size="icon"
+            className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 rounded-full w-12 h-12 relative"
+            title="2x Revenue Boost"
           >
-            <Zap className="w-5 h-5 mb-1" />
-            <span className="text-xs">2x Revenue</span>
-            {getBoostTimeRemaining("revenue") > 0 ? (
-              <span className="text-[10px] text-yellow-200">{getBoostTimeRemaining("revenue")}s</span>
-            ) : adCooldowns["revenue"] > 0 ? (
-              <span className="text-[10px]">{adCooldowns["revenue"]}s</span>
-            ) : (
-              <span className="text-[10px]">Watch Ad</span>
+            <Zap className="w-5 h-5" />
+            {getBoostTimeRemaining("revenue") > 0 && (
+              <span className="absolute -top-1 -right-1 bg-yellow-400 text-black text-[8px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                {getBoostTimeRemaining("revenue")}
+              </span>
+            )}
+            {adCooldowns["revenue"] > 0 && getBoostTimeRemaining("revenue") === 0 && (
+              <span className="absolute -top-1 -right-1 bg-gray-400 text-white text-[8px] rounded-full w-4 h-4 flex items-center justify-center">
+                {adCooldowns["revenue"]}
+              </span>
             )}
           </Button>
           
           <Button
             onClick={() => handleWatchAd("customers")}
             disabled={adCooldowns["customers"] > 0}
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 h-auto py-3 flex flex-col"
+            size="icon"
+            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-full w-12 h-12 relative"
+            title="+10 Customers"
           >
-            <Users className="w-5 h-5 mb-1" />
-            <span className="text-xs">+10 Customers</span>
-            {adCooldowns["customers"] > 0 ? (
-              <span className="text-[10px]">{adCooldowns["customers"]}s</span>
-            ) : (
-              <span className="text-[10px]">Watch Ad</span>
+            <Users className="w-5 h-5" />
+            {adCooldowns["customers"] > 0 && (
+              <span className="absolute -top-1 -right-1 bg-gray-400 text-white text-[8px] rounded-full w-4 h-4 flex items-center justify-center">
+                {adCooldowns["customers"]}
+              </span>
             )}
           </Button>
           
           <Button
             onClick={() => handleWatchAd("speed")}
             disabled={adCooldowns["speed"] > 0}
-            className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 h-auto py-3 flex flex-col"
+            size="icon"
+            className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 rounded-full w-12 h-12 relative"
+            title="2x Speed Boost"
           >
-            <Gauge className="w-5 h-5 mb-1" />
-            <span className="text-xs">2x Speed</span>
-            {getBoostTimeRemaining("speed") > 0 ? (
-              <span className="text-[10px] text-green-200">{getBoostTimeRemaining("speed")}s</span>
-            ) : adCooldowns["speed"] > 0 ? (
-              <span className="text-[10px]">{adCooldowns["speed"]}s</span>
-            ) : (
-              <span className="text-[10px]">Watch Ad</span>
+            <Gauge className="w-5 h-5" />
+            {getBoostTimeRemaining("speed") > 0 && (
+              <span className="absolute -top-1 -right-1 bg-green-400 text-black text-[8px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                {getBoostTimeRemaining("speed")}
+              </span>
+            )}
+            {adCooldowns["speed"] > 0 && getBoostTimeRemaining("speed") === 0 && (
+              <span className="absolute -top-1 -right-1 bg-gray-400 text-white text-[8px] rounded-full w-4 h-4 flex items-center justify-center">
+                {adCooldowns["speed"]}
+              </span>
             )}
           </Button>
         </div>
