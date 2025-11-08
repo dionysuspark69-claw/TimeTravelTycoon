@@ -7,6 +7,7 @@ import { ManagersPanel } from "./ManagersPanel";
 import { AchievementsPanel } from "./AchievementsPanel";
 import { MissionsPanel } from "./MissionsPanel";
 import { CollectionsPanel } from "./CollectionsPanel";
+import { useAchievements } from "@/lib/stores/useAchievements";
 import { useState } from "react";
 
 export function UpgradePanel() {
@@ -35,6 +36,9 @@ export function UpgradePanel() {
     getCustomerRateUpgradeCost,
     getTimeMachineBuyCost,
   } = useIdleGame();
+  
+  const { getUnclaimedAchievements } = useAchievements();
+  const unclaimedCount = getUnclaimedAchievements().length;
   
   const formatNumber = (num: number) => {
     if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
@@ -90,9 +94,12 @@ export function UpgradePanel() {
             <Target className="w-4 h-4" />
             <span className="hidden sm:inline">Missions</span>
           </TabsTrigger>
-          <TabsTrigger value="achievements" className="flex items-center gap-2">
+          <TabsTrigger value="achievements" className="flex items-center gap-2 relative">
             <Trophy className="w-4 h-4" />
             <span className="hidden sm:inline">Achievements</span>
+            {unclaimedCount > 0 && (
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border border-gray-900" />
+            )}
           </TabsTrigger>
         </TabsList>
         

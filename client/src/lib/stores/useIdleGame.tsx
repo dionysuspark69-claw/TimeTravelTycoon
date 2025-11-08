@@ -218,6 +218,7 @@ interface IdleGameState {
   setTutorialShown: () => void;
   
   coinsPerSecond: number;
+  lastClickBoostTime?: number;
   
   addChronocoins: (amount: number) => void;
   spendChronocoins: (amount: number) => boolean;
@@ -298,6 +299,7 @@ export const useIdleGame = create<IdleGameState>()(
     setTutorialShown: () => set({ tutorialShown: true }),
     
     coinsPerSecond: 0,
+    lastClickBoostTime: undefined,
     
     addChronocoins: (amount) => {
       set((state) => ({
@@ -417,9 +419,23 @@ export const useIdleGame = create<IdleGameState>()(
     clickBoost: () => {
       const state = get();
       const fare = state.getCurrentFare();
-      state.addChronocoins(fare * 0.5);
+      const clickRevenue = fare * 0.5;
+      state.addChronocoins(clickRevenue);
       
-      set({ totalBoostsUsed: state.totalBoostsUsed + 1 });
+      const clickTimestamp = Date.now();
+      
+      set({ 
+        totalBoostsUsed: state.totalBoostsUsed + 1,
+        coinsPerSecond: clickRevenue,
+        lastClickBoostTime: clickTimestamp
+      });
+      
+      setTimeout(() => {
+        const currentState = get();
+        if (currentState.lastClickBoostTime === clickTimestamp) {
+          set({ coinsPerSecond: 0 });
+        }
+      }, 1000);
     },
     
     watchAd: (type) => {
@@ -727,8 +743,48 @@ export const useIdleGame = create<IdleGameState>()(
             legendary: "🟠"
           };
           
+          const discoveryMessages: Record<string, string> = {
+            trex_tooth: "A passenger accidentally kicked it loose from a fossil bed!",
+            raptor_claw: "Found stuck in your time machine's seat cushion... somehow.",
+            amber_fossil: "A tourist dropped it while frantically running from a T-Rex!",
+            dino_egg_shell: "Your customer sat on it by mistake. Oops.",
+            fern_print: "Peeled off the ground after a heavy landing!",
+            
+            golden_ankh: "A pharaoh tossed it as a tip for an excellent trip!",
+            scarab_amulet: "Found wedged between pyramid stones during pickup.",
+            papyrus_scroll: "Blown into the cabin by a desert sandstorm!",
+            canopic_jar: "A mummy left this behind. No, really.",
+            clay_tablet: "Accidentally swapped for a customer's luggage!",
+            
+            excalibur_shard: "Chipped off during a jousting tournament detour!",
+            holy_grail_piece: "A monk dropped it while boarding in a hurry.",
+            knights_signet: "Rolled under your seat during a bumpy castle landing!",
+            chainmail_link: "Snagged on your time machine during a battlefield pickup.",
+            wooden_shield: "Splintered off when a knight used your door as cover!",
+            
+            davinci_sketch: "Leonardo himself doodled it on your napkin!",
+            galileo_lens: "He forgot it while star-gazing from your observation deck.",
+            medici_coin: "Payment from a wealthy patron - overly generous!",
+            artists_palette: "Michelangelo left it behind after getting paint everywhere.",
+            printing_block: "Gutenberg traded it for a ride to the future!",
+            
+            steam_governor: "Fell off a train you were racing against!",
+            edison_bulb: "Edison himself tested it in your cabin. It works!",
+            factory_blueprint: "Blown out of an industrial magnate's briefcase.",
+            brass_gear: "Popped loose from a malfunctioning machine nearby.",
+            coal_sample: "A worker accidentally dropped his lunch pail!",
+            
+            quantum_core: "A tech entrepreneur left it as collateral for the fare!",
+            neural_chip: "Downloaded from a passenger's failed brain backup.",
+            fusion_cell: "Swapped for your outdated battery by a helpful engineer.",
+            holo_projector: "A kid dropped it playing holographic games in transit.",
+            smart_fabric: "Torn from a passenger's self-repairing jacket!"
+          };
+          
+          const discoveryMsg = discoveryMessages[droppedArtifact.id] || "Your passenger accidentally left it behind!";
+          
           toast.success(`Artifact Discovered!`, {
-            description: `${rarityColors[droppedArtifact.rarity]} ${droppedArtifact.name} (${droppedArtifact.rarity}) - ${droppedArtifact.description}`,
+            description: `${rarityColors[droppedArtifact.rarity]} ${droppedArtifact.name} - ${discoveryMsg}`,
             duration: 5000
           });
         }
