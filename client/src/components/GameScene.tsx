@@ -3,7 +3,7 @@ import { OrbitControls } from "@react-three/drei";
 import { TimeMachine } from "./TimeMachine";
 import { CharacterManager } from "./CharacterManager";
 import { Starfield } from "./Starfield";
-import { Spaceship } from "./Spaceship";
+import { SpaceshipFleet } from "./SpaceshipFleet";
 
 function Scene() {
   return (
@@ -23,21 +23,7 @@ function Scene() {
       
       <CharacterManager />
       
-      <Spaceship 
-        position={[-8, 2, -6]} 
-        rotation={[0, Math.PI / 4, 0]}
-        color="#3498db"
-      />
-      <Spaceship 
-        position={[-9, 1.5, -3]} 
-        rotation={[0, Math.PI / 6, 0]}
-        color="#9b59b6"
-      />
-      <Spaceship 
-        position={[-7, 2.2, -8]} 
-        rotation={[0, Math.PI / 3, 0]}
-        color="#e74c3c"
-      />
+      <SpaceshipFleet />
       
       <OrbitControls
         enablePan={false}

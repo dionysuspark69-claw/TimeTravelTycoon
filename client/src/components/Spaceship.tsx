@@ -6,9 +6,10 @@ interface SpaceshipProps {
   position: [number, number, number];
   rotation?: [number, number, number];
   color?: string;
+  speedMultiplier?: number;
 }
 
-export function Spaceship({ position, rotation = [0, 0, 0], color = "#3498db" }: SpaceshipProps) {
+export function Spaceship({ position, rotation = [0, 0, 0], color = "#3498db", speedMultiplier = 1 }: SpaceshipProps) {
   const groupRef = useRef<THREE.Group>(null);
   const engineGlow1Ref = useRef<THREE.PointLight>(null);
   const engineGlow2Ref = useRef<THREE.PointLight>(null);
@@ -18,14 +19,14 @@ export function Spaceship({ position, rotation = [0, 0, 0], color = "#3498db" }:
   
   useFrame((state) => {
     if (groupRef.current) {
-      const floatHeight = Math.sin(state.clock.elapsedTime * 0.5 + floatOffset) * 0.15;
+      const floatHeight = Math.sin(state.clock.elapsedTime * 0.5 * speedMultiplier + floatOffset) * 0.15;
       groupRef.current.position.y = baseY + floatHeight;
       
-      groupRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 0.3 + floatOffset) * 0.05;
+      groupRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 0.3 * speedMultiplier + floatOffset) * 0.05;
     }
     
     if (engineGlow1Ref.current && engineGlow2Ref.current) {
-      const pulse = Math.sin(state.clock.elapsedTime * 4) * 0.5 + 1;
+      const pulse = Math.sin(state.clock.elapsedTime * 4 * speedMultiplier) * 0.5 + 1;
       engineGlow1Ref.current.intensity = pulse;
       engineGlow2Ref.current.intensity = pulse;
     }

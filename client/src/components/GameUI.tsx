@@ -81,7 +81,7 @@ export function GameUI() {
   
   return (
     <div className="absolute inset-0 pointer-events-none">
-      <div className="p-4 flex flex-col gap-4 h-full pointer-events-none">
+      <div className="p-4 flex flex-col gap-4 h-full pointer-events-none relative">
         <div className="flex justify-between items-start gap-2 pointer-events-auto">
           <Card className="bg-black/80 backdrop-blur-sm border-cyan-500/30 p-4 min-w-[200px]">
             <div className="text-cyan-400 text-sm mb-2">ChronoCoins</div>
@@ -140,6 +140,65 @@ export function GameUI() {
           </div>
         </div>
         
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-3 pointer-events-auto">
+          <Button
+            onClick={() => handleWatchAd("revenue")}
+            disabled={adCooldowns["revenue"] > 0}
+            className="bg-gradient-to-br from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 rounded-xl w-24 h-24 relative shadow-lg border-2 border-yellow-400/50 flex flex-col items-center justify-center p-2 disabled:opacity-60"
+          >
+            <Zap className="w-8 h-8 mb-1" />
+            <span className="text-[10px] font-bold text-white">Revenue</span>
+            <span className="text-xs font-extrabold text-yellow-200">2x</span>
+            {getBoostTimeRemaining("revenue") > 0 ? (
+              <span className="absolute bottom-1 left-1/2 -translate-x-1/2 bg-yellow-400 text-black text-xs px-2 py-0.5 rounded-full font-bold">
+                {getBoostTimeRemaining("revenue")}s
+              </span>
+            ) : adCooldowns["revenue"] > 0 ? (
+              <span className="absolute bottom-1 left-1/2 -translate-x-1/2 bg-gray-500 text-white text-xs px-2 py-0.5 rounded-full">
+                {adCooldowns["revenue"]}s
+              </span>
+            ) : null}
+          </Button>
+          
+          <Button
+            onClick={() => handleWatchAd("customers")}
+            disabled={adCooldowns["customers"] > 0}
+            className="bg-gradient-to-br from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-xl w-24 h-24 relative shadow-lg border-2 border-blue-400/50 flex flex-col items-center justify-center p-2 disabled:opacity-60"
+          >
+            <Users className="w-8 h-8 mb-1" />
+            <span className="text-[10px] font-bold text-white">Customers</span>
+            <span className="text-xs font-extrabold text-blue-200">+10</span>
+            {getBoostTimeRemaining("customers") > 0 ? (
+              <span className="absolute bottom-1 left-1/2 -translate-x-1/2 bg-blue-400 text-black text-xs px-2 py-0.5 rounded-full font-bold">
+                {getBoostTimeRemaining("customers")}s
+              </span>
+            ) : adCooldowns["customers"] > 0 ? (
+              <span className="absolute bottom-1 left-1/2 -translate-x-1/2 bg-gray-500 text-white text-xs px-2 py-0.5 rounded-full">
+                {adCooldowns["customers"]}s
+              </span>
+            ) : null}
+          </Button>
+          
+          <Button
+            onClick={() => handleWatchAd("speed")}
+            disabled={adCooldowns["speed"] > 0}
+            className="bg-gradient-to-br from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 rounded-xl w-24 h-24 relative shadow-lg border-2 border-green-400/50 flex flex-col items-center justify-center p-2 disabled:opacity-60"
+          >
+            <Gauge className="w-8 h-8 mb-1" />
+            <span className="text-[10px] font-bold text-white">Speed</span>
+            <span className="text-xs font-extrabold text-green-200">2x</span>
+            {getBoostTimeRemaining("speed") > 0 ? (
+              <span className="absolute bottom-1 left-1/2 -translate-x-1/2 bg-green-400 text-black text-xs px-2 py-0.5 rounded-full font-bold">
+                {getBoostTimeRemaining("speed")}s
+              </span>
+            ) : adCooldowns["speed"] > 0 ? (
+              <span className="absolute bottom-1 left-1/2 -translate-x-1/2 bg-gray-500 text-white text-xs px-2 py-0.5 rounded-full">
+                {adCooldowns["speed"]}s
+              </span>
+            ) : null}
+          </Button>
+        </div>
+        
         <div className="flex-1" />
         
         <div className="flex gap-2 items-end pointer-events-auto">
@@ -155,63 +214,6 @@ export function GameUI() {
             <div className="text-purple-400 text-[10px]">Done:</div>
             <div className="text-white text-sm font-bold">{formatNumber(totalCustomersServed)}</div>
           </div>
-        </div>
-        
-        <div className="flex gap-1 pointer-events-auto">
-          <Button
-            onClick={() => handleWatchAd("revenue")}
-            disabled={adCooldowns["revenue"] > 0}
-            size="icon"
-            className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 rounded-full w-12 h-12 relative"
-            title="2x Revenue Boost"
-          >
-            <Zap className="w-5 h-5" />
-            {getBoostTimeRemaining("revenue") > 0 && (
-              <span className="absolute -top-1 -right-1 bg-yellow-400 text-black text-[8px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
-                {getBoostTimeRemaining("revenue")}
-              </span>
-            )}
-            {adCooldowns["revenue"] > 0 && getBoostTimeRemaining("revenue") === 0 && (
-              <span className="absolute -top-1 -right-1 bg-gray-400 text-white text-[8px] rounded-full w-4 h-4 flex items-center justify-center">
-                {adCooldowns["revenue"]}
-              </span>
-            )}
-          </Button>
-          
-          <Button
-            onClick={() => handleWatchAd("customers")}
-            disabled={adCooldowns["customers"] > 0}
-            size="icon"
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-full w-12 h-12 relative"
-            title="+10 Customers"
-          >
-            <Users className="w-5 h-5" />
-            {adCooldowns["customers"] > 0 && (
-              <span className="absolute -top-1 -right-1 bg-gray-400 text-white text-[8px] rounded-full w-4 h-4 flex items-center justify-center">
-                {adCooldowns["customers"]}
-              </span>
-            )}
-          </Button>
-          
-          <Button
-            onClick={() => handleWatchAd("speed")}
-            disabled={adCooldowns["speed"] > 0}
-            size="icon"
-            className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 rounded-full w-12 h-12 relative"
-            title="2x Speed Boost"
-          >
-            <Gauge className="w-5 h-5" />
-            {getBoostTimeRemaining("speed") > 0 && (
-              <span className="absolute -top-1 -right-1 bg-green-400 text-black text-[8px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
-                {getBoostTimeRemaining("speed")}
-              </span>
-            )}
-            {adCooldowns["speed"] > 0 && getBoostTimeRemaining("speed") === 0 && (
-              <span className="absolute -top-1 -right-1 bg-gray-400 text-white text-[8px] rounded-full w-4 h-4 flex items-center justify-center">
-                {adCooldowns["speed"]}
-              </span>
-            )}
-          </Button>
         </div>
         
         <div className="pointer-events-auto">
