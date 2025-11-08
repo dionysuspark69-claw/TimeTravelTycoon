@@ -1,4 +1,4 @@
-import { useRef, useMemo } from "react";
+import { useRef, useMemo, useState, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
@@ -7,15 +7,38 @@ interface SpaceshipProps {
   rotation?: [number, number, number];
   color?: string;
   speedMultiplier?: number;
+  isNew?: boolean;
 }
 
-export function Spaceship({ position, rotation = [0, 0, 0], color = "#3498db", speedMultiplier = 1 }: SpaceshipProps) {
+export function Spaceship({ position, rotation = [0, 0, 0], color = "#3498db", speedMultiplier = 1, isNew = false }: SpaceshipProps) {
   const groupRef = useRef<THREE.Group>(null);
   const engineGlow1Ref = useRef<THREE.PointLight>(null);
   const engineGlow2Ref = useRef<THREE.PointLight>(null);
   
+  const [scale, setScale] = useState(isNew ? 0.01 : 1);
   const baseY = position[1];
   const floatOffset = useMemo(() => Math.random() * Math.PI * 2, []);
+  
+  useEffect(() => {
+    if (isNew) {
+      const targetScale = 1;
+      const animationDuration = 1500;
+      const startTime = Date.now();
+      
+      const animate = () => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / animationDuration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        setScale(0.01 + eased * (targetScale - 0.01));
+        
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        }
+      };
+      
+      animate();
+    }
+  }, [isNew]);
   
   useFrame((state) => {
     if (groupRef.current) {
@@ -33,7 +56,7 @@ export function Spaceship({ position, rotation = [0, 0, 0], color = "#3498db", s
   });
   
   return (
-    <group ref={groupRef} position={position} rotation={rotation}>
+    <group ref={groupRef} position={position} rotation={rotation} scale={scale}>
       <mesh position={[0, 0, 0]}>
         <capsuleGeometry args={[0.4, 1.2, 8, 16]} />
         <meshStandardMaterial

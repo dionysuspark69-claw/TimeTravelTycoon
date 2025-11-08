@@ -217,6 +217,8 @@ interface IdleGameState {
   tutorialShown: boolean;
   setTutorialShown: () => void;
   
+  coinsPerSecond: number;
+  
   addChronocoins: (amount: number) => void;
   spendChronocoins: (amount: number) => boolean;
   
@@ -294,6 +296,8 @@ export const useIdleGame = create<IdleGameState>()(
     
     tutorialShown: false,
     setTutorialShown: () => set({ tutorialShown: true }),
+    
+    coinsPerSecond: 0,
     
     addChronocoins: (amount) => {
       set((state) => ({
@@ -706,6 +710,9 @@ export const useIdleGame = create<IdleGameState>()(
         const revenue = baseRevenue * timeShareMultiplier * state.getRevenueMultiplier(bonuses.revenue);
         
         state.addChronocoins(revenue);
+        
+        const coinsPerSec = revenue / (travelTime / 1000);
+        set({ coinsPerSecond: coinsPerSec });
         
         const artifactsStore = useArtifacts.getState();
         const droppedArtifact = artifactsStore.checkForArtifactDrop(state.currentDestination);

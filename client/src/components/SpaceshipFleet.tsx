@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useIdleGame } from "@/lib/stores/useIdleGame";
 import { Spaceship } from "./Spaceship";
 
@@ -34,23 +34,39 @@ export function SpaceshipFleet() {
     return Math.min(1 + Math.floor(customerGenerationRate / 3), 8);
   }, [customerGenerationRate]);
   
+  const [prevShipCount, setPrevShipCount] = useState(shipCount);
+  const [shipKeys, setShipKeys] = useState<number[]>(() => Array.from({ length: shipCount }, (_, i) => i));
+  
+  useEffect(() => {
+    if (shipCount > prevShipCount) {
+      const newKeys = Array.from({ length: shipCount - prevShipCount }, (_, i) => Date.now() + i);
+      setShipKeys(prev => [...prev, ...newKeys]);
+    } else if (shipCount < prevShipCount) {
+      setShipKeys(prev => prev.slice(0, shipCount));
+    }
+    setPrevShipCount(shipCount);
+  }, [shipCount, prevShipCount]);
+  
   const ships = useMemo(() => {
-    return Array.from({ length: shipCount }, (_, i) => ({
+    return shipKeys.map((key, i) => ({
+      key,
       position: BASE_POSITIONS[i],
       rotation: BASE_ROTATIONS[i],
       color: SHIP_COLORS[i % SHIP_COLORS.length],
+      isNew: key > 100,
     }));
-  }, [shipCount]);
+  }, [shipKeys]);
   
   return (
     <>
-      {ships.map((ship, i) => (
+      {ships.map((ship) => (
         <Spaceship
-          key={i}
+          key={ship.key}
           position={ship.position}
           rotation={ship.rotation}
           color={ship.color}
           speedMultiplier={1 + (timeMachineSpeed - 1) * 0.1}
+          isNew={ship.isNew}
         />
       ))}
     </>

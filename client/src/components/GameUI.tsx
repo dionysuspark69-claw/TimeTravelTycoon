@@ -23,6 +23,7 @@ export function GameUI() {
     prestigeLevel,
     prestigePoints,
     activeBoosts,
+    coinsPerSecond,
     
     upgradeTimeMachine,
     upgradeCapacity,
@@ -71,6 +72,13 @@ export function GameUI() {
     return Math.floor(num).toString();
   };
   
+  const formatCoinsPerSecond = (num: number) => {
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
+    if (num >= 1000) return (num / 1000).toFixed(1) + "K";
+    if (num >= 1) return num.toFixed(1);
+    return num.toFixed(2);
+  };
+  
   const getBoostTimeRemaining = (type: string) => {
     const boost = activeBoosts.find(b => b.type === type);
     if (!boost) return 0;
@@ -87,6 +95,9 @@ export function GameUI() {
             <div className="text-cyan-400 text-sm mb-2">ChronoCoins</div>
             <div className="text-white text-3xl font-bold">{formatNumber(chronocoins)}</div>
             <div className="text-gray-400 text-xs mt-1">Total: {formatNumber(totalEarned)}</div>
+            {coinsPerSecond > 0 && (
+              <div className="text-green-400 text-xs mt-1">+{formatCoinsPerSecond(coinsPerSecond)}/sec</div>
+            )}
             {prestigeLevel > 0 && (
               <div className="text-yellow-400 text-xs mt-1 flex items-center gap-1">
                 <Trophy className="w-3 h-3" />
@@ -140,15 +151,14 @@ export function GameUI() {
           </div>
         </div>
         
-        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-3 pointer-events-auto">
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col gap-2 pointer-events-auto">
           <Button
             onClick={() => handleWatchAd("revenue")}
             disabled={adCooldowns["revenue"] > 0}
-            className="bg-gradient-to-br from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 rounded-xl w-24 h-24 relative shadow-lg border-2 border-yellow-400/50 flex flex-col items-center justify-center p-2 disabled:opacity-60"
+            className="bg-gradient-to-br from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 rounded-lg w-16 h-16 relative shadow-lg border-2 border-yellow-400/50 flex flex-col items-center justify-center p-1 disabled:opacity-60"
           >
-            <Zap className="w-8 h-8 mb-1" />
-            <span className="text-[10px] font-bold text-white">Revenue</span>
-            <span className="text-xs font-extrabold text-yellow-200">2x</span>
+            <Zap className="w-5 h-5" />
+            <span className="text-[9px] font-extrabold text-yellow-200">2x</span>
             {getBoostTimeRemaining("revenue") > 0 ? (
               <span className="absolute bottom-1 left-1/2 -translate-x-1/2 bg-yellow-400 text-black text-xs px-2 py-0.5 rounded-full font-bold">
                 {getBoostTimeRemaining("revenue")}s
@@ -163,11 +173,10 @@ export function GameUI() {
           <Button
             onClick={() => handleWatchAd("customers")}
             disabled={adCooldowns["customers"] > 0}
-            className="bg-gradient-to-br from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-xl w-24 h-24 relative shadow-lg border-2 border-blue-400/50 flex flex-col items-center justify-center p-2 disabled:opacity-60"
+            className="bg-gradient-to-br from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg w-16 h-16 relative shadow-lg border-2 border-blue-400/50 flex flex-col items-center justify-center p-1 disabled:opacity-60"
           >
-            <Users className="w-8 h-8 mb-1" />
-            <span className="text-[10px] font-bold text-white">Customers</span>
-            <span className="text-xs font-extrabold text-blue-200">+10</span>
+            <Users className="w-5 h-5" />
+            <span className="text-[9px] font-extrabold text-blue-200">+10</span>
             {getBoostTimeRemaining("customers") > 0 ? (
               <span className="absolute bottom-1 left-1/2 -translate-x-1/2 bg-blue-400 text-black text-xs px-2 py-0.5 rounded-full font-bold">
                 {getBoostTimeRemaining("customers")}s
@@ -182,11 +191,10 @@ export function GameUI() {
           <Button
             onClick={() => handleWatchAd("speed")}
             disabled={adCooldowns["speed"] > 0}
-            className="bg-gradient-to-br from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 rounded-xl w-24 h-24 relative shadow-lg border-2 border-green-400/50 flex flex-col items-center justify-center p-2 disabled:opacity-60"
+            className="bg-gradient-to-br from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 rounded-lg w-16 h-16 relative shadow-lg border-2 border-green-400/50 flex flex-col items-center justify-center p-1 disabled:opacity-60"
           >
-            <Gauge className="w-8 h-8 mb-1" />
-            <span className="text-[10px] font-bold text-white">Speed</span>
-            <span className="text-xs font-extrabold text-green-200">2x</span>
+            <Gauge className="w-5 h-5" />
+            <span className="text-[9px] font-extrabold text-green-200">2x</span>
             {getBoostTimeRemaining("speed") > 0 ? (
               <span className="absolute bottom-1 left-1/2 -translate-x-1/2 bg-green-400 text-black text-xs px-2 py-0.5 rounded-full font-bold">
                 {getBoostTimeRemaining("speed")}s
@@ -202,30 +210,31 @@ export function GameUI() {
         <div className="flex-1" />
         
         <div className="flex gap-2 items-end pointer-events-auto">
-          <div className="flex gap-1 items-center bg-black/20 backdrop-blur-sm border border-white/10 rounded-full px-2 py-1">
-            <div className="text-cyan-400 text-[10px]">Wait:</div>
-            <div className="text-white text-sm font-bold">{Math.floor(waitingCustomers)}</div>
+          <div className="flex gap-1 items-center bg-black/60 backdrop-blur-sm border border-cyan-500/30 rounded-full px-3 py-1.5">
+            <div className="text-cyan-400 text-xs font-semibold">Wait:</div>
+            <div className="text-white text-base font-bold">{Math.floor(waitingCustomers)}</div>
           </div>
-          <div className="flex gap-1 items-center bg-black/20 backdrop-blur-sm border border-white/10 rounded-full px-2 py-1">
-            <div className="text-green-400 text-[10px]">Trip:</div>
-            <div className="text-white text-sm font-bold">{processingCustomers}</div>
+          <div className="flex gap-1 items-center bg-black/60 backdrop-blur-sm border border-green-500/30 rounded-full px-3 py-1.5">
+            <div className="text-green-400 text-xs font-semibold">Trip:</div>
+            <div className="text-white text-base font-bold">{processingCustomers}</div>
           </div>
-          <div className="flex gap-1 items-center bg-black/20 backdrop-blur-sm border border-white/10 rounded-full px-2 py-1">
-            <div className="text-purple-400 text-[10px]">Done:</div>
-            <div className="text-white text-sm font-bold">{formatNumber(totalCustomersServed)}</div>
+          <div className="flex gap-1 items-center bg-black/60 backdrop-blur-sm border border-purple-500/30 rounded-full px-3 py-1.5">
+            <div className="text-purple-400 text-xs font-semibold">Done:</div>
+            <div className="text-white text-base font-bold">{formatNumber(totalCustomersServed)}</div>
           </div>
         </div>
         
-        <div className="pointer-events-auto">
-          <Button
-            onClick={prestige}
-            disabled={totalEarned < 100000}
-            className="bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700 h-16 w-full text-lg font-bold disabled:opacity-50"
-          >
-            <Trophy className="w-5 h-5 mr-2" />
-            Prestige
-          </Button>
-        </div>
+        {totalEarned >= 100000 && (
+          <div className="pointer-events-auto">
+            <Button
+              onClick={prestige}
+              className="bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700 h-16 w-full text-lg font-bold"
+            >
+              <Trophy className="w-5 h-5 mr-2" />
+              Prestige
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -10,7 +10,7 @@ import { CollectionsPanel } from "./CollectionsPanel";
 import { useState } from "react";
 
 export function UpgradePanel() {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
   const {
     chronocoins,
     timeMachineLevel,
