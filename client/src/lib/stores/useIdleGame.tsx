@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
+import { useArtifacts } from "./useArtifacts";
 
 export interface TimePeriod {
   id: string;
@@ -577,7 +578,10 @@ export const useIdleGame = create<IdleGameState>()(
       const destination = TIME_PERIODS.find(d => d.id === state.currentDestination);
       const destinationMod = destination?.revenueModifier || 1.0;
       
-      let multiplier = (1 + (state.prestigePoints * 0.1) + managerBonus) * destinationMod;
+      const artifactsStore = useArtifacts.getState();
+      const artifactBonus = artifactsStore.getDestinationRevenueBonus(state.currentDestination);
+      
+      let multiplier = (1 + (state.prestigePoints * 0.1) + managerBonus + artifactBonus) * destinationMod;
       
       const now = Date.now();
       state.activeBoosts.forEach(boost => {
@@ -675,6 +679,12 @@ export const useIdleGame = create<IdleGameState>()(
         const revenue = baseRevenue * timeShareMultiplier * state.getRevenueMultiplier(bonuses.revenue);
         
         state.addChronocoins(revenue);
+        
+        const artifactsStore = useArtifacts.getState();
+        const droppedArtifact = artifactsStore.checkForArtifactDrop(state.currentDestination);
+        if (droppedArtifact) {
+          artifactsStore.discoverArtifact(droppedArtifact.id);
+        }
         
         const travelingEntities = state.customerEntities.filter(e => e.state !== "traveling");
         
