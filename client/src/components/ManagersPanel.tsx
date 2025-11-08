@@ -2,11 +2,11 @@ import { useIdleGame } from "@/lib/stores/useIdleGame";
 import { useManagers, MANAGER_TYPES } from "@/lib/stores/useManagers";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
-import { ArrowUp, Users, Zap, DollarSign } from "lucide-react";
+import { ArrowUp, Users, Zap, DollarSign, Star, Crown, Sparkles } from "lucide-react";
 
 export function ManagersPanel() {
   const { chronocoins, spendChronocoins } = useIdleGame();
-  const { upgradeManager, getManagerLevel, getManagerCost } = useManagers();
+  const { upgradeManager, getManagerLevel, getManagerCost, getUnlockedPerks } = useManagers();
   
   const formatNumber = (num: number) => {
     if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
@@ -35,6 +35,7 @@ export function ManagersPanel() {
         const cost = getManagerCost(manager.id);
         const isMaxLevel = level >= manager.maxLevel;
         const bonusAmount = (level * manager.bonusPerLevel * 100).toFixed(0);
+        const unlockedPerks = getUnlockedPerks(manager.id);
         
         return (
           <Card
@@ -56,6 +57,33 @@ export function ManagersPanel() {
                   Level {level}/{manager.maxLevel}
                   {level > 0 && <span className="text-green-400 ml-2">+{bonusAmount}% bonus</span>}
                 </div>
+                
+                {unlockedPerks.length > 0 && (
+                  <div className="mt-2 space-y-1">
+                    {unlockedPerks.map((perk, idx) => (
+                      <div key={idx} className="flex items-center gap-2 text-xs">
+                        {perk.type === "active" ? (
+                          <Crown className="w-3 h-3 text-yellow-400" />
+                        ) : (
+                          <Star className="w-3 h-3 text-purple-400" />
+                        )}
+                        <span className="text-purple-300 font-semibold">{perk.name}:</span>
+                        <span className="text-gray-400">{perk.description}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {manager.perks.filter(p => level < p.level).length > 0 && (
+                  <div className="mt-2 space-y-1">
+                    {manager.perks.filter(p => level < p.level).map((perk, idx) => (
+                      <div key={idx} className="flex items-center gap-2 text-xs text-gray-600">
+                        <Sparkles className="w-3 h-3" />
+                        <span className="font-semibold">Level {perk.level}: {perk.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               {!isMaxLevel ? (
                 <Button
