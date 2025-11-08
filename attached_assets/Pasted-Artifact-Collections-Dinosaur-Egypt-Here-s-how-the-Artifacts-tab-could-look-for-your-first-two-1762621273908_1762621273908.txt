@@ -1,0 +1,90 @@
+Artifact Collections (Dinosaur & Egypt)
+Here's how the "Artifacts" tab could look for your first two destinations. Remember, each artifact gives a small permanent boost (like +0.5% All Revenue), and completing the set gives a big bonus.
+
+Destination: Dinosaur Era (65 Million BC)
+Collection: "Relics of the Cretaceous"
+
+Artifacts to Find:
+
+Polished Amber: (Common) A piece of hardened sap with a tiny, trapped fly.
+
+Velociraptor Claw: (Common) A single, curved claw.
+
+Ginkgo Leaf Fossil: (Uncommon) An imprint of an ancient leaf, perfectly preserved.
+
+Triceratops Horn Fragment: (Uncommon) The chipped-off point of a massive horn.
+
+Pristine T-Rex Tooth: (Rare) A flawless, giant tooth.
+
+Set Bonus: "Primal Fury"
+
+Effect: The "Click Boost!" button is now 25% more powerful.
+
+Destination: Ancient Egypt (2500 BC)
+Collection: "Treasures of the Nile"
+
+Artifacts to Find:
+
+Clay Scarab Amulet: (Common) A small beetle charm, said to bring good luck.
+
+Hieroglyph Tablet Scrap: (Common) A fragment of stone with "Time Machine" etched on it... how?
+
+Linen Mummy Wrapping: (Uncommon) A surprisingly well-preserved strip of cloth.
+
+Golden Ankh: (Uncommon) A beautiful symbol of life.
+
+Eye of Horus Pendant: (Rare) A glowing amulet, pulsing with faint energy.
+
+Set Bonus: "Pharaoh's Blessing"
+
+Effect: All Managers now cost 10% less to hire and upgrade.
+
+2. The "Portal" Visuals (A Fantastic Idea!)
+This adds so much visual flair! The central time machine stays the same, but the "portal" effect that gathers customers and shoots the machine off-world should change based on the active destination.
+
+Default (The Present): The glowing green, high-tech ring you have now.
+
+Dinosaur Era Portal: A "Jungle Portal" — a swirling vortex of green leaves, vines, and cracked earth.
+
+Ancient Egypt Portal: A "Sandstorm Portal" — a vortex of golden sand and shimmering desert heat.
+
+This makes every destination feel truly unique, not just a menu item.
+
+3. More Destination Ideas
+Let's add more stops to the timeline! Each one can have its own "Base Fare," unique portal, and Artifact collection.
+
+The Wild West (Frontier Town, 1870 AD)
+
+Description: "Stake your claim in an era of outlaws and gold!"
+
+Base Fare: 2,500
+
+Portal: A "Dust Devil Portal" that looks like a swirling tumbleweed or a mini-tornado of dust.
+
+Artifacts: Sheriff's Badge, Gold Nugget, Saloon Token, Wanted Poster, (Rare) Ornate Six-Shooter.
+
+Set Bonus: "Gold Rush" — 5% chance any trip pays out 10x ChronoCoins.
+
+Cyberpunk City (Neo-Kyoto, 2242 AD)
+
+Description: "Navigate the neon-drenched streets of a high-tech future."
+
+Base Fare: 500,000
+
+Portal: A "Digital Rift Portal" — a glitchy, neon-blue matrix of 1s and 0s and flickering code.
+
+Artifacts: Glitching Data-Chip, Cybernetic Eye, Flying 'Noodle' Ad, Corporate Security Badge, (Rare) Sentient AI Core.
+
+Set Bonus: "System Overclock" — All ad-boosts (2x Revenue, etc.) last 30 seconds longer.
+
+Age of Sail (Tortuga, 1701 AD)
+
+Description: "Seek treasure and adventure on the high seas!"
+
+Base Fare: 75,000
+
+Portal: A "Maelstrom Portal" — a swirling, dark-blue whirlpool of seawater and sea foam.
+
+Artifacts: Piece of Eight, Pirate's Compass, Jolly Roger Flag, Message in a Bottle, (Rare) Black Pearl.
+
+Set Bonus: "Buried Treasure" — Once per day, a "Treasure Chest" appears. Clicking it gives a massive bundle of ChronoCoins (e.g., 1 hour of earnings).
