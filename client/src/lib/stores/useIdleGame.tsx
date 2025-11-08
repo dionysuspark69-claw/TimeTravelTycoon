@@ -682,10 +682,6 @@ export const useIdleGame = create<IdleGameState>()(
       const bonuses = managerBonuses || {customerRate: 0, speed: 0, revenue: 0};
       const perks = managerPerks || {hasVIP: false, hasSlipstream: false, hasTimeShare: false, hasTemporalBeacon: false};
       
-      set({
-        activeBoosts: state.activeBoosts.filter(boost => boost.endsAt > now)
-      });
-      
       if (perks.hasTemporalBeacon && now - state.lastTemporalBeaconTime >= 60000) {
         set({ lastTemporalBeaconTime: now });
       }
