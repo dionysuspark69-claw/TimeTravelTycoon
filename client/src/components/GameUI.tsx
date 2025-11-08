@@ -1,10 +1,8 @@
 import { useIdleGame, TIME_PERIODS } from "@/lib/stores/useIdleGame";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
-import { Progress } from "./ui/progress";
 import { useAudio } from "@/lib/stores/useAudio";
-import { Volume2, VolumeX, Zap, Users, Gauge, Trophy, MapPin } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Volume2, VolumeX, Trophy, MapPin } from "lucide-react";
 import { StatsPanel } from "./StatsPanel";
 
 export function GameUI() {
@@ -22,49 +20,12 @@ export function GameUI() {
     unlockedDestinations,
     prestigeLevel,
     prestigePoints,
-    activeBoosts,
     coinsPerSecond,
     
-    upgradeTimeMachine,
-    upgradeCapacity,
-    upgradeSpeed,
-    upgradeCustomerRate,
-    unlockDestination,
-    setDestination,
-    watchAd,
     prestige,
-    
-    getTimeMachineUpgradeCost,
-    getCapacityUpgradeCost,
-    getSpeedUpgradeCost,
-    getCustomerRateUpgradeCost,
   } = useIdleGame();
   
   const { isMuted, toggleMute } = useAudio();
-  const [adCooldowns, setAdCooldowns] = useState<Record<string, number>>({});
-  
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setAdCooldowns(prev => {
-        const updated = { ...prev };
-        Object.keys(updated).forEach(key => {
-          if (updated[key] > 0) {
-            updated[key] = Math.max(0, updated[key] - 1);
-          }
-        });
-        return updated;
-      });
-    }, 1000);
-    
-    return () => clearInterval(interval);
-  }, []);
-  
-  const handleWatchAd = (type: "revenue" | "customers" | "speed") => {
-    if (adCooldowns[type] && adCooldowns[type] > 0) return;
-    
-    watchAd(type);
-    setAdCooldowns(prev => ({ ...prev, [type]: 60 }));
-  };
   
   const formatNumber = (num: number) => {
     if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
@@ -77,12 +38,6 @@ export function GameUI() {
     if (num >= 1000) return (num / 1000).toFixed(1) + "K";
     if (num >= 1) return num.toFixed(1);
     return num.toFixed(2);
-  };
-  
-  const getBoostTimeRemaining = (type: string) => {
-    const boost = activeBoosts.find(b => b.type === type);
-    if (!boost) return 0;
-    return Math.max(0, Math.ceil((boost.endsAt - Date.now()) / 1000));
   };
   
   const currentDest = TIME_PERIODS.find(d => d.id === currentDestination);
@@ -149,62 +104,6 @@ export function GameUI() {
               {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
             </Button>
           </div>
-        </div>
-        
-        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col gap-2 pointer-events-auto">
-          <Button
-            onClick={() => handleWatchAd("revenue")}
-            disabled={adCooldowns["revenue"] > 0}
-            className="bg-gradient-to-br from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 rounded-lg w-16 h-16 relative shadow-lg border-2 border-yellow-400/50 flex flex-col items-center justify-center p-1 disabled:opacity-60"
-          >
-            <Zap className="w-5 h-5" />
-            <span className="text-[9px] font-extrabold text-yellow-200">2x</span>
-            {getBoostTimeRemaining("revenue") > 0 ? (
-              <span className="absolute bottom-1 left-1/2 -translate-x-1/2 bg-yellow-400 text-black text-xs px-2 py-0.5 rounded-full font-bold">
-                {getBoostTimeRemaining("revenue")}s
-              </span>
-            ) : adCooldowns["revenue"] > 0 ? (
-              <span className="absolute bottom-1 left-1/2 -translate-x-1/2 bg-gray-500 text-white text-xs px-2 py-0.5 rounded-full">
-                {adCooldowns["revenue"]}s
-              </span>
-            ) : null}
-          </Button>
-          
-          <Button
-            onClick={() => handleWatchAd("customers")}
-            disabled={adCooldowns["customers"] > 0}
-            className="bg-gradient-to-br from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg w-16 h-16 relative shadow-lg border-2 border-blue-400/50 flex flex-col items-center justify-center p-1 disabled:opacity-60"
-          >
-            <Users className="w-5 h-5" />
-            <span className="text-[9px] font-extrabold text-blue-200">+10</span>
-            {getBoostTimeRemaining("customers") > 0 ? (
-              <span className="absolute bottom-1 left-1/2 -translate-x-1/2 bg-blue-400 text-black text-xs px-2 py-0.5 rounded-full font-bold">
-                {getBoostTimeRemaining("customers")}s
-              </span>
-            ) : adCooldowns["customers"] > 0 ? (
-              <span className="absolute bottom-1 left-1/2 -translate-x-1/2 bg-gray-500 text-white text-xs px-2 py-0.5 rounded-full">
-                {adCooldowns["customers"]}s
-              </span>
-            ) : null}
-          </Button>
-          
-          <Button
-            onClick={() => handleWatchAd("speed")}
-            disabled={adCooldowns["speed"] > 0}
-            className="bg-gradient-to-br from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 rounded-lg w-16 h-16 relative shadow-lg border-2 border-green-400/50 flex flex-col items-center justify-center p-1 disabled:opacity-60"
-          >
-            <Gauge className="w-5 h-5" />
-            <span className="text-[9px] font-extrabold text-green-200">2x</span>
-            {getBoostTimeRemaining("speed") > 0 ? (
-              <span className="absolute bottom-1 left-1/2 -translate-x-1/2 bg-green-400 text-black text-xs px-2 py-0.5 rounded-full font-bold">
-                {getBoostTimeRemaining("speed")}s
-              </span>
-            ) : adCooldowns["speed"] > 0 ? (
-              <span className="absolute bottom-1 left-1/2 -translate-x-1/2 bg-gray-500 text-white text-xs px-2 py-0.5 rounded-full">
-                {adCooldowns["speed"]}s
-              </span>
-            ) : null}
-          </Button>
         </div>
         
         <div className="flex-1" />

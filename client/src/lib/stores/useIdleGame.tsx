@@ -204,12 +204,6 @@ export const TIME_PERIODS: TimePeriod[] = [
   }
 ];
 
-export interface AdBoost {
-  type: "revenue" | "customers" | "speed";
-  multiplier: number;
-  endsAt: number;
-}
-
 export type CustomerState = "spawning" | "approaching" | "waiting" | "boarding" | "traveling";
 
 export interface CustomerEntity {
@@ -243,15 +237,12 @@ interface IdleGameState {
   tripEndTime: number | null;
   
   totalManagerUpgrades: number;
-  totalBoostsUsed: number;
   
   customerEntities: CustomerEntity[];
   nextCustomerId: number;
   
   unlockedDestinations: string[];
   currentDestination: string;
-  
-  activeBoosts: AdBoost[];
   
   lastUpdateTime: number;
   lastPlayTime: number;
@@ -276,8 +267,6 @@ interface IdleGameState {
   setDestination: (destinationId: string) => void;
   
   clickBoost: () => void;
-  
-  watchAd: (type: "revenue" | "customers" | "speed") => void;
   
   prestige: () => void;
   
@@ -324,15 +313,12 @@ export const useIdleGame = create<IdleGameState>()(
     tripEndTime: null,
     
     totalManagerUpgrades: 0,
-    totalBoostsUsed: 0,
     
     customerEntities: [],
     nextCustomerId: 0,
     
     unlockedDestinations: ["dinosaur"],
     currentDestination: "dinosaur",
-    
-    activeBoosts: [],
     
     lastUpdateTime: Date.now(),
     lastPlayTime: Date.now(),
@@ -468,7 +454,6 @@ export const useIdleGame = create<IdleGameState>()(
       const clickTimestamp = Date.now();
       
       set({ 
-        totalBoostsUsed: state.totalBoostsUsed + 1,
         coinsPerSecond: clickRevenue,
         lastClickBoostTime: clickTimestamp
       });
@@ -479,25 +464,6 @@ export const useIdleGame = create<IdleGameState>()(
           set({ coinsPerSecond: 0 });
         }
       }, 1000);
-    },
-    
-    watchAd: (type) => {
-      const now = Date.now();
-      const duration = 30000;
-      
-      let boost: AdBoost;
-      if (type === "revenue") {
-        boost = { type: "revenue", multiplier: 2, endsAt: now + duration };
-      } else if (type === "customers") {
-        boost = { type: "customers", multiplier: 10, endsAt: now + duration };
-        set((state) => ({ waitingCustomers: state.waitingCustomers + 10 }));
-      } else {
-        boost = { type: "speed", multiplier: 2, endsAt: now + duration };
-      }
-      
-      set((state) => ({
-        activeBoosts: [...state.activeBoosts, boost]
-      }));
     },
     
     prestige: () => {
@@ -522,8 +488,7 @@ export const useIdleGame = create<IdleGameState>()(
         customerEntities: [],
         nextCustomerId: 0,
         unlockedDestinations: ["dinosaur"],
-        currentDestination: "dinosaur",
-        activeBoosts: []
+        currentDestination: "dinosaur"
       });
     },
     

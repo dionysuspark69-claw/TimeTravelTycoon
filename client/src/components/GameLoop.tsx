@@ -3,6 +3,7 @@ import { useIdleGame } from "@/lib/stores/useIdleGame";
 import { useManagers } from "@/lib/stores/useManagers";
 import { useMissions } from "@/lib/stores/useMissions";
 import { useEvents } from "@/lib/stores/useEvents";
+import { useAdBoosts } from "@/lib/stores/useAdBoosts";
 
 export function GameLoop() {
   const update = useIdleGame(state => state.update);
@@ -19,12 +20,16 @@ export function GameLoop() {
   const totalTrips = useIdleGame(state => state.totalTripsCompleted);
   const totalEarned = useIdleGame(state => state.totalEarned);
   const totalManagerUpgrades = useIdleGame(state => state.totalManagerUpgrades);
-  const totalBoostsUsed = useIdleGame(state => state.totalBoostsUsed);
   const unlockedDestinations = useIdleGame(state => state.unlockedDestinations);
   
   const { checkProgress } = useMissions();
   const eventsUpdate = useEvents(state => state.update);
   const getActiveMultipliers = useEvents(state => state.getActiveMultipliers);
+  const adBoostsUpdate = useAdBoosts(state => state.update);
+  const getAdRevenueMultiplier = useAdBoosts(state => state.getRevenueMultiplier);
+  const getAdCustomerMultiplier = useAdBoosts(state => state.getCustomerMultiplier);
+  const getAdSpeedMultiplier = useAdBoosts(state => state.getSpeedMultiplier);
+  const totalBoostsUsed = useAdBoosts(state => state.totalBoostsUsed);
   
   useEffect(() => {
     let lastTime = Date.now();
@@ -38,6 +43,7 @@ export function GameLoop() {
       
       updatePerkTimers(deltaTime);
       eventsUpdate(deltaTime);
+      adBoostsUpdate(deltaTime);
       
       if (hasPerk("accountant", 10) && totalTrips > lastCompoundCheck && totalTrips % 100 === 0) {
         incrementCompoundInterest();
@@ -47,11 +53,14 @@ export function GameLoop() {
       const speedBonus = getSpeedBonus();
       const overclockMultiplier = overclockActive ? 1000 : 1;
       const eventMultipliers = getActiveMultipliers();
+      const adRevenueBoost = getAdRevenueMultiplier();
+      const adCustomerBoost = getAdCustomerMultiplier();
+      const adSpeedBoost = getAdSpeedMultiplier();
       
       const bonuses = {
-        customerRate: getCustomerRateBonus() * eventMultipliers.customers,
-        speed: speedBonus * overclockMultiplier * eventMultipliers.speed,
-        revenue: getRevenueBonus() * eventMultipliers.revenue
+        customerRate: getCustomerRateBonus() * eventMultipliers.customers * adCustomerBoost,
+        speed: speedBonus * overclockMultiplier * eventMultipliers.speed * adSpeedBoost,
+        revenue: getRevenueBonus() * eventMultipliers.revenue * adRevenueBoost
       };
       
       const perks = {
@@ -75,7 +84,7 @@ export function GameLoop() {
         cancelAnimationFrame(animationFrameId);
       }
     };
-  }, [update, getCustomerRateBonus, getSpeedBonus, getRevenueBonus, updatePerkTimers, hasPerk, overclockActive, incrementCompoundInterest, totalTrips, totalEarned, totalManagerUpgrades, totalBoostsUsed, unlockedDestinations, checkProgress, eventsUpdate, getActiveMultipliers]);
+  }, [update, getCustomerRateBonus, getSpeedBonus, getRevenueBonus, updatePerkTimers, hasPerk, overclockActive, incrementCompoundInterest, totalTrips, totalEarned, totalManagerUpgrades, totalBoostsUsed, unlockedDestinations, checkProgress, eventsUpdate, getActiveMultipliers, adBoostsUpdate, getAdRevenueMultiplier, getAdCustomerMultiplier, getAdSpeedMultiplier]);
   
   return null;
 }

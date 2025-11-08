@@ -2,11 +2,12 @@ import { useIdleGame, TIME_PERIODS } from "@/lib/stores/useIdleGame";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { ArrowUp, MapPin, Users, Trophy, Settings, Plus, Minus, Target, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowUp, MapPin, Users, Trophy, Settings, Plus, Minus, Target, Sparkles, ChevronDown, ChevronUp, Tv } from "lucide-react";
 import { ManagersPanel } from "./ManagersPanel";
 import { AchievementsPanel } from "./AchievementsPanel";
 import { MissionsPanel } from "./MissionsPanel";
 import { CollectionsPanel } from "./CollectionsPanel";
+import { AdBoostPanel } from "./AdBoostPanel";
 import { useAchievements } from "@/lib/stores/useAchievements";
 import { useState } from "react";
 
@@ -73,7 +74,7 @@ export function UpgradePanel() {
       {isExpanded && (
         <div className="p-4 max-h-[40vh] overflow-y-auto">
           <Tabs defaultValue="upgrades" className="w-full">
-        <TabsList className="grid w-full grid-cols-6 bg-gray-900">
+        <TabsList className="grid w-full grid-cols-7 bg-gray-900">
           <TabsTrigger value="upgrades" className="flex items-center gap-2">
             <Settings className="w-4 h-4" />
             <span className="hidden sm:inline">Upgrades</span>
@@ -85,6 +86,10 @@ export function UpgradePanel() {
           <TabsTrigger value="destinations" className="flex items-center gap-2">
             <MapPin className="w-4 h-4" />
             <span className="hidden sm:inline">Destinations</span>
+          </TabsTrigger>
+          <TabsTrigger value="boosts" className="flex items-center gap-2">
+            <Tv className="w-4 h-4" />
+            <span className="hidden sm:inline">Ad Boosts</span>
           </TabsTrigger>
           <TabsTrigger value="collections" className="flex items-center gap-2">
             <Sparkles className="w-4 h-4" />
@@ -200,6 +205,10 @@ export function UpgradePanel() {
         
         <TabsContent value="managers" className="space-y-2 mt-4">
           <ManagersPanel />
+        </TabsContent>
+        
+        <TabsContent value="boosts" className="space-y-2 mt-4">
+          <AdBoostPanel />
         </TabsContent>
         
         <TabsContent value="achievements" className="space-y-2 mt-4">
