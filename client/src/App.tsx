@@ -8,6 +8,7 @@ import { SoundManager } from "./components/SoundManager";
 import { OfflineEarningsDialog } from "./components/OfflineEarningsDialog";
 import { AchievementChecker } from "./components/AchievementChecker";
 import { FloatingTextManager } from "./components/FloatingTextManager";
+import { Toaster } from "./components/ui/sonner";
 
 function App() {
   const [showGame, setShowGame] = useState(false);
@@ -38,6 +39,7 @@ function App() {
       <FloatingTextManager />
       <GameLoop />
       <SoundManager />
+      <Toaster />
     </div>
   );
 }

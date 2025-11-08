@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 import { useArtifacts } from "./useArtifacts";
+import { toast } from "sonner";
 
 export interface TimePeriod {
   id: string;
@@ -684,6 +685,19 @@ export const useIdleGame = create<IdleGameState>()(
         const droppedArtifact = artifactsStore.checkForArtifactDrop(state.currentDestination);
         if (droppedArtifact) {
           artifactsStore.discoverArtifact(droppedArtifact.id);
+          
+          const rarityColors = {
+            common: "🔹",
+            uncommon: "🟢",
+            rare: "🔵",
+            epic: "🟣",
+            legendary: "🟠"
+          };
+          
+          toast.success(`Artifact Discovered!`, {
+            description: `${rarityColors[droppedArtifact.rarity]} ${droppedArtifact.name} (${droppedArtifact.rarity}) - ${droppedArtifact.description}`,
+            duration: 5000
+          });
         }
         
         const travelingEntities = state.customerEntities.filter(e => e.state !== "traveling");
