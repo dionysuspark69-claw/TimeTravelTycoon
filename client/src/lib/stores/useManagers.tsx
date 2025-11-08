@@ -111,6 +111,7 @@ interface ManagerState {
   
   hasPerk: (managerId: string, perkLevel: number) => boolean;
   getUnlockedPerks: (managerId: string) => ManagerPerk[];
+  getTotalManagerLevels: () => number;
   
   triggerOverclock: () => boolean;
   updatePerkTimers: (deltaTime: number) => void;
@@ -184,6 +185,11 @@ export const useManagers = create<ManagerState>()(
       
       const level = get().getManagerLevel(managerId);
       return manager.perks.filter(perk => level >= perk.level);
+    },
+    
+    getTotalManagerLevels: () => {
+      const state = get();
+      return Object.values(state.managers).reduce((sum, level) => sum + level, 0);
     },
     
     triggerOverclock: () => {

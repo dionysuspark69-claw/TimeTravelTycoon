@@ -2,13 +2,15 @@ import { useIdleGame, TIME_PERIODS } from "@/lib/stores/useIdleGame";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { ArrowUp, MapPin, Users, Trophy, Settings, Plus, Minus, Target, Sparkles } from "lucide-react";
+import { ArrowUp, MapPin, Users, Trophy, Settings, Plus, Minus, Target, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
 import { ManagersPanel } from "./ManagersPanel";
 import { AchievementsPanel } from "./AchievementsPanel";
 import { MissionsPanel } from "./MissionsPanel";
 import { CollectionsPanel } from "./CollectionsPanel";
+import { useState } from "react";
 
 export function UpgradePanel() {
+  const [isExpanded, setIsExpanded] = useState(false);
   const {
     chronocoins,
     timeMachineLevel,
@@ -38,8 +40,32 @@ export function UpgradePanel() {
   };
   
   return (
-    <div className="w-full bg-black/80 backdrop-blur-sm border-t border-cyan-500/30 p-4">
-      <Tabs defaultValue="upgrades" className="w-full">
+    <div className="w-full bg-black/80 backdrop-blur-sm border-t border-cyan-500/30">
+      <div className="flex items-center justify-between p-2 border-b border-cyan-500/20">
+        <div className="text-cyan-400 font-semibold text-sm">Game Menu</div>
+        <Button
+          onClick={() => setIsExpanded(!isExpanded)}
+          variant="ghost"
+          size="sm"
+          className="text-cyan-400 hover:text-cyan-300"
+        >
+          {isExpanded ? (
+            <>
+              <ChevronDown className="w-4 h-4 mr-1" />
+              Hide
+            </>
+          ) : (
+            <>
+              <ChevronUp className="w-4 h-4 mr-1" />
+              Show
+            </>
+          )}
+        </Button>
+      </div>
+      
+      {isExpanded && (
+        <div className="p-4 max-h-[40vh] overflow-y-auto">
+          <Tabs defaultValue="upgrades" className="w-full">
         <TabsList className="grid w-full grid-cols-6 bg-gray-900">
           <TabsTrigger value="upgrades" className="flex items-center gap-2">
             <Settings className="w-4 h-4" />
@@ -232,7 +258,9 @@ export function UpgradePanel() {
             );
           })}
         </TabsContent>
-      </Tabs>
+          </Tabs>
+        </div>
+      )}
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { Progress } from "./ui/progress";
 import { useAudio } from "@/lib/stores/useAudio";
 import { Volume2, VolumeX, Zap, Users, Gauge, Trophy, MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
+import { StatsPanel } from "./StatsPanel";
 
 export function GameUI() {
   const {
@@ -127,14 +128,17 @@ export function GameUI() {
             </Card>
           )}
           
-          <Button
-            onClick={toggleMute}
-            variant="outline"
-            size="icon"
-            className="bg-black/80 backdrop-blur-sm border-cyan-500/30"
-          >
-            {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-          </Button>
+          <div className="flex gap-2">
+            <StatsPanel />
+            <Button
+              onClick={toggleMute}
+              variant="outline"
+              size="icon"
+              className="bg-black/80 backdrop-blur-sm border-cyan-500/30"
+            >
+              {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+            </Button>
+          </div>
         </div>
         
         <div className="flex gap-2 pointer-events-auto">
