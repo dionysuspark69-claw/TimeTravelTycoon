@@ -4,6 +4,41 @@ import { TimeMachine } from "./TimeMachine";
 import { CharacterManager } from "./CharacterManager";
 import { Starfield } from "./Starfield";
 import { SpaceshipFleet } from "./SpaceshipFleet";
+import { Component, ErrorInfo, ReactNode } from "react";
+
+interface ErrorBoundaryProps {
+  children: ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+}
+
+class WebGLErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(): ErrorBoundaryState {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.log("WebGL Error caught:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ width: "100%", height: "60vh", position: "relative", background: "#1a1a2e" }}>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 function Scene() {
   return (
@@ -37,14 +72,19 @@ function Scene() {
 
 export function GameScene() {
   return (
-    <div style={{ width: "100%", height: "60vh", position: "relative" }}>
-      <Canvas
-        camera={{ position: [8, 6, 8], fov: 50 }}
-        shadows
-      >
-        <color attach="background" args={["#1a1a2e"]} />
-        <Scene />
-      </Canvas>
-    </div>
+    <WebGLErrorBoundary>
+      <div style={{ width: "100%", height: "60vh", position: "relative" }}>
+        <Canvas
+          camera={{ position: [8, 6, 8], fov: 50 }}
+          shadows
+          onCreated={(state) => {
+            console.log("WebGL context created successfully");
+          }}
+        >
+          <color attach="background" args={["#1a1a2e"]} />
+          <Scene />
+        </Canvas>
+      </div>
+    </WebGLErrorBoundary>
   );
 }
