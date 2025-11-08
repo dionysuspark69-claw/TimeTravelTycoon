@@ -7,6 +7,7 @@ import { GameLoop } from "./components/GameLoop";
 import { SoundManager } from "./components/SoundManager";
 import { OfflineEarningsDialog } from "./components/OfflineEarningsDialog";
 import { AchievementChecker } from "./components/AchievementChecker";
+import { FloatingTextManager } from "./components/FloatingTextManager";
 
 function App() {
   const [showGame, setShowGame] = useState(false);
@@ -34,6 +35,7 @@ function App() {
       
       <OfflineEarningsDialog />
       <AchievementChecker />
+      <FloatingTextManager />
       <GameLoop />
       <SoundManager />
     </div>

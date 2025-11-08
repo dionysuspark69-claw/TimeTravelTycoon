@@ -171,9 +171,10 @@ export function GameUI() {
         <div className="grid grid-cols-2 gap-2 pointer-events-auto">
           <Button
             onClick={clickBoost}
-            className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 h-16 text-lg font-bold"
+            className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 h-16 text-lg font-bold relative overflow-hidden animate-pulse shadow-lg shadow-pink-500/50"
           >
-            Click Boost!
+            <span className="relative z-10">✨ Click Boost! ✨</span>
+            <div className="absolute inset-0 bg-gradient-to-r from-pink-400/30 to-purple-400/30 animate-pulse" />
           </Button>
           
           <Button

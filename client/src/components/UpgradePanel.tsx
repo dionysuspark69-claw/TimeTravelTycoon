@@ -2,7 +2,7 @@ import { useIdleGame, TIME_PERIODS } from "@/lib/stores/useIdleGame";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { ArrowUp, MapPin } from "lucide-react";
+import { ArrowUp, MapPin, Users, Trophy, Settings } from "lucide-react";
 import { ManagersPanel } from "./ManagersPanel";
 import { AchievementsPanel } from "./AchievementsPanel";
 
@@ -39,10 +39,22 @@ export function UpgradePanel() {
     <div className="w-full bg-black/80 backdrop-blur-sm border-t border-cyan-500/30 p-4">
       <Tabs defaultValue="upgrades" className="w-full">
         <TabsList className="grid w-full grid-cols-4 bg-gray-900">
-          <TabsTrigger value="upgrades">Upgrades</TabsTrigger>
-          <TabsTrigger value="managers">Managers</TabsTrigger>
-          <TabsTrigger value="destinations">Destinations</TabsTrigger>
-          <TabsTrigger value="achievements">Achievements</TabsTrigger>
+          <TabsTrigger value="upgrades" className="flex items-center gap-2">
+            <Settings className="w-4 h-4" />
+            <span className="hidden sm:inline">Upgrades</span>
+          </TabsTrigger>
+          <TabsTrigger value="managers" className="flex items-center gap-2">
+            <Users className="w-4 h-4" />
+            <span className="hidden sm:inline">Managers</span>
+          </TabsTrigger>
+          <TabsTrigger value="destinations" className="flex items-center gap-2">
+            <MapPin className="w-4 h-4" />
+            <span className="hidden sm:inline">Destinations</span>
+          </TabsTrigger>
+          <TabsTrigger value="achievements" className="flex items-center gap-2">
+            <Trophy className="w-4 h-4" />
+            <span className="hidden sm:inline">Achievements</span>
+          </TabsTrigger>
         </TabsList>
         
         <TabsContent value="upgrades" className="space-y-2 mt-4">
