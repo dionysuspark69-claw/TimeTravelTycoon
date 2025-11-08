@@ -160,6 +160,13 @@ export const useManagers = create<ManagerState>()(
             [managerId]: currentLevel + 1
           }
         }));
+        
+        const idleGame = (window as any).__idleGameStore;
+        if (idleGame) {
+          const currentTotal = idleGame.getState().totalManagerUpgrades || 0;
+          idleGame.setState({ totalManagerUpgrades: currentTotal + 1 });
+        }
+        
         return true;
       }
       

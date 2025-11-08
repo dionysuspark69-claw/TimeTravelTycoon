@@ -25,7 +25,7 @@ export function CustomerAvatar({ entity, position, targetPosition, onReachedTarg
   const leftArmRef = useRef<THREE.Mesh>(null);
   const rightArmRef = useRef<THREE.Mesh>(null);
   
-  const color = useMemo(() => COLORS[entity.colorIndex % COLORS.length], [entity.colorIndex]);
+  const color = useMemo(() => entity.isVIP ? "#FFD700" : COLORS[entity.colorIndex % COLORS.length], [entity.colorIndex, entity.isVIP]);
   
   const currentPos = useRef(new THREE.Vector3(...position));
   const walkPhase = useRef(0);
@@ -130,14 +130,26 @@ export function CustomerAvatar({ entity, position, targetPosition, onReachedTarg
   
   return (
     <group ref={groupRef} position={position}>
+      {entity.isVIP && (
+        <pointLight position={[0, 0.8, 0]} color="#FFD700" intensity={0.5} distance={1.5} />
+      )}
+      
       <mesh position={[0, 0.8, 0]}>
         <sphereGeometry args={[0.2, 16, 16]} />
-        <meshStandardMaterial color={color} />
+        <meshStandardMaterial 
+          color={color} 
+          emissive={entity.isVIP ? "#FFD700" : "#000000"}
+          emissiveIntensity={entity.isVIP ? 0.3 : 0}
+        />
       </mesh>
       
       <mesh position={[0, 0.4, 0]}>
         <cylinderGeometry args={[0.15, 0.15, 0.5, 8]} />
-        <meshStandardMaterial color={color} />
+        <meshStandardMaterial 
+          color={color}
+          emissive={entity.isVIP ? "#FFD700" : "#000000"}
+          emissiveIntensity={entity.isVIP ? 0.2 : 0}
+        />
       </mesh>
       
       <mesh ref={leftLegRef} position={[-0.08, 0.05, 0]}>

@@ -193,7 +193,11 @@ interface IdleGameState {
   waitingCustomers: number;
   processingCustomers: number;
   totalCustomersServed: number;
+  totalTripsCompleted: number;
   tripEndTime: number | null;
+  
+  totalManagerUpgrades: number;
+  totalBoostsUsed: number;
   
   customerEntities: CustomerEntity[];
   nextCustomerId: number;
@@ -205,6 +209,7 @@ interface IdleGameState {
   
   lastUpdateTime: number;
   lastPlayTime: number;
+  lastTemporalBeaconTime: number;
   
   addChronocoins: (amount: number) => void;
   spendChronocoins: (amount: number) => boolean;
@@ -226,12 +231,12 @@ interface IdleGameState {
   calculateOfflineEarnings: () => number;
   claimOfflineEarnings: () => void;
   
-  spawnCustomerEntity: () => void;
+  spawnCustomerEntity: (isVIP?: boolean) => void;
   updateCustomerStates: () => void;
   markEntityReachedTarget: (entityId: string) => void;
   boardCustomers: (count: number) => void;
   
-  update: (deltaTime: number, managerBonuses?: {customerRate: number, speed: number, revenue: number}) => void;
+  update: (deltaTime: number, managerBonuses?: {customerRate: number, speed: number, revenue: number}, managerPerks?: {hasVIP: boolean, hasSlipstream: boolean, hasTimeShare: boolean, hasTemporalBeacon: boolean}) => void;
   
   getTimeMachineUpgradeCost: () => number;
   getCapacityUpgradeCost: () => number;
@@ -260,7 +265,11 @@ export const useIdleGame = create<IdleGameState>()(
     waitingCustomers: 0,
     processingCustomers: 0,
     totalCustomersServed: 0,
+    totalTripsCompleted: 0,
     tripEndTime: null,
+    
+    totalManagerUpgrades: 0,
+    totalBoostsUsed: 0,
     
     customerEntities: [],
     nextCustomerId: 0,
@@ -272,6 +281,7 @@ export const useIdleGame = create<IdleGameState>()(
     
     lastUpdateTime: Date.now(),
     lastPlayTime: Date.now(),
+    lastTemporalBeaconTime: 0,
     
     addChronocoins: (amount) => {
       set((state) => ({
@@ -377,6 +387,8 @@ export const useIdleGame = create<IdleGameState>()(
       const state = get();
       const fare = state.getCurrentFare();
       state.addChronocoins(fare * 0.5);
+      
+      set({ totalBoostsUsed: state.totalBoostsUsed + 1 });
     },
     
     watchAd: (type) => {
@@ -449,7 +461,7 @@ export const useIdleGame = create<IdleGameState>()(
       }
     },
     
-    spawnCustomerEntity: () => {
+    spawnCustomerEntity: (isVIP = false) => {
       const state = get();
       const id = `customer-${state.nextCustomerId}`;
       const colorIndex = state.nextCustomerId % 5;
@@ -461,7 +473,8 @@ export const useIdleGame = create<IdleGameState>()(
         spawnTime: now,
         stateChangedTime: now,
         colorIndex,
-        hasReachedTarget: false
+        hasReachedTarget: false,
+        isVIP
       };
       
       set({
@@ -601,20 +614,30 @@ export const useIdleGame = create<IdleGameState>()(
       return Math.floor(destination.baseFare * state.timeMachineLevel);
     },
     
-    update: (deltaTime, managerBonuses) => {
+    update: (deltaTime, managerBonuses, managerPerks) => {
       const state = get();
       const now = Date.now();
       
       const bonuses = managerBonuses || {customerRate: 0, speed: 0, revenue: 0};
+      const perks = managerPerks || {hasVIP: false, hasSlipstream: false, hasTimeShare: false, hasTemporalBeacon: false};
       
       set({
         activeBoosts: state.activeBoosts.filter(boost => boost.endsAt > now)
       });
       
+      if (perks.hasTemporalBeacon && now - state.lastTemporalBeaconTime >= 60000) {
+        set({ lastTemporalBeaconTime: now });
+      }
+      
       const destination = TIME_PERIODS.find(d => d.id === state.currentDestination);
       const destinationCustomerMod = destination?.customerGenModifier || 1.0;
       
-      const customerGenRate = state.customerGenerationRate * 0.5 * (1 + bonuses.customerRate) * destinationCustomerMod;
+      let customerGenRate = state.customerGenerationRate * 0.5 * (1 + bonuses.customerRate) * destinationCustomerMod;
+      
+      if (perks.hasTemporalBeacon && now - state.lastTemporalBeaconTime < 1000) {
+        customerGenRate *= 2;
+      }
+      
       const newCustomers = customerGenRate * (deltaTime / 1000);
       
       const travelTime = 3000 / (state.timeMachineSpeed * state.getSpeedMultiplier(bonuses.speed));
@@ -630,9 +653,9 @@ export const useIdleGame = create<IdleGameState>()(
       const entitiesToSpawn = Math.max(0, targetEntityCount - queueEntitiesCount);
       
       if (entitiesToSpawn > 0 && state.customerEntities.length < 25) {
-        console.log(`Spawning ${entitiesToSpawn} entities. WaitingCustomers: ${waitingCustomers.toFixed(2)}, CurrentEntities: ${state.customerEntities.length}`);
         for (let i = 0; i < Math.min(entitiesToSpawn, 25 - state.customerEntities.length); i++) {
-          state.spawnCustomerEntity();
+          const isVIP = perks.hasVIP && Math.random() < 0.01;
+          state.spawnCustomerEntity(isVIP);
         }
       }
       
@@ -640,7 +663,16 @@ export const useIdleGame = create<IdleGameState>()(
       
       if (state.tripEndTime !== null && now >= state.tripEndTime) {
         const fare = state.getCurrentFare();
-        const revenue = fare * state.processingCustomers * state.getRevenueMultiplier(bonuses.revenue);
+        const travelingCustomers = state.customerEntities.filter(e => e.state === "traveling");
+        const vipCount = travelingCustomers.filter(c => c.isVIP).length;
+        const normalCount = travelingCustomers.length - vipCount;
+        
+        let baseRevenue = fare * normalCount;
+        const vipRevenue = fare * 100 * vipCount;
+        baseRevenue += vipRevenue;
+        
+        const timeShareMultiplier = perks.hasTimeShare && Math.random() < 0.05 ? 3 : 1;
+        const revenue = baseRevenue * timeShareMultiplier * state.getRevenueMultiplier(bonuses.revenue);
         
         state.addChronocoins(revenue);
         
@@ -650,6 +682,7 @@ export const useIdleGame = create<IdleGameState>()(
           processingCustomers: 0,
           tripEndTime: null,
           totalCustomersServed: state.totalCustomersServed + state.processingCustomers,
+          totalTripsCompleted: state.totalTripsCompleted + 1,
           customerEntities: travelingEntities
         });
       }
@@ -660,9 +693,12 @@ export const useIdleGame = create<IdleGameState>()(
         
         state.boardCustomers(canProcess);
         
+        const slipstreamChance = perks.hasSlipstream && Math.random() < 0.5;
+        const actualTravelTime = slipstreamChance ? 0 : travelTime;
+        
         set({
           processingCustomers: canProcess,
-          tripEndTime: now + travelTime
+          tripEndTime: now + actualTravelTime
         });
       }
       
@@ -673,3 +709,7 @@ export const useIdleGame = create<IdleGameState>()(
     }
   }))
 );
+
+if (typeof window !== 'undefined') {
+  (window as any).__idleGameStore = useIdleGame;
+}
