@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Achievement } from "@/lib/stores/useAchievements";
 import { Card } from "./ui/card";
-import { Trophy, X } from "lucide-react";
+import { Trophy, X, Gift } from "lucide-react";
 import { Button } from "./ui/button";
 
 interface AchievementNotificationProps {
@@ -42,8 +42,9 @@ export function AchievementNotification({ achievement, onClose }: AchievementNot
             </div>
             <div className="text-white font-semibold">{achievement.name}</div>
             <div className="text-yellow-100 text-sm">{achievement.description}</div>
-            <div className="text-yellow-200 text-sm mt-1">
-              Reward: +{achievement.reward} coins
+            <div className="text-yellow-200 text-sm mt-2 flex items-center gap-1 bg-black/20 px-2 py-1 rounded">
+              <Gift className="w-3 h-3" />
+              Claim {achievement.reward} coins in Achievements tab!
             </div>
           </div>
           <Button

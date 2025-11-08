@@ -9,8 +9,7 @@ export function AchievementChecker() {
     totalEarned,
     timeMachineLevel,
     unlockedDestinations,
-    prestigeLevel,
-    addChronocoins
+    prestigeLevel
   } = useIdleGame();
   
   const { checkAchievements } = useAchievements();
@@ -29,10 +28,6 @@ export function AchievementChecker() {
     const newAchievements = checkAchievements(stats);
     
     if (newAchievements.length > 0) {
-      newAchievements.forEach(achievement => {
-        addChronocoins(achievement.reward);
-      });
-      
       setQueue(prev => [...prev, ...newAchievements]);
     }
   }, [totalCustomersServed, totalEarned, timeMachineLevel, unlockedDestinations.length, prestigeLevel]);

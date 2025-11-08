@@ -15,6 +15,7 @@ export function TimeMachine() {
   const currentDestination = useIdleGame(state => state.currentDestination);
   const timeMachineLevel = useIdleGame(state => state.timeMachineLevel);
   const tripEndTime = useIdleGame(state => state.tripEndTime);
+  const clickBoost = useIdleGame(state => state.clickBoost);
   
   const destinationColors: Record<string, string> = {
     dinosaur: "#2ecc71",
@@ -72,6 +73,17 @@ export function TimeMachine() {
   
   return (
     <group ref={meshRef} scale={scale}>
+      <mesh 
+        position={[0, 0, 0]} 
+        onClick={(e) => {
+          e.stopPropagation();
+          clickBoost();
+        }}
+      >
+        <sphereGeometry args={[3, 32, 32]} />
+        <meshBasicMaterial transparent opacity={0} />
+      </mesh>
+      
       <mesh position={[0, 0, 0]} ref={coreRef}>
         <sphereGeometry args={[0.8, 32, 32]} />
         <meshStandardMaterial

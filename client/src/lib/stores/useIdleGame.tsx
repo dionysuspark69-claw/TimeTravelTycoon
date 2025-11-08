@@ -214,6 +214,9 @@ interface IdleGameState {
   lastPlayTime: number;
   lastTemporalBeaconTime: number;
   
+  tutorialShown: boolean;
+  setTutorialShown: () => void;
+  
   addChronocoins: (amount: number) => void;
   spendChronocoins: (amount: number) => boolean;
   
@@ -288,6 +291,9 @@ export const useIdleGame = create<IdleGameState>()(
     lastUpdateTime: Date.now(),
     lastPlayTime: Date.now(),
     lastTemporalBeaconTime: 0,
+    
+    tutorialShown: false,
+    setTutorialShown: () => set({ tutorialShown: true }),
     
     addChronocoins: (amount) => {
       set((state) => ({

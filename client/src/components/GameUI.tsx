@@ -24,7 +24,6 @@ export function GameUI() {
     prestigePoints,
     activeBoosts,
     
-    clickBoost,
     upgradeTimeMachine,
     upgradeCapacity,
     upgradeSpeed,
@@ -215,19 +214,11 @@ export function GameUI() {
           </Button>
         </div>
         
-        <div className="grid grid-cols-2 gap-2 pointer-events-auto">
-          <Button
-            onClick={clickBoost}
-            className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 h-16 text-lg font-bold relative overflow-hidden animate-pulse shadow-lg shadow-pink-500/50"
-          >
-            <span className="relative z-10">✨ Click Boost! ✨</span>
-            <div className="absolute inset-0 bg-gradient-to-r from-pink-400/30 to-purple-400/30 animate-pulse" />
-          </Button>
-          
+        <div className="pointer-events-auto">
           <Button
             onClick={prestige}
             disabled={totalEarned < 100000}
-            className="bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700 h-16 text-lg font-bold disabled:opacity-50"
+            className="bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700 h-16 w-full text-lg font-bold disabled:opacity-50"
           >
             <Trophy className="w-5 h-5 mr-2" />
             Prestige
