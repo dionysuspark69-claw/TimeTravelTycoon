@@ -640,13 +640,6 @@ export const useIdleGame = create<IdleGameState>()(
       
       let multiplier = (1 + (state.prestigePoints * 0.1) + managerBonus + artifactBonus) * destinationMod;
       
-      const now = Date.now();
-      state.activeBoosts.forEach(boost => {
-        if (boost.type === "revenue" && boost.endsAt > now) {
-          multiplier *= boost.multiplier;
-        }
-      });
-      
       return multiplier;
     },
     
@@ -656,13 +649,6 @@ export const useIdleGame = create<IdleGameState>()(
       const destinationMod = destination?.speedModifier || 1.0;
       
       let multiplier = (1 + managerBonus) * destinationMod;
-      
-      const now = Date.now();
-      state.activeBoosts.forEach(boost => {
-        if (boost.type === "speed" && boost.endsAt > now) {
-          multiplier *= boost.multiplier;
-        }
-      });
       
       return multiplier;
     },
