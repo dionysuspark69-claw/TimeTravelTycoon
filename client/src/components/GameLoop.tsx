@@ -50,7 +50,9 @@ export function GameLoop() {
         lastCompoundCheck = totalTrips;
       }
       
-      const speedBonus = getSpeedBonus();
+      const managerCustomerBonus = getCustomerRateBonus();
+      const managerSpeedBonus = getSpeedBonus();
+      const managerRevenueBonus = getRevenueBonus();
       const overclockMultiplier = overclockActive ? 1000 : 1;
       const eventMultipliers = getActiveMultipliers();
       const adRevenueBoost = getAdRevenueMultiplier();
@@ -58,9 +60,9 @@ export function GameLoop() {
       const adSpeedBoost = getAdSpeedMultiplier();
       
       const bonuses = {
-        customerRate: getCustomerRateBonus() * eventMultipliers.customers * adCustomerBoost,
-        speed: speedBonus * overclockMultiplier * eventMultipliers.speed * adSpeedBoost,
-        revenue: getRevenueBonus() * eventMultipliers.revenue * adRevenueBoost
+        customerRate: (1 + managerCustomerBonus) * eventMultipliers.customers * adCustomerBoost - 1,
+        speed: (1 + managerSpeedBonus) * overclockMultiplier * eventMultipliers.speed * adSpeedBoost - 1,
+        revenue: (1 + managerRevenueBonus) * eventMultipliers.revenue * adRevenueBoost - 1
       };
       
       const perks = {

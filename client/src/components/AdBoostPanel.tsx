@@ -5,17 +5,30 @@ import { Tv, Zap, Clock, CheckCircle2 } from "lucide-react";
 import { useState, useEffect } from "react";
 
 export function AdBoostPanel() {
-  const {
-    isWatchingAd,
-    watchingAdType,
-    adWatchStartedAt,
-    startWatchingAd,
-    completeAdWatch,
-    cancelAdWatch,
-    isAdAvailable,
-    getCooldownRemaining,
-    getActiveBoost
-  } = useAdBoosts();
+  const isWatchingAd = useAdBoosts(state => state.isWatchingAd);
+  const watchingAdType = useAdBoosts(state => state.watchingAdType);
+  const adWatchStartedAt = useAdBoosts(state => state.adWatchStartedAt);
+  const startWatchingAd = useAdBoosts(state => state.startWatchingAd);
+  const completeAdWatch = useAdBoosts(state => state.completeAdWatch);
+  const cancelAdWatch = useAdBoosts(state => state.cancelAdWatch);
+  
+  const revenueBoostData = useAdBoosts(state => ({
+    available: state.isAdAvailable("revenue"),
+    cooldown: state.getCooldownRemaining("revenue"),
+    activeBoost: state.getActiveBoost("revenue")
+  }));
+  
+  const customersBoostData = useAdBoosts(state => ({
+    available: state.isAdAvailable("customers"),
+    cooldown: state.getCooldownRemaining("customers"),
+    activeBoost: state.getActiveBoost("customers")
+  }));
+  
+  const speedBoostData = useAdBoosts(state => ({
+    available: state.isAdAvailable("speed"),
+    cooldown: state.getCooldownRemaining("speed"),
+    activeBoost: state.getActiveBoost("speed")
+  }));
   
   const [, setTick] = useState(0);
   
@@ -54,11 +67,10 @@ export function AdBoostPanel() {
     type: AdBoostType,
     icon: React.ReactNode,
     label: string,
-    description: string
+    description: string,
+    boostData: { available: boolean; cooldown: number; activeBoost: any }
   ) => {
-    const available = isAdAvailable(type);
-    const cooldown = getCooldownRemaining(type);
-    const activeBoost = getActiveBoost(type);
+    const { available, cooldown, activeBoost } = boostData;
     const isActive = !!activeBoost;
     const isCurrentlyWatching = isWatchingAd && watchingAdType === type;
     
@@ -175,21 +187,24 @@ export function AdBoostPanel() {
           "revenue",
           "💰",
           "2x Revenue",
-          "Double your ChronoCoin earnings for 5 minutes"
+          "Double your ChronoCoin earnings for 5 minutes",
+          revenueBoostData
         )}
         
         {renderAdBoostButton(
           "customers",
           "👥",
           "2x Customers",
-          "Attract twice as many customers for 5 minutes"
+          "Attract twice as many customers for 5 minutes",
+          customersBoostData
         )}
         
         {renderAdBoostButton(
           "speed",
           "⚡",
           "1.5x Speed",
-          "Faster trips for 5 minutes"
+          "Faster trips for 5 minutes",
+          speedBoostData
         )}
       </div>
     </div>
