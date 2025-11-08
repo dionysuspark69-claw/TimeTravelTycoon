@@ -1,5 +1,6 @@
 import { useAchievements, ACHIEVEMENTS } from "@/lib/stores/useAchievements";
 import { useIdleGame } from "@/lib/stores/useIdleGame";
+import { useAudio } from "@/lib/stores/useAudio";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Trophy, Lock, Gift } from "lucide-react";
@@ -13,6 +14,7 @@ export function AchievementsPanel() {
     const reward = claimAchievement(achievementId);
     if (reward > 0) {
       addChronocoins(reward);
+      useAudio.getState().playAchievement();
       toast.success(`${achievementName} claimed!`, {
         description: `+${reward} ChronoCoins`,
         duration: 3000,

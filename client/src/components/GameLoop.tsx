@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useIdleGame } from "@/lib/stores/useIdleGame";
 import { useManagers } from "@/lib/stores/useManagers";
 import { useMissions } from "@/lib/stores/useMissions";
+import { useEvents } from "@/lib/stores/useEvents";
 
 export function GameLoop() {
   const update = useIdleGame(state => state.update);
@@ -22,6 +23,8 @@ export function GameLoop() {
   const unlockedDestinations = useIdleGame(state => state.unlockedDestinations);
   
   const { checkProgress } = useMissions();
+  const eventsUpdate = useEvents(state => state.update);
+  const getActiveMultipliers = useEvents(state => state.getActiveMultipliers);
   
   useEffect(() => {
     let lastTime = Date.now();
@@ -34,6 +37,7 @@ export function GameLoop() {
       lastTime = currentTime;
       
       updatePerkTimers(deltaTime);
+      eventsUpdate(deltaTime);
       
       if (hasPerk("accountant", 10) && totalTrips > lastCompoundCheck && totalTrips % 100 === 0) {
         incrementCompoundInterest();
@@ -42,11 +46,12 @@ export function GameLoop() {
       
       const speedBonus = getSpeedBonus();
       const overclockMultiplier = overclockActive ? 1000 : 1;
+      const eventMultipliers = getActiveMultipliers();
       
       const bonuses = {
-        customerRate: getCustomerRateBonus(),
-        speed: speedBonus * overclockMultiplier,
-        revenue: getRevenueBonus()
+        customerRate: getCustomerRateBonus() * eventMultipliers.customers,
+        speed: speedBonus * overclockMultiplier * eventMultipliers.speed,
+        revenue: getRevenueBonus() * eventMultipliers.revenue
       };
       
       const perks = {
@@ -70,7 +75,7 @@ export function GameLoop() {
         cancelAnimationFrame(animationFrameId);
       }
     };
-  }, [update, getCustomerRateBonus, getSpeedBonus, getRevenueBonus, updatePerkTimers, hasPerk, overclockActive, incrementCompoundInterest, totalTrips, totalEarned, totalManagerUpgrades, totalBoostsUsed, unlockedDestinations, checkProgress]);
+  }, [update, getCustomerRateBonus, getSpeedBonus, getRevenueBonus, updatePerkTimers, hasPerk, overclockActive, incrementCompoundInterest, totalTrips, totalEarned, totalManagerUpgrades, totalBoostsUsed, unlockedDestinations, checkProgress, eventsUpdate, getActiveMultipliers]);
   
   return null;
 }

@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 import { useArtifacts } from "./useArtifacts";
+import { useAudio } from "./useAudio";
 import { toast } from "sonner";
 
 export interface TimePeriod {
@@ -48,6 +49,20 @@ export const TIME_PERIODS: TimePeriod[] = [
     cons: ["Primitive Routes: -20% speed"]
   },
   {
+    id: "rome",
+    name: "Ancient Rome",
+    era: "100 AD",
+    baseFare: 40,
+    unlockCost: 1500,
+    color: "#c0392b",
+    description: "Witness the glory of the Roman Empire!",
+    speedModifier: 1.1,
+    revenueModifier: 1.4,
+    customerGenModifier: 1.2,
+    pros: ["Imperial Splendor: +40% revenue", "Road Network: +10% speed", "Empire Travelers: +20% customers"],
+    cons: []
+  },
+  {
     id: "medieval",
     name: "Medieval Times",
     era: "1200 AD",
@@ -60,6 +75,20 @@ export const TIME_PERIODS: TimePeriod[] = [
     customerGenModifier: 1.3,
     pros: ["Popular Era: +30% customer generation", "Historic Interest: +20% revenue"],
     cons: []
+  },
+  {
+    id: "viking",
+    name: "Viking Age",
+    era: "900 AD",
+    baseFare: 60,
+    unlockCost: 3500,
+    color: "#34495e",
+    description: "Sail with legendary Norse warriors!",
+    speedModifier: 0.9,
+    revenueModifier: 1.6,
+    customerGenModifier: 0.9,
+    pros: ["Legendary Tales: +60% revenue"],
+    cons: ["Rough Seas: -10% speed", "Fierce Reputation: -10% customers"]
   },
   {
     id: "renaissance",
@@ -144,6 +173,20 @@ export const TIME_PERIODS: TimePeriod[] = [
     customerGenModifier: 1.1,
     pros: ["Advanced Tech: +100% speed", "Curious Minds: +10% customers"],
     cons: ["Jaded Tourists: -20% revenue"]
+  },
+  {
+    id: "cyberpunk",
+    name: "Cyberpunk Metropolis",
+    era: "2077 AD",
+    baseFare: 350,
+    unlockCost: 100000,
+    color: "#e91e63",
+    description: "Neon-lit streets and corporate intrigue!",
+    speedModifier: 1.6,
+    revenueModifier: 1.8,
+    customerGenModifier: 0.7,
+    pros: ["High Tech: +60% speed", "Premium Clients: +80% revenue"],
+    cons: ["Dangerous Streets: -30% customers"]
   },
   {
     id: "farfuture",
@@ -594,6 +637,8 @@ export const useIdleGame = create<IdleGameState>()(
       const state = get();
       const now = Date.now();
       
+      useAudio.getState().playBoarding();
+      
       const waitingEntities = state.customerEntities.filter(
         e => e.state === "waiting"
       ).slice(0, count);
@@ -790,6 +835,8 @@ export const useIdleGame = create<IdleGameState>()(
         }
         
         const travelingEntities = state.customerEntities.filter(e => e.state !== "traveling");
+        
+        useAudio.getState().playTimeTravel();
         
         set({
           processingCustomers: 0,

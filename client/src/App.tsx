@@ -9,6 +9,7 @@ import { OfflineEarningsDialog } from "./components/OfflineEarningsDialog";
 import { AchievementChecker } from "./components/AchievementChecker";
 import { FloatingTextManager } from "./components/FloatingTextManager";
 import { ClickBoostTutorial } from "./components/ClickBoostTutorial";
+import { ActiveEventsDisplay } from "./components/ActiveEventsDisplay";
 import { Toaster } from "./components/ui/sonner";
 
 function App() {
@@ -31,6 +32,7 @@ function App() {
       <div className="flex-1 relative">
         <GameScene />
         <GameUI />
+        <ActiveEventsDisplay />
       </div>
       
       <UpgradePanel />

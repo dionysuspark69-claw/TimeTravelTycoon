@@ -87,7 +87,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     id: "all_destinations",
     name: "Time Explorer",
     description: "Unlock all time destinations",
-    condition: (stats) => stats.unlockedDestinationsCount >= 6,
+    condition: (stats) => stats.unlockedDestinationsCount >= 13,
     reward: 20000,
     icon: "🌍"
   },
