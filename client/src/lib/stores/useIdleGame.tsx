@@ -557,9 +557,16 @@ export const useIdleGame = create<IdleGameState>()(
       
       let waitingCustomers = state.waitingCustomers + newCustomers;
       
-      const wholeNewCustomers = Math.floor(newCustomers);
-      if (wholeNewCustomers > 0 && state.customerEntities.length < 25) {
-        for (let i = 0; i < Math.min(wholeNewCustomers, 25 - state.customerEntities.length); i++) {
+      const queueEntitiesCount = state.customerEntities.filter(
+        e => e.state === "approaching" || e.state === "waiting"
+      ).length;
+      
+      const targetEntityCount = Math.min(Math.floor(waitingCustomers), 25);
+      const entitiesToSpawn = Math.max(0, targetEntityCount - queueEntitiesCount);
+      
+      if (entitiesToSpawn > 0 && state.customerEntities.length < 25) {
+        console.log(`Spawning ${entitiesToSpawn} entities. WaitingCustomers: ${waitingCustomers.toFixed(2)}, CurrentEntities: ${state.customerEntities.length}`);
+        for (let i = 0; i < Math.min(entitiesToSpawn, 25 - state.customerEntities.length); i++) {
           state.spawnCustomerEntity();
         }
       }
