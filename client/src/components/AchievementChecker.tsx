@@ -35,7 +35,7 @@ export function AchievementChecker() {
       
       setQueue(prev => [...prev, ...newAchievements]);
     }
-  }, [totalCustomersServed, totalEarned, timeMachineLevel, unlockedDestinations.length, prestigeLevel, checkAchievements, addChronocoins]);
+  }, [totalCustomersServed, totalEarned, timeMachineLevel, unlockedDestinations.length, prestigeLevel]);
   
   useEffect(() => {
     if (queue.length > 0 && !currentNotification) {

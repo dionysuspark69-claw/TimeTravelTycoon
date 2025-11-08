@@ -1,30 +1,9 @@
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { TimeMachine } from "./TimeMachine";
-import { Customer } from "./Customer";
-import { useIdleGame } from "@/lib/stores/useIdleGame";
-import { useMemo } from "react";
+import { CharacterManager } from "./CharacterManager";
 
 function Scene() {
-  const waitingCustomers = useIdleGame(state => state.waitingCustomers);
-  
-  const customerPositions = useMemo(() => {
-    const positions: [number, number, number][] = [];
-    const maxDisplay = Math.min(waitingCustomers, 20);
-    
-    for (let i = 0; i < maxDisplay; i++) {
-      const angle = (i / maxDisplay) * Math.PI * 2;
-      const radius = 3 + Math.floor(i / 8) * 0.5;
-      positions.push([
-        Math.cos(angle) * radius,
-        0.25,
-        Math.sin(angle) * radius
-      ]);
-    }
-    
-    return positions;
-  }, [waitingCustomers]);
-  
   return (
     <>
       <ambientLight intensity={0.5} />
@@ -38,9 +17,7 @@ function Scene() {
       
       <TimeMachine />
       
-      {customerPositions.map((pos, i) => (
-        <Customer key={i} position={pos} index={i} />
-      ))}
+      <CharacterManager />
       
       <OrbitControls
         enablePan={false}

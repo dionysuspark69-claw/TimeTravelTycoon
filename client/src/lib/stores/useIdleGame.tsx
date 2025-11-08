@@ -110,6 +110,18 @@ export interface AdBoost {
   endsAt: number;
 }
 
+export type CustomerState = "spawning" | "approaching" | "waiting" | "boarding" | "traveling";
+
+export interface CustomerEntity {
+  id: string;
+  state: CustomerState;
+  spawnTime: number;
+  stateChangedTime: number;
+  colorIndex: number;
+  targetPosition?: [number, number, number];
+  hasReachedTarget?: boolean;
+}
+
 interface IdleGameState {
   chronocoins: number;
   totalEarned: number;
@@ -126,6 +138,9 @@ interface IdleGameState {
   processingCustomers: number;
   totalCustomersServed: number;
   tripEndTime: number | null;
+  
+  customerEntities: CustomerEntity[];
+  nextCustomerId: number;
   
   unlockedDestinations: string[];
   currentDestination: string;
@@ -154,6 +169,11 @@ interface IdleGameState {
   
   calculateOfflineEarnings: () => number;
   claimOfflineEarnings: () => void;
+  
+  spawnCustomerEntity: () => void;
+  updateCustomerStates: () => void;
+  markEntityReachedTarget: (entityId: string) => void;
+  boardCustomers: (count: number) => void;
   
   update: (deltaTime: number, managerBonuses?: {customerRate: number, speed: number, revenue: number}) => void;
   
@@ -185,6 +205,9 @@ export const useIdleGame = create<IdleGameState>()(
     processingCustomers: 0,
     totalCustomersServed: 0,
     tripEndTime: null,
+    
+    customerEntities: [],
+    nextCustomerId: 0,
     
     unlockedDestinations: ["dinosaur"],
     currentDestination: "dinosaur",
@@ -337,6 +360,8 @@ export const useIdleGame = create<IdleGameState>()(
         waitingCustomers: 0,
         processingCustomers: 0,
         tripEndTime: null,
+        customerEntities: [],
+        nextCustomerId: 0,
         unlockedDestinations: ["dinosaur"],
         currentDestination: "dinosaur",
         activeBoosts: []
@@ -366,6 +391,116 @@ export const useIdleGame = create<IdleGameState>()(
         get().addChronocoins(earnings);
         set({ lastPlayTime: Date.now() });
       }
+    },
+    
+    spawnCustomerEntity: () => {
+      const state = get();
+      const id = `customer-${state.nextCustomerId}`;
+      const colorIndex = state.nextCustomerId % 5;
+      const now = Date.now();
+      
+      const newEntity: CustomerEntity = {
+        id,
+        state: "spawning",
+        spawnTime: now,
+        stateChangedTime: now,
+        colorIndex,
+        hasReachedTarget: false
+      };
+      
+      set({
+        customerEntities: [...state.customerEntities, newEntity],
+        nextCustomerId: state.nextCustomerId + 1
+      });
+    },
+    
+    updateCustomerStates: () => {
+      const state = get();
+      const now = Date.now();
+      
+      const waitingAndApproachingCount = state.customerEntities.filter(
+        e => e.state === "waiting" || e.state === "approaching"
+      ).length;
+      
+      const updatedEntities = state.customerEntities.map((entity, index) => {
+        if (entity.state === "spawning" && now - entity.stateChangedTime > 100) {
+          const queueIndex = state.customerEntities.filter(
+            (e, i) => i < index && (e.state === "waiting" || e.state === "approaching")
+          ).length;
+          
+          const QUEUE_START: [number, number, number] = [-6, 0, -2];
+          const queuePos: [number, number, number] = [
+            QUEUE_START[0] + Math.floor(queueIndex / 5) * 0.8,
+            QUEUE_START[1],
+            QUEUE_START[2] + (queueIndex % 5) * 0.6
+          ];
+          
+          return { 
+            ...entity, 
+            state: "approaching" as CustomerState, 
+            stateChangedTime: now,
+            targetPosition: queuePos
+          };
+        }
+        if (entity.state === "approaching" && entity.hasReachedTarget) {
+          return { ...entity, state: "waiting" as CustomerState, stateChangedTime: now };
+        }
+        if (entity.state === "approaching" && now - entity.stateChangedTime > 5000) {
+          return { ...entity, state: "waiting" as CustomerState, stateChangedTime: now };
+        }
+        return entity;
+      });
+      
+      const hasChanges = updatedEntities.some((entity, index) => 
+        entity.state !== state.customerEntities[index]?.state ||
+        entity.targetPosition !== state.customerEntities[index]?.targetPosition
+      );
+      
+      if (hasChanges) {
+        set({ customerEntities: updatedEntities });
+      }
+    },
+    
+    markEntityReachedTarget: (entityId: string) => {
+      const state = get();
+      const updatedEntities = state.customerEntities.map(entity => {
+        if (entity.id === entityId && !entity.hasReachedTarget) {
+          return { ...entity, hasReachedTarget: true };
+        }
+        return entity;
+      });
+      
+      set({ customerEntities: updatedEntities });
+    },
+    
+    boardCustomers: (count) => {
+      const state = get();
+      const now = Date.now();
+      
+      const waitingEntities = state.customerEntities.filter(
+        e => e.state === "waiting"
+      ).slice(0, count);
+      
+      const updatedEntities = state.customerEntities.map(entity => {
+        if (waitingEntities.find(e => e.id === entity.id)) {
+          return { ...entity, state: "boarding" as CustomerState, stateChangedTime: now };
+        }
+        return entity;
+      });
+      
+      set({ customerEntities: updatedEntities });
+      
+      setTimeout(() => {
+        const currentState = get();
+        const travelingEntities = currentState.customerEntities.map(entity => {
+          if (waitingEntities.find(e => e.id === entity.id) && entity.state === "boarding") {
+            return { ...entity, state: "traveling" as CustomerState, stateChangedTime: Date.now() };
+          }
+          return entity;
+        });
+        
+        set({ customerEntities: travelingEntities });
+      }, 500);
     },
     
     getRevenueMultiplier: (managerBonus = 0) => {
@@ -422,21 +557,36 @@ export const useIdleGame = create<IdleGameState>()(
       
       let waitingCustomers = state.waitingCustomers + newCustomers;
       
+      const wholeNewCustomers = Math.floor(newCustomers);
+      if (wholeNewCustomers > 0 && state.customerEntities.length < 25) {
+        for (let i = 0; i < Math.min(wholeNewCustomers, 25 - state.customerEntities.length); i++) {
+          state.spawnCustomerEntity();
+        }
+      }
+      
+      state.updateCustomerStates();
+      
       if (state.tripEndTime !== null && now >= state.tripEndTime) {
         const fare = state.getCurrentFare();
         const revenue = fare * state.processingCustomers * state.getRevenueMultiplier(bonuses.revenue);
         
         state.addChronocoins(revenue);
+        
+        const travelingEntities = state.customerEntities.filter(e => e.state !== "traveling");
+        
         set({
           processingCustomers: 0,
           tripEndTime: null,
-          totalCustomersServed: state.totalCustomersServed + state.processingCustomers
+          totalCustomersServed: state.totalCustomersServed + state.processingCustomers,
+          customerEntities: travelingEntities
         });
       }
       
       if (state.processingCustomers === 0 && waitingCustomers >= 1) {
         const canProcess = Math.min(Math.floor(waitingCustomers), capacity);
         waitingCustomers -= canProcess;
+        
+        state.boardCustomers(canProcess);
         
         set({
           processingCustomers: canProcess,
