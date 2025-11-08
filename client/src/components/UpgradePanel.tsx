@@ -2,7 +2,7 @@ import { useIdleGame, TIME_PERIODS } from "@/lib/stores/useIdleGame";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { ArrowUp, MapPin, Users, Trophy, Settings } from "lucide-react";
+import { ArrowUp, MapPin, Users, Trophy, Settings, Plus, Minus } from "lucide-react";
 import { ManagersPanel } from "./ManagersPanel";
 import { AchievementsPanel } from "./AchievementsPanel";
 
@@ -154,7 +154,7 @@ export function UpgradePanel() {
                 }}
               >
                 <div className="flex items-center justify-between">
-                  <div>
+                  <div className="flex-1">
                     <div className="text-white font-semibold flex items-center gap-2">
                       <div
                         className="w-3 h-3 rounded-full"
@@ -165,6 +165,28 @@ export function UpgradePanel() {
                     <div className="text-gray-400 text-sm">{destination.era}</div>
                     <div className="text-gray-500 text-xs">{destination.description}</div>
                     <div className="text-cyan-400 text-sm mt-1">Base Fare: {destination.baseFare}</div>
+                    
+                    {destination.pros.length > 0 && (
+                      <div className="mt-2 space-y-1">
+                        {destination.pros.map((pro, idx) => (
+                          <div key={idx} className="flex items-center gap-1 text-green-400 text-xs">
+                            <Plus className="w-3 h-3" />
+                            <span>{pro}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {destination.cons.length > 0 && (
+                      <div className="mt-2 space-y-1">
+                        {destination.cons.map((con, idx) => (
+                          <div key={idx} className="flex items-center gap-1 text-red-400 text-xs">
+                            <Minus className="w-3 h-3" />
+                            <span>{con}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   {!isUnlocked ? (
                     <Button

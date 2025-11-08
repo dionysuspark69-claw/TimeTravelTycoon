@@ -9,6 +9,11 @@ export interface TimePeriod {
   unlockCost: number;
   color: string;
   description: string;
+  speedModifier: number;
+  revenueModifier: number;
+  customerGenModifier: number;
+  pros: string[];
+  cons: string[];
 }
 
 export const TIME_PERIODS: TimePeriod[] = [
@@ -19,7 +24,12 @@ export const TIME_PERIODS: TimePeriod[] = [
     baseFare: 10,
     unlockCost: 0,
     color: "#2ecc71",
-    description: "Watch the mighty dinosaurs roam!"
+    description: "Watch the mighty dinosaurs roam!",
+    speedModifier: 1.0,
+    revenueModifier: 1.0,
+    customerGenModifier: 1.0,
+    pros: ["Balanced experience"],
+    cons: []
   },
   {
     id: "egypt",
@@ -28,7 +38,12 @@ export const TIME_PERIODS: TimePeriod[] = [
     baseFare: 25,
     unlockCost: 500,
     color: "#f39c12",
-    description: "Visit the pyramids being built!"
+    description: "Visit the pyramids being built!",
+    speedModifier: 0.8,
+    revenueModifier: 1.5,
+    customerGenModifier: 1.0,
+    pros: ["Easily Impressed: +50% revenue"],
+    cons: ["Primitive Routes: -20% speed"]
   },
   {
     id: "medieval",
@@ -37,7 +52,12 @@ export const TIME_PERIODS: TimePeriod[] = [
     baseFare: 50,
     unlockCost: 2000,
     color: "#9b59b6",
-    description: "Experience knights and castles!"
+    description: "Experience knights and castles!",
+    speedModifier: 1.0,
+    revenueModifier: 1.2,
+    customerGenModifier: 1.3,
+    pros: ["Popular Era: +30% customer generation", "Historic Interest: +20% revenue"],
+    cons: []
   },
   {
     id: "renaissance",
@@ -46,7 +66,12 @@ export const TIME_PERIODS: TimePeriod[] = [
     baseFare: 75,
     unlockCost: 5000,
     color: "#e67e22",
-    description: "Witness the rebirth of art and science!"
+    description: "Witness the rebirth of art and science!",
+    speedModifier: 1.2,
+    revenueModifier: 1.3,
+    customerGenModifier: 0.9,
+    pros: ["Cultural Boom: +30% revenue", "Stable Routes: +20% speed"],
+    cons: ["Elite Tourism: -10% customer generation"]
   },
   {
     id: "industrial",
@@ -55,7 +80,12 @@ export const TIME_PERIODS: TimePeriod[] = [
     baseFare: 100,
     unlockCost: 10000,
     color: "#95a5a6",
-    description: "See the age of steam and steel!"
+    description: "See the age of steam and steel!",
+    speedModifier: 1.5,
+    revenueModifier: 1.0,
+    customerGenModifier: 1.2,
+    pros: ["Steam Power: +50% speed", "Working Class: +20% customers"],
+    cons: []
   },
   {
     id: "wildwest",
@@ -64,7 +94,12 @@ export const TIME_PERIODS: TimePeriod[] = [
     baseFare: 125,
     unlockCost: 20000,
     color: "#e74c3c",
-    description: "Live the cowboy adventure!"
+    description: "Live the cowboy adventure!",
+    speedModifier: 0.7,
+    revenueModifier: 2.0,
+    customerGenModifier: 0.8,
+    pros: ["High Stakes: +100% revenue"],
+    cons: ["Dangerous Territory: -30% speed", "Cautious Travelers: -20% customers"]
   },
   {
     id: "roaring20s",
@@ -73,7 +108,12 @@ export const TIME_PERIODS: TimePeriod[] = [
     baseFare: 175,
     unlockCost: 35000,
     color: "#f1c40f",
-    description: "Dance through the jazz age!"
+    description: "Dance through the jazz age!",
+    speedModifier: 1.3,
+    revenueModifier: 1.5,
+    customerGenModifier: 1.4,
+    pros: ["Party Era: +40% customers", "Wealthy Tourists: +50% revenue", "Modern Travel: +30% speed"],
+    cons: []
   },
   {
     id: "spaceage",
@@ -82,7 +122,12 @@ export const TIME_PERIODS: TimePeriod[] = [
     baseFare: 225,
     unlockCost: 50000,
     color: "#3498db",
-    description: "Join the race to the moon!"
+    description: "Join the race to the moon!",
+    speedModifier: 1.8,
+    revenueModifier: 1.2,
+    customerGenModifier: 1.0,
+    pros: ["Rocket Tech: +80% speed", "Scientific Interest: +20% revenue"],
+    cons: []
   },
   {
     id: "future",
@@ -91,7 +136,12 @@ export const TIME_PERIODS: TimePeriod[] = [
     baseFare: 300,
     unlockCost: 75000,
     color: "#1abc9c",
-    description: "See the world of tomorrow!"
+    description: "See the world of tomorrow!",
+    speedModifier: 2.0,
+    revenueModifier: 0.8,
+    customerGenModifier: 1.1,
+    pros: ["Advanced Tech: +100% speed", "Curious Minds: +10% customers"],
+    cons: ["Jaded Tourists: -20% revenue"]
   },
   {
     id: "farfuture",
@@ -100,7 +150,12 @@ export const TIME_PERIODS: TimePeriod[] = [
     baseFare: 500,
     unlockCost: 150000,
     color: "#9b59b6",
-    description: "Explore the distant future!"
+    description: "Explore the distant future!",
+    speedModifier: 0.5,
+    revenueModifier: 5.0,
+    customerGenModifier: 0.5,
+    pros: ["Extreme Premium: +400% revenue"],
+    cons: ["Unstable Timelines: -50% speed", "Risky Travel: -50% customers"]
   }
 ];
 
@@ -120,6 +175,7 @@ export interface CustomerEntity {
   colorIndex: number;
   targetPosition?: [number, number, number];
   hasReachedTarget?: boolean;
+  isVIP?: boolean;
 }
 
 interface IdleGameState {
@@ -505,7 +561,10 @@ export const useIdleGame = create<IdleGameState>()(
     
     getRevenueMultiplier: (managerBonus = 0) => {
       const state = get();
-      let multiplier = 1 + (state.prestigePoints * 0.1) + managerBonus;
+      const destination = TIME_PERIODS.find(d => d.id === state.currentDestination);
+      const destinationMod = destination?.revenueModifier || 1.0;
+      
+      let multiplier = (1 + (state.prestigePoints * 0.1) + managerBonus) * destinationMod;
       
       const now = Date.now();
       state.activeBoosts.forEach(boost => {
@@ -519,7 +578,10 @@ export const useIdleGame = create<IdleGameState>()(
     
     getSpeedMultiplier: (managerBonus = 0) => {
       const state = get();
-      let multiplier = 1 + managerBonus;
+      const destination = TIME_PERIODS.find(d => d.id === state.currentDestination);
+      const destinationMod = destination?.speedModifier || 1.0;
+      
+      let multiplier = (1 + managerBonus) * destinationMod;
       
       const now = Date.now();
       state.activeBoosts.forEach(boost => {
@@ -549,7 +611,10 @@ export const useIdleGame = create<IdleGameState>()(
         activeBoosts: state.activeBoosts.filter(boost => boost.endsAt > now)
       });
       
-      const customerGenRate = state.customerGenerationRate * 0.5 * (1 + bonuses.customerRate);
+      const destination = TIME_PERIODS.find(d => d.id === state.currentDestination);
+      const destinationCustomerMod = destination?.customerGenModifier || 1.0;
+      
+      const customerGenRate = state.customerGenerationRate * 0.5 * (1 + bonuses.customerRate) * destinationCustomerMod;
       const newCustomers = customerGenRate * (deltaTime / 1000);
       
       const travelTime = 3000 / (state.timeMachineSpeed * state.getSpeedMultiplier(bonuses.speed));

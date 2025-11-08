@@ -3,7 +3,7 @@ import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Progress } from "./ui/progress";
 import { useAudio } from "@/lib/stores/useAudio";
-import { Volume2, VolumeX, Zap, Users, Gauge, Trophy } from "lucide-react";
+import { Volume2, VolumeX, Zap, Users, Gauge, Trophy, MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export function GameUI() {
@@ -77,10 +77,12 @@ export function GameUI() {
     return Math.max(0, Math.ceil((boost.endsAt - Date.now()) / 1000));
   };
   
+  const currentDest = TIME_PERIODS.find(d => d.id === currentDestination);
+  
   return (
     <div className="absolute inset-0 pointer-events-none">
       <div className="p-4 flex flex-col gap-4 h-full pointer-events-none">
-        <div className="flex justify-between items-start pointer-events-auto">
+        <div className="flex justify-between items-start gap-2 pointer-events-auto">
           <Card className="bg-black/80 backdrop-blur-sm border-cyan-500/30 p-4 min-w-[200px]">
             <div className="text-cyan-400 text-sm mb-2">ChronoCoins</div>
             <div className="text-white text-3xl font-bold">{formatNumber(chronocoins)}</div>
@@ -92,6 +94,38 @@ export function GameUI() {
               </div>
             )}
           </Card>
+          
+          {currentDest && (
+            <Card 
+              className="bg-black/80 backdrop-blur-sm border-cyan-500/30 p-3 min-w-[180px]"
+              style={{
+                borderColor: currentDest.color,
+                borderWidth: 2
+              }}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <MapPin className="w-4 h-4" style={{ color: currentDest.color }} />
+                <div className="text-white text-sm font-semibold">{currentDest.name}</div>
+              </div>
+              <div className="text-xs space-y-0.5">
+                {currentDest.speedModifier !== 1.0 && (
+                  <div className={currentDest.speedModifier > 1 ? "text-green-400" : "text-red-400"}>
+                    Speed: {currentDest.speedModifier > 1 ? '+' : ''}{((currentDest.speedModifier - 1) * 100).toFixed(0)}%
+                  </div>
+                )}
+                {currentDest.revenueModifier !== 1.0 && (
+                  <div className={currentDest.revenueModifier > 1 ? "text-green-400" : "text-red-400"}>
+                    Revenue: {currentDest.revenueModifier > 1 ? '+' : ''}{((currentDest.revenueModifier - 1) * 100).toFixed(0)}%
+                  </div>
+                )}
+                {currentDest.customerGenModifier !== 1.0 && (
+                  <div className={currentDest.customerGenModifier > 1 ? "text-green-400" : "text-red-400"}>
+                    Customers: {currentDest.customerGenModifier > 1 ? '+' : ''}{((currentDest.customerGenModifier - 1) * 100).toFixed(0)}%
+                  </div>
+                )}
+              </div>
+            </Card>
+          )}
           
           <Button
             onClick={toggleMute}
