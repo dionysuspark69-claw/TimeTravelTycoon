@@ -76,7 +76,7 @@ export function AchievementsPanel() {
                     <Button
                       onClick={() => handleClaim(achievement.id, achievement.name)}
                       size="sm"
-                      className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white text-xs px-3 py-1 h-7"
+                      className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white text-xs px-3 min-h-[44px]"
                     >
                       <Gift className="w-3 h-3 mr-1" />
                       Claim

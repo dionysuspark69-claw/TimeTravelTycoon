@@ -37,7 +37,7 @@ export function StatsPanel() {
         <Button 
           size="sm" 
           variant="outline"
-          className="bg-gray-900/80 border-cyan-500/50 hover:bg-gray-800 text-white"
+          className="bg-gray-900/80 border-cyan-500/50 hover:bg-gray-800 text-white min-h-[44px]"
         >
           <BarChart3 className="w-4 h-4 mr-1" />
           Stats

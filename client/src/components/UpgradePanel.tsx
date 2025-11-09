@@ -48,7 +48,7 @@ export function UpgradePanel() {
   };
   
   return (
-    <div className="w-full bg-black/80 backdrop-blur-sm border-t border-cyan-500/30">
+    <div className="w-full bg-black/80 backdrop-blur-sm border-t border-cyan-500/30" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       <div className="flex items-center justify-between p-2 border-b border-cyan-500/20">
         <div className="text-cyan-400 font-semibold text-sm">Game Menu</div>
         <Button
@@ -72,34 +72,34 @@ export function UpgradePanel() {
       </div>
       
       {isExpanded && (
-        <div className="p-4">
+        <div className="p-2 md:p-4">
           <Tabs defaultValue="upgrades" className="w-full">
         <TabsList className="grid w-full grid-cols-7 bg-gray-900">
-          <TabsTrigger value="upgrades" className="flex items-center gap-2 text-xs sm:text-sm px-1 sm:px-3">
+          <TabsTrigger value="upgrades" className="flex items-center gap-2 text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
             <Settings className="w-4 h-4" />
             <span className="hidden sm:inline">Upgrades</span>
           </TabsTrigger>
-          <TabsTrigger value="managers" className="flex items-center gap-2 text-xs sm:text-sm px-1 sm:px-3">
+          <TabsTrigger value="managers" className="flex items-center gap-2 text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
             <Users className="w-4 h-4" />
             <span className="hidden sm:inline">Managers</span>
           </TabsTrigger>
-          <TabsTrigger value="destinations" className="flex items-center gap-2 text-xs sm:text-sm px-1 sm:px-3">
+          <TabsTrigger value="destinations" className="flex items-center gap-2 text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
             <MapPin className="w-4 h-4" />
             <span className="hidden sm:inline">Destinations</span>
           </TabsTrigger>
-          <TabsTrigger value="boosts" className="flex items-center gap-2 text-xs sm:text-sm px-1 sm:px-3">
+          <TabsTrigger value="boosts" className="flex items-center gap-2 text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
             <Tv className="w-4 h-4" />
             <span className="hidden sm:inline">Ad Boosts</span>
           </TabsTrigger>
-          <TabsTrigger value="collections" className="flex items-center gap-2 text-xs sm:text-sm px-1 sm:px-3">
+          <TabsTrigger value="collections" className="flex items-center gap-2 text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
             <Sparkles className="w-4 h-4" />
             <span className="hidden sm:inline">Collections</span>
           </TabsTrigger>
-          <TabsTrigger value="missions" className="flex items-center gap-2 text-xs sm:text-sm px-1 sm:px-3">
+          <TabsTrigger value="missions" className="flex items-center gap-2 text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
             <Target className="w-4 h-4" />
             <span className="hidden sm:inline">Missions</span>
           </TabsTrigger>
-          <TabsTrigger value="achievements" className="flex items-center gap-2 relative text-xs sm:text-sm px-1 sm:px-3">
+          <TabsTrigger value="achievements" className="flex items-center gap-2 relative text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
             <Trophy className="w-4 h-4" />
             <span className="hidden sm:inline">Achievements</span>
             {unclaimedCount > 0 && (
@@ -108,7 +108,7 @@ export function UpgradePanel() {
           </TabsTrigger>
         </TabsList>
         
-        <TabsContent value="upgrades" className="space-y-2 mt-4 max-h-[300px] overflow-y-auto pr-2">
+        <TabsContent value="upgrades" className="space-y-2 mt-4 max-h-[40vh] md:max-h-[45vh] overflow-y-auto pr-2 pb-4">
           <Card className="bg-gray-900/50 border-cyan-500/30 p-3">
             <div className="flex items-center justify-between">
               <div>
@@ -203,27 +203,27 @@ export function UpgradePanel() {
           </Card>
         </TabsContent>
         
-        <TabsContent value="managers" className="space-y-2 mt-4 max-h-[300px] overflow-y-auto pr-2">
+        <TabsContent value="managers" className="space-y-2 mt-4 max-h-[40vh] md:max-h-[45vh] overflow-y-auto pr-2 pb-4">
           <ManagersPanel />
         </TabsContent>
         
-        <TabsContent value="boosts" className="space-y-2 mt-4 max-h-[300px] overflow-y-auto pr-2">
+        <TabsContent value="boosts" className="space-y-2 mt-4 max-h-[40vh] md:max-h-[45vh] overflow-y-auto pr-2 pb-4">
           <AdBoostPanel />
         </TabsContent>
         
-        <TabsContent value="achievements" className="space-y-2 mt-4 max-h-[300px] overflow-y-auto pr-2">
+        <TabsContent value="achievements" className="space-y-2 mt-4 max-h-[40vh] md:max-h-[45vh] overflow-y-auto pr-2 pb-4">
           <AchievementsPanel />
         </TabsContent>
         
-        <TabsContent value="collections" className="space-y-2 mt-4 max-h-[300px] overflow-y-auto pr-2">
+        <TabsContent value="collections" className="space-y-2 mt-4 max-h-[40vh] md:max-h-[45vh] overflow-y-auto pr-2 pb-4">
           <CollectionsPanel />
         </TabsContent>
         
-        <TabsContent value="missions" className="space-y-2 mt-4 max-h-[300px] overflow-y-auto pr-2">
+        <TabsContent value="missions" className="space-y-2 mt-4 max-h-[40vh] md:max-h-[45vh] overflow-y-auto pr-2 pb-4">
           <MissionsPanel />
         </TabsContent>
         
-        <TabsContent value="destinations" className="space-y-2 mt-4 max-h-[300px] overflow-y-auto pr-2">
+        <TabsContent value="destinations" className="space-y-2 mt-4 max-h-[40vh] md:max-h-[45vh] overflow-y-auto pr-2 pb-4">
           {TIME_PERIODS.map((destination) => {
             const isUnlocked = unlockedDestinations.includes(destination.id);
             const isCurrent = currentDestination === destination.id;

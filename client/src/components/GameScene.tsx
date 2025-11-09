@@ -3,9 +3,9 @@ import { OrbitControls } from "@react-three/drei";
 import { TimeMachine } from "./TimeMachine";
 import { CharacterManager } from "./CharacterManager";
 import { Starfield } from "./Starfield";
-import { SpaceshipFleet } from "./SpaceshipFleet";
 import { Component, ErrorInfo, ReactNode } from "react";
 import { useIdleGame } from "@/lib/stores/useIdleGame";
+import { useIsMobile } from "@/hooks/use-is-mobile";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -32,7 +32,7 @@ class WebGLErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryStat
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ width: "100%", height: "60vh", position: "relative", background: "#1a1a2e" }}>
+        <div className="w-full h-[50vh] md:h-[60vh] relative bg-[#1a1a2e]">
         </div>
       );
     }
@@ -75,8 +75,6 @@ function Scene() {
       
       <CharacterManager />
       
-      <SpaceshipFleet />
-      
       <OrbitControls
         enablePan={false}
         minDistance={5}
@@ -88,11 +86,19 @@ function Scene() {
 }
 
 export function GameScene() {
+  const isMobile = useIsMobile();
+  
+  const cameraPosition: [number, number, number] = isMobile 
+    ? [10, 8, 10]
+    : [8, 6, 8];
+  
+  const cameraFov = isMobile ? 60 : 50;
+  
   return (
     <WebGLErrorBoundary>
-      <div style={{ width: "100%", height: "60vh", position: "relative" }}>
+      <div className="w-full h-[50vh] md:h-[60vh] relative">
         <Canvas
-          camera={{ position: [8, 6, 8], fov: 50 }}
+          camera={{ position: cameraPosition, fov: cameraFov }}
           shadows
           onCreated={(state) => {
             console.log("WebGL context created successfully");

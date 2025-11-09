@@ -128,7 +128,7 @@ export function AdBoostPanel() {
             <Button
               onClick={() => startWatchingAd(type)}
               disabled={!available || isWatchingAd}
-              className={`w-full ${
+              className={`w-full min-h-[44px] ${
                 available && !isWatchingAd
                   ? "bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700"
                   : "bg-gray-700"
@@ -144,7 +144,7 @@ export function AdBoostPanel() {
             <Button
               onClick={cancelAdWatch}
               variant="outline"
-              className="w-full"
+              className="w-full min-h-[44px]"
               size="sm"
             >
               Cancel

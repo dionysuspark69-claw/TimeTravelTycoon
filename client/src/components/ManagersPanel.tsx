@@ -115,7 +115,7 @@ export function ManagersPanel() {
                     onClick={triggerOverclock}
                     disabled={overclockActive || overclockCooldownLeft > 0}
                     size="sm"
-                    className={overclockActive ? "bg-yellow-600 animate-pulse" : "bg-purple-600 hover:bg-purple-700"}
+                    className={`min-h-[44px] ${overclockActive ? "bg-yellow-600 animate-pulse" : "bg-purple-600 hover:bg-purple-700"}`}
                   >
                     <Bolt className="w-4 h-4 mr-1" />
                     {overclockActive 
@@ -130,7 +130,7 @@ export function ManagersPanel() {
                     onClick={() => upgradeManager(manager.id, chronocoins, spendChronocoins)}
                     disabled={chronocoins < cost}
                     size="sm"
-                    className="bg-cyan-600 hover:bg-cyan-700"
+                    className="bg-cyan-600 hover:bg-cyan-700 min-h-[44px]"
                   >
                     <ArrowUp className="w-4 h-4 mr-1" />
                     {formatNumber(cost)}

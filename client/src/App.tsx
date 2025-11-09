@@ -21,14 +21,14 @@ function App() {
 
   if (!showGame) {
     return (
-      <div className="w-screen h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900">
+      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900">
         <div className="text-white text-2xl font-bold">Loading ChronoTransit...</div>
       </div>
     );
   }
 
   return (
-    <div className="w-screen h-screen flex flex-col bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 overflow-hidden">
+    <div className="w-full h-full flex flex-col bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 overflow-hidden">
       <div className="flex-1 relative">
         <GameScene />
         <GameUI />

@@ -41,7 +41,7 @@ export function SettingsDialog() {
         <Button 
           size="icon" 
           variant="outline"
-          className="bg-black/80 backdrop-blur-sm border-cyan-500/30"
+          className="bg-black/80 backdrop-blur-sm border-cyan-500/30 min-h-[44px] min-w-[44px]"
         >
           <Settings className="w-4 h-4" />
         </Button>
@@ -78,7 +78,7 @@ export function SettingsDialog() {
                   onClick={toggleMute}
                   variant="outline"
                   size="lg"
-                  className="bg-gray-700 border-cyan-500/30 hover:bg-gray-600"
+                  className="bg-gray-700 border-cyan-500/30 hover:bg-gray-600 min-h-[44px]"
                 >
                   {isMuted ? (
                     <>

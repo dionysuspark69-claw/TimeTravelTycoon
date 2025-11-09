@@ -99,7 +99,7 @@ export function GooglePlayTab() {
         <Button
           onClick={handleSignIn}
           disabled={isLoading}
-          className="bg-green-600 hover:bg-green-700 w-full"
+          className="bg-green-600 hover:bg-green-700 w-full min-h-[44px]"
         >
           <LogIn className="w-4 h-4 mr-2" />
           {isLoading ? "Signing in..." : "Sign in with Google Play"}
@@ -126,7 +126,7 @@ export function GooglePlayTab() {
             onClick={signOut}
             variant="outline"
             size="sm"
-            className="border-red-500/50 hover:bg-red-600/20"
+            className="border-red-500/50 hover:bg-red-600/20 min-h-[44px]"
           >
             <LogOut className="w-4 h-4 mr-1" />
             Sign Out
@@ -137,7 +137,7 @@ export function GooglePlayTab() {
           <Button
             onClick={handleSync}
             disabled={isSyncing}
-            className="flex-1 bg-blue-600 hover:bg-blue-700"
+            className="flex-1 bg-blue-600 hover:bg-blue-700 min-h-[44px]"
           >
             <Upload className="w-4 h-4 mr-2" />
             {isSyncing ? "Syncing..." : "Sync"}
@@ -146,7 +146,7 @@ export function GooglePlayTab() {
             onClick={handleLoad}
             disabled={isLoading}
             variant="outline"
-            className="flex-1 border-blue-500/50"
+            className="flex-1 border-blue-500/50 min-h-[44px]"
           >
             <Download className="w-4 h-4 mr-2" />
             {isLoading ? "Loading..." : "Load"}
