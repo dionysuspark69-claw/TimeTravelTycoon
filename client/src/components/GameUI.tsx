@@ -161,13 +161,14 @@ export function GameUI() {
           <div className="flex gap-1 items-center bg-black/60 backdrop-blur-sm border border-purple-500/30 rounded-full px-2 md:px-3 py-1 md:py-1.5">
             <div className="text-purple-400 text-xs md:text-sm font-semibold">Done:</div>
             <div className="text-white text-sm md:text-base font-bold">{formatNumber(totalCustomersServed)}</div>
-            {getActiveBoostTimer() && (
-              <div className="flex gap-0.5 items-center text-xs text-yellow-400 ml-1">
-                <Clock className="w-3 h-3" />
-                <span>{formatTime(getActiveBoostTimer()!)}</span>
-              </div>
-            )}
           </div>
+          {getActiveBoostTimer() && (
+            <div className="flex gap-1 items-center bg-gradient-to-r from-yellow-600/80 to-orange-600/80 backdrop-blur-sm border border-yellow-400/50 rounded-full px-2 md:px-3 py-1 md:py-1.5 animate-pulse">
+              <Clock className="w-3 h-3 md:w-4 md:h-4 text-yellow-200" />
+              <div className="text-yellow-200 text-xs md:text-sm font-semibold">Ad Boost:</div>
+              <div className="text-white text-sm md:text-base font-bold">{formatTime(getActiveBoostTimer()!)}</div>
+            </div>
+          )}
         </div>
         
         {totalEarned >= 100000 && (

@@ -51,6 +51,19 @@ export function ManagersPanel() {
     }
   };
   
+  const getBonusLabel = (bonusType: string) => {
+    switch (bonusType) {
+      case "customerRate":
+        return "Customer Generation";
+      case "speed":
+        return "Trip Speed";
+      case "revenue":
+        return "Revenue";
+      default:
+        return "Bonus";
+    }
+  };
+  
   return (
     <div className="space-y-2 mt-4">
       <h3 className="text-white font-semibold text-lg mb-3">Managers</h3>
@@ -77,9 +90,15 @@ export function ManagersPanel() {
                   {manager.name}
                 </div>
                 <div className="text-gray-400 text-sm">{manager.description}</div>
-                <div className="text-cyan-400 text-sm mt-1">
-                  Level {level}/{manager.maxLevel}
-                  {level > 0 && <span className="text-green-400 ml-2">+{bonusAmount}% bonus</span>}
+                <div className="flex flex-wrap items-center gap-2 mt-1">
+                  <div className="text-cyan-400 text-sm">
+                    Level {level}/{manager.maxLevel}
+                  </div>
+                  {level > 0 && (
+                    <div className="text-green-400 text-sm font-semibold bg-green-500/10 px-2 py-0.5 rounded">
+                      +{bonusAmount}% {getBonusLabel(manager.bonusType)}
+                    </div>
+                  )}
                 </div>
                 
                 {unlockedPerks.length > 0 && (
