@@ -4,6 +4,8 @@ import { Card } from "./ui/card";
 import { useAudio } from "@/lib/stores/useAudio";
 import { Volume2, VolumeX, Trophy, MapPin } from "lucide-react";
 import { StatsPanel } from "./StatsPanel";
+import { SettingsDialog } from "./SettingsDialog";
+import { useIsMobile } from "@/hooks/use-is-mobile";
 
 export function GameUI() {
   const {
@@ -26,6 +28,7 @@ export function GameUI() {
   } = useIdleGame();
   
   const { isMuted, toggleMute } = useAudio();
+  const isMobile = useIsMobile();
   
   const formatNumber = (num: number) => {
     if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
@@ -94,15 +97,21 @@ export function GameUI() {
           )}
           
           <div className="flex gap-2">
-            <StatsPanel />
-            <Button
-              onClick={toggleMute}
-              variant="outline"
-              size="icon"
-              className="bg-black/80 backdrop-blur-sm border-cyan-500/30"
-            >
-              {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-            </Button>
+            {isMobile ? (
+              <SettingsDialog />
+            ) : (
+              <>
+                <StatsPanel />
+                <Button
+                  onClick={toggleMute}
+                  variant="outline"
+                  size="icon"
+                  className="bg-black/80 backdrop-blur-sm border-cyan-500/30"
+                >
+                  {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                </Button>
+              </>
+            )}
           </div>
         </div>
         
