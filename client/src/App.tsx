@@ -9,6 +9,7 @@ import { OfflineEarningsDialog } from "./components/OfflineEarningsDialog";
 import { AchievementChecker } from "./components/AchievementChecker";
 import { FloatingTextManager } from "./components/FloatingTextManager";
 import { ClickBoostTutorial } from "./components/ClickBoostTutorial";
+import { PrestigeTutorial } from "./components/PrestigeTutorial";
 import { ActiveEventsDisplay } from "./components/ActiveEventsDisplay";
 import { Toaster } from "./components/ui/sonner";
 
@@ -39,6 +40,7 @@ function App() {
       
       <OfflineEarningsDialog />
       <ClickBoostTutorial />
+      <PrestigeTutorial />
       <AchievementChecker />
       <FloatingTextManager />
       <GameLoop />

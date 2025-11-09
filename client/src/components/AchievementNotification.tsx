@@ -18,7 +18,7 @@ export function AchievementNotification({ achievement, onClose }: AchievementNot
       const timer = setTimeout(() => {
         setVisible(false);
         setTimeout(onClose, 300);
-      }, 5000);
+      }, 3500);
       
       return () => clearTimeout(timer);
     }

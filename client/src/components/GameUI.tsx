@@ -2,10 +2,12 @@ import { useIdleGame, TIME_PERIODS } from "@/lib/stores/useIdleGame";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { useAudio } from "@/lib/stores/useAudio";
-import { Volume2, VolumeX, Trophy, MapPin } from "lucide-react";
+import { Volume2, VolumeX, Trophy, MapPin, Clock } from "lucide-react";
 import { StatsPanel } from "./StatsPanel";
 import { SettingsDialog } from "./SettingsDialog";
 import { useIsMobile } from "@/hooks/use-is-mobile";
+import { useAdBoosts } from "@/lib/stores/useAdBoosts";
+import { useState, useEffect } from "react";
 
 export function GameUI() {
   const {
@@ -29,6 +31,16 @@ export function GameUI() {
   
   const { isMuted, toggleMute } = useAudio();
   const isMobile = useIsMobile();
+  const { activeBoosts } = useAdBoosts();
+  const [, setTick] = useState(0);
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTick(t => t + 1);
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, []);
   
   const formatNumber = (num: number) => {
     if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
@@ -41,6 +53,25 @@ export function GameUI() {
     if (num >= 1000) return (num / 1000).toFixed(1) + "K";
     if (num >= 1) return num.toFixed(1);
     return num.toFixed(2);
+  };
+  
+  const formatTime = (ms: number) => {
+    const seconds = Math.ceil(ms / 1000);
+    if (seconds < 60) return `${seconds}s`;
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}m ${remainingSeconds}s`;
+  };
+  
+  const getActiveBoostTimer = () => {
+    if (activeBoosts.length === 0) return null;
+    const now = Date.now();
+    const longestBoost = activeBoosts.reduce((longest, boost) => {
+      const remaining = boost.endsAt - now;
+      const longestRemaining = longest.endsAt - now;
+      return remaining > longestRemaining ? boost : longest;
+    });
+    return longestBoost.endsAt - now;
   };
   
   const currentDest = TIME_PERIODS.find(d => d.id === currentDestination);
@@ -130,6 +161,12 @@ export function GameUI() {
           <div className="flex gap-1 items-center bg-black/60 backdrop-blur-sm border border-purple-500/30 rounded-full px-2 md:px-3 py-1 md:py-1.5">
             <div className="text-purple-400 text-xs md:text-sm font-semibold">Done:</div>
             <div className="text-white text-sm md:text-base font-bold">{formatNumber(totalCustomersServed)}</div>
+            {getActiveBoostTimer() && (
+              <div className="flex gap-0.5 items-center text-xs text-yellow-400 ml-1">
+                <Clock className="w-3 h-3" />
+                <span>{formatTime(getActiveBoostTimer()!)}</span>
+              </div>
+            )}
           </div>
         </div>
         

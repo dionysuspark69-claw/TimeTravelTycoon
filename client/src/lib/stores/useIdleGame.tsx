@@ -215,6 +215,7 @@ export interface CustomerEntity {
   targetPosition?: [number, number, number];
   hasReachedTarget?: boolean;
   isVIP?: boolean;
+  assignedMachineIndex?: number;
 }
 
 interface IdleGameState {
@@ -250,6 +251,9 @@ interface IdleGameState {
   
   tutorialShown: boolean;
   setTutorialShown: () => void;
+  
+  prestigeTutorialShown: boolean;
+  setPrestigeTutorialShown: () => void;
   
   coinsPerSecond: number;
   lastClickBoostTime?: number;
@@ -327,6 +331,9 @@ export const useIdleGame = create<IdleGameState>()(
     tutorialShown: false,
     setTutorialShown: () => set({ tutorialShown: true }),
     
+    prestigeTutorialShown: false,
+    setPrestigeTutorialShown: () => set({ prestigeTutorialShown: true }),
+    
     coinsPerSecond: 0,
     lastClickBoostTime: undefined,
     
@@ -348,27 +355,27 @@ export const useIdleGame = create<IdleGameState>()(
     
     getTimeMachineUpgradeCost: () => {
       const state = get();
-      return Math.floor(100 * Math.pow(1.5, state.timeMachineLevel - 1));
+      return Math.floor(100 * Math.pow(1.7, state.timeMachineLevel - 1));
     },
     
     getCapacityUpgradeCost: () => {
       const state = get();
-      return Math.floor(50 * Math.pow(1.4, state.timeMachineCapacity - 1));
+      return Math.floor(50 * Math.pow(1.6, state.timeMachineCapacity - 1));
     },
     
     getSpeedUpgradeCost: () => {
       const state = get();
-      return Math.floor(75 * Math.pow(1.45, state.timeMachineSpeed - 1));
+      return Math.floor(75 * Math.pow(1.65, state.timeMachineSpeed - 1));
     },
     
     getCustomerRateUpgradeCost: () => {
       const state = get();
-      return Math.floor(200 * Math.pow(1.6, state.customerGenerationRate - 1));
+      return Math.floor(200 * Math.pow(1.8, state.customerGenerationRate - 1));
     },
     
     getTimeMachineBuyCost: () => {
       const state = get();
-      return Math.floor(10000 * Math.pow(2, state.timeMachineCount - 1));
+      return Math.floor(10000 * Math.pow(3, state.timeMachineCount - 1));
     },
     
     upgradeTimeMachine: () => {
@@ -608,9 +615,16 @@ export const useIdleGame = create<IdleGameState>()(
         e => e.state === "waiting"
       ).slice(0, count);
       
-      const updatedEntities = state.customerEntities.map(entity => {
-        if (waitingEntities.find(e => e.id === entity.id)) {
-          return { ...entity, state: "boarding" as CustomerState, stateChangedTime: now };
+      const updatedEntities = state.customerEntities.map((entity, idx) => {
+        const waitingIndex = waitingEntities.findIndex(e => e.id === entity.id);
+        if (waitingIndex >= 0) {
+          const machineIndex = waitingIndex % state.timeMachineCount;
+          return { 
+            ...entity, 
+            state: "boarding" as CustomerState, 
+            stateChangedTime: now,
+            assignedMachineIndex: machineIndex
+          };
         }
         return entity;
       });
