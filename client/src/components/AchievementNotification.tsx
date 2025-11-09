@@ -14,13 +14,26 @@ export function AchievementNotification({ achievement, onClose }: AchievementNot
   
   useEffect(() => {
     if (achievement) {
-      setVisible(true);
-      const timer = setTimeout(() => {
+      setVisible(false);
+      const showTimer = setTimeout(() => {
+        setVisible(true);
+      }, 50);
+      
+      const hideTimer = setTimeout(() => {
         setVisible(false);
-        setTimeout(onClose, 300);
+      }, 3000);
+      
+      const closeTimer = setTimeout(() => {
+        onClose();
       }, 3500);
       
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(showTimer);
+        clearTimeout(hideTimer);
+        clearTimeout(closeTimer);
+      };
+    } else {
+      setVisible(false);
     }
   }, [achievement, onClose]);
   

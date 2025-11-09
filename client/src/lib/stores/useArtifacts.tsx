@@ -1081,6 +1081,1596 @@ export const ARTIFACT_COLLECTIONS: ArtifactCollection[] = [
     ],
     setBonusDescription: "Complete set grants +10% revenue for Mars Colony",
     setBonusMultiplier: 0.10
+  },
+  {
+    destinationId: "cambrian",
+    name: "Cambrian Period Collection",
+    artifacts: [
+      {
+        id: "anomalocaris_fossil",
+        name: "Anomalocaris Fossil",
+        destinationId: "cambrian",
+        rarity: "legendary",
+        description: "Complete fossil of the Cambrian apex predator",
+        dropRate: 0.00005,
+        revenueBonus: 0.005
+      },
+      {
+        id: "opabinia_eye",
+        name: "Opabinia Eye Stalk",
+        destinationId: "cambrian",
+        rarity: "epic",
+        description: "Fossilized compound eye from a five-eyed creature",
+        dropRate: 0.0001,
+        revenueBonus: 0.005
+      },
+      {
+        id: "burgess_shale",
+        name: "Burgess Shale Fragment",
+        destinationId: "cambrian",
+        rarity: "rare",
+        description: "Exceptional preservation from the famous fossil bed",
+        dropRate: 0.0003,
+        revenueBonus: 0.005
+      },
+      {
+        id: "trilobite_shell",
+        name: "Trilobite Shell",
+        destinationId: "cambrian",
+        rarity: "uncommon",
+        description: "Segmented exoskeleton from early arthropod",
+        dropRate: 0.0008,
+        revenueBonus: 0.005
+      },
+      {
+        id: "cambrian_algae",
+        name: "Cambrian Algae Print",
+        destinationId: "cambrian",
+        rarity: "common",
+        description: "Impression of primitive marine plant life",
+        dropRate: 0.002,
+        revenueBonus: 0.005
+      }
+    ],
+    setBonusDescription: "Complete set grants +10% revenue for Cambrian Period",
+    setBonusMultiplier: 0.10
+  },
+  {
+    destinationId: "iceage",
+    name: "Ice Age Collection",
+    artifacts: [
+      {
+        id: "mammoth_tusk",
+        name: "Woolly Mammoth Tusk",
+        destinationId: "iceage",
+        rarity: "legendary",
+        description: "Massive ivory tusk from the ice age giant",
+        dropRate: 0.00005,
+        revenueBonus: 0.005
+      },
+      {
+        id: "sabertooth_fang",
+        name: "Saber-Toothed Tiger Fang",
+        destinationId: "iceage",
+        rarity: "epic",
+        description: "Enormous canine tooth from a fearsome predator",
+        dropRate: 0.0001,
+        revenueBonus: 0.005
+      },
+      {
+        id: "cave_bear_skull",
+        name: "Cave Bear Skull",
+        destinationId: "iceage",
+        rarity: "rare",
+        description: "Well-preserved cranium from a massive bear",
+        dropRate: 0.0003,
+        revenueBonus: 0.005
+      },
+      {
+        id: "giant_sloth_claw",
+        name: "Giant Ground Sloth Claw",
+        destinationId: "iceage",
+        rarity: "uncommon",
+        description: "Large curved claw from an ancient herbivore",
+        dropRate: 0.0008,
+        revenueBonus: 0.005
+      },
+      {
+        id: "glacial_stone",
+        name: "Glacial Stone",
+        destinationId: "iceage",
+        rarity: "common",
+        description: "Rock smoothed by ancient glacier movement",
+        dropRate: 0.002,
+        revenueBonus: 0.005
+      }
+    ],
+    setBonusDescription: "Complete set grants +10% revenue for Ice Age",
+    setBonusMultiplier: 0.10
+  },
+  {
+    destinationId: "stoneage",
+    name: "Stone Age Collection",
+    artifacts: [
+      {
+        id: "hand_axe",
+        name: "Paleolithic Hand Axe",
+        destinationId: "stoneage",
+        rarity: "legendary",
+        description: "Perfectly crafted stone tool used for millennia",
+        dropRate: 0.00005,
+        revenueBonus: 0.005
+      },
+      {
+        id: "cave_painting",
+        name: "Cave Painting Fragment",
+        destinationId: "stoneage",
+        rarity: "epic",
+        description: "Rock surface with ancient animal depictions",
+        dropRate: 0.0001,
+        revenueBonus: 0.005
+      },
+      {
+        id: "flint_spearhead",
+        name: "Flint Spearhead",
+        destinationId: "stoneage",
+        rarity: "rare",
+        description: "Knapped stone weapon point for hunting",
+        dropRate: 0.0003,
+        revenueBonus: 0.005
+      },
+      {
+        id: "bone_needle",
+        name: "Bone Sewing Needle",
+        destinationId: "stoneage",
+        rarity: "uncommon",
+        description: "Finely carved tool for making clothing",
+        dropRate: 0.0008,
+        revenueBonus: 0.005
+      },
+      {
+        id: "stone_scraper",
+        name: "Stone Scraper",
+        destinationId: "stoneage",
+        rarity: "common",
+        description: "Basic tool for processing hides and wood",
+        dropRate: 0.002,
+        revenueBonus: 0.005
+      }
+    ],
+    setBonusDescription: "Complete set grants +10% revenue for Stone Age",
+    setBonusMultiplier: 0.10
+  },
+  {
+    destinationId: "bronzeage",
+    name: "Bronze Age Collection",
+    artifacts: [
+      {
+        id: "bronze_sword",
+        name: "Bronze Ceremonial Sword",
+        destinationId: "bronzeage",
+        rarity: "legendary",
+        description: "Ornate blade symbolizing the age of metal",
+        dropRate: 0.00005,
+        revenueBonus: 0.005
+      },
+      {
+        id: "sun_chariot",
+        name: "Sun Chariot Model",
+        destinationId: "bronzeage",
+        rarity: "epic",
+        description: "Intricate bronze sculpture of celestial worship",
+        dropRate: 0.0001,
+        revenueBonus: 0.005
+      },
+      {
+        id: "bronze_axehead",
+        name: "Bronze Axe Head",
+        destinationId: "bronzeage",
+        rarity: "rare",
+        description: "Functional weapon or tool from early metalworking",
+        dropRate: 0.0003,
+        revenueBonus: 0.005
+      },
+      {
+        id: "copper_ingot",
+        name: "Copper Trade Ingot",
+        destinationId: "bronzeage",
+        rarity: "uncommon",
+        description: "Standardized metal bar for commerce",
+        dropRate: 0.0008,
+        revenueBonus: 0.005
+      },
+      {
+        id: "pottery_shard",
+        name: "Decorated Pottery Shard",
+        destinationId: "bronzeage",
+        rarity: "common",
+        description: "Fragment of ceramic vessel with geometric patterns",
+        dropRate: 0.002,
+        revenueBonus: 0.005
+      }
+    ],
+    setBonusDescription: "Complete set grants +10% revenue for Bronze Age",
+    setBonusMultiplier: 0.10
+  },
+  {
+    destinationId: "mesopotamia",
+    name: "Mesopotamia Collection",
+    artifacts: [
+      {
+        id: "code_hammurabi",
+        name: "Code of Hammurabi Tablet",
+        destinationId: "mesopotamia",
+        rarity: "legendary",
+        description: "Ancient law code carved in cuneiform script",
+        dropRate: 0.00005,
+        revenueBonus: 0.005
+      },
+      {
+        id: "ishtar_gate",
+        name: "Ishtar Gate Brick",
+        destinationId: "mesopotamia",
+        rarity: "epic",
+        description: "Glazed blue brick from the magnificent gate",
+        dropRate: 0.0001,
+        revenueBonus: 0.005
+      },
+      {
+        id: "ziggurat_stone",
+        name: "Ziggurat Foundation Stone",
+        destinationId: "mesopotamia",
+        rarity: "rare",
+        description: "Inscribed block from a temple tower",
+        dropRate: 0.0003,
+        revenueBonus: 0.005
+      },
+      {
+        id: "cylinder_seal",
+        name: "Cylinder Seal",
+        destinationId: "mesopotamia",
+        rarity: "uncommon",
+        description: "Carved stone roller for marking documents",
+        dropRate: 0.0008,
+        revenueBonus: 0.005
+      },
+      {
+        id: "cuneiform_tablet",
+        name: "Cuneiform Clay Tablet",
+        destinationId: "mesopotamia",
+        rarity: "common",
+        description: "Administrative record in wedge-shaped writing",
+        dropRate: 0.002,
+        revenueBonus: 0.005
+      }
+    ],
+    setBonusDescription: "Complete set grants +10% revenue for Mesopotamia",
+    setBonusMultiplier: 0.10
+  },
+  {
+    destinationId: "mayan",
+    name: "Mayan Civilization Collection",
+    artifacts: [
+      {
+        id: "jade_death_mask",
+        name: "Jade Death Mask",
+        destinationId: "mayan",
+        rarity: "legendary",
+        description: "Intricate funerary mask of a great ruler",
+        dropRate: 0.00005,
+        revenueBonus: 0.005
+      },
+      {
+        id: "mayan_codex",
+        name: "Mayan Codex Page",
+        destinationId: "mayan",
+        rarity: "epic",
+        description: "Rare surviving page of hieroglyphic writing",
+        dropRate: 0.0001,
+        revenueBonus: 0.005
+      },
+      {
+        id: "calendar_stone",
+        name: "Calendar Stone Fragment",
+        destinationId: "mayan",
+        rarity: "rare",
+        description: "Piece of the astronomical calendar system",
+        dropRate: 0.0003,
+        revenueBonus: 0.005
+      },
+      {
+        id: "obsidian_blade",
+        name: "Obsidian Ceremonial Blade",
+        destinationId: "mayan",
+        rarity: "uncommon",
+        description: "Razor-sharp volcanic glass weapon",
+        dropRate: 0.0008,
+        revenueBonus: 0.005
+      },
+      {
+        id: "pottery_vessel",
+        name: "Decorated Pottery Vessel",
+        destinationId: "mayan",
+        rarity: "common",
+        description: "Clay pot with intricate painted designs",
+        dropRate: 0.002,
+        revenueBonus: 0.005
+      }
+    ],
+    setBonusDescription: "Complete set grants +10% revenue for Mayan Civilization",
+    setBonusMultiplier: 0.10
+  },
+  {
+    destinationId: "aztec",
+    name: "Aztec Empire Collection",
+    artifacts: [
+      {
+        id: "sun_stone",
+        name: "Aztec Sun Stone Replica",
+        destinationId: "aztec",
+        rarity: "legendary",
+        description: "Miniature of the massive calendar stone",
+        dropRate: 0.00005,
+        revenueBonus: 0.005
+      },
+      {
+        id: "feathered_headdress",
+        name: "Quetzal Feathered Headdress",
+        destinationId: "aztec",
+        rarity: "epic",
+        description: "Ceremonial crown of brilliant green plumes",
+        dropRate: 0.0001,
+        revenueBonus: 0.005
+      },
+      {
+        id: "macuahuitl",
+        name: "Macuahuitl Fragment",
+        destinationId: "aztec",
+        rarity: "rare",
+        description: "Wooden sword with obsidian blade inserts",
+        dropRate: 0.0003,
+        revenueBonus: 0.005
+      },
+      {
+        id: "cacao_vessel",
+        name: "Cacao Drinking Vessel",
+        destinationId: "aztec",
+        rarity: "uncommon",
+        description: "Ceremonial cup for chocolate beverages",
+        dropRate: 0.0008,
+        revenueBonus: 0.005
+      },
+      {
+        id: "turquoise_mosaic",
+        name: "Turquoise Mosaic Tile",
+        destinationId: "aztec",
+        rarity: "common",
+        description: "Small decorative piece from a larger artwork",
+        dropRate: 0.002,
+        revenueBonus: 0.005
+      }
+    ],
+    setBonusDescription: "Complete set grants +10% revenue for Aztec Empire",
+    setBonusMultiplier: 0.10
+  },
+  {
+    destinationId: "inca",
+    name: "Inca Empire Collection",
+    artifacts: [
+      {
+        id: "golden_llama",
+        name: "Golden Llama Figurine",
+        destinationId: "inca",
+        rarity: "legendary",
+        description: "Precious offering statue in solid gold",
+        dropRate: 0.00005,
+        revenueBonus: 0.005
+      },
+      {
+        id: "quipu_record",
+        name: "Quipu Record Keeper",
+        destinationId: "inca",
+        rarity: "epic",
+        description: "Knotted string system for storing information",
+        dropRate: 0.0001,
+        revenueBonus: 0.005
+      },
+      {
+        id: "stone_carving",
+        name: "Precision Stone Carving",
+        destinationId: "inca",
+        rarity: "rare",
+        description: "Perfectly fitted masonry block from Machu Picchu",
+        dropRate: 0.0003,
+        revenueBonus: 0.005
+      },
+      {
+        id: "silver_tupu",
+        name: "Silver Tupu Pin",
+        destinationId: "inca",
+        rarity: "uncommon",
+        description: "Decorative fastener for traditional clothing",
+        dropRate: 0.0008,
+        revenueBonus: 0.005
+      },
+      {
+        id: "ceramic_vessel",
+        name: "Inca Ceramic Vessel",
+        destinationId: "inca",
+        rarity: "common",
+        description: "Simple pottery for storing chicha or grain",
+        dropRate: 0.002,
+        revenueBonus: 0.005
+      }
+    ],
+    setBonusDescription: "Complete set grants +10% revenue for Inca Empire",
+    setBonusMultiplier: 0.10
+  },
+  {
+    destinationId: "mongol",
+    name: "Mongol Empire Collection",
+    artifacts: [
+      {
+        id: "khan_seal",
+        name: "Great Khan's Seal",
+        destinationId: "mongol",
+        rarity: "legendary",
+        description: "Imperial seal of the Mongol emperor",
+        dropRate: 0.00005,
+        revenueBonus: 0.005
+      },
+      {
+        id: "composite_bow",
+        name: "Mongol Composite Bow",
+        destinationId: "mongol",
+        rarity: "epic",
+        description: "Legendary weapon that conquered continents",
+        dropRate: 0.0001,
+        revenueBonus: 0.005
+      },
+      {
+        id: "silk_paiza",
+        name: "Silk Road Paiza",
+        destinationId: "mongol",
+        rarity: "rare",
+        description: "Golden passport for safe passage across the empire",
+        dropRate: 0.0003,
+        revenueBonus: 0.005
+      },
+      {
+        id: "horse_armor",
+        name: "Lamellar Horse Armor",
+        destinationId: "mongol",
+        rarity: "uncommon",
+        description: "Protective scales for cavalry mounts",
+        dropRate: 0.0008,
+        revenueBonus: 0.005
+      },
+      {
+        id: "felt_ornament",
+        name: "Felt Ger Ornament",
+        destinationId: "mongol",
+        rarity: "common",
+        description: "Decorative piece from a nomadic tent",
+        dropRate: 0.002,
+        revenueBonus: 0.005
+      }
+    ],
+    setBonusDescription: "Complete set grants +10% revenue for Mongol Empire",
+    setBonusMultiplier: 0.10
+  },
+  {
+    destinationId: "discovery",
+    name: "Age of Discovery Collection",
+    artifacts: [
+      {
+        id: "navigation_astrolabe",
+        name: "Navigator's Astrolabe",
+        destinationId: "discovery",
+        rarity: "legendary",
+        description: "Precious instrument for celestial navigation",
+        dropRate: 0.00005,
+        revenueBonus: 0.005
+      },
+      {
+        id: "first_map",
+        name: "First World Map",
+        destinationId: "discovery",
+        rarity: "epic",
+        description: "Early cartographic representation of new worlds",
+        dropRate: 0.0001,
+        revenueBonus: 0.005
+      },
+      {
+        id: "spice_container",
+        name: "Spice Trade Container",
+        destinationId: "discovery",
+        rarity: "rare",
+        description: "Sealed vessel that held precious spices",
+        dropRate: 0.0003,
+        revenueBonus: 0.005
+      },
+      {
+        id: "ship_compass",
+        name: "Ship's Compass",
+        destinationId: "discovery",
+        rarity: "uncommon",
+        description: "Magnetic navigation tool from an explorer's vessel",
+        dropRate: 0.0008,
+        revenueBonus: 0.005
+      },
+      {
+        id: "sailing_rope",
+        name: "Ship's Rigging Rope",
+        destinationId: "discovery",
+        rarity: "common",
+        description: "Weathered rope from a voyage of discovery",
+        dropRate: 0.002,
+        revenueBonus: 0.005
+      }
+    ],
+    setBonusDescription: "Complete set grants +10% revenue for Age of Discovery",
+    setBonusMultiplier: 0.10
+  },
+  {
+    destinationId: "frenchrev",
+    name: "French Revolution Collection",
+    artifacts: [
+      {
+        id: "liberty_cap",
+        name: "Liberty Cap of Marianne",
+        destinationId: "frenchrev",
+        rarity: "legendary",
+        description: "Phrygian cap symbolizing freedom and revolution",
+        dropRate: 0.00005,
+        revenueBonus: 0.005
+      },
+      {
+        id: "guillotine_blade",
+        name: "Guillotine Blade Fragment",
+        destinationId: "frenchrev",
+        rarity: "epic",
+        description: "Piece of the infamous revolutionary instrument",
+        dropRate: 0.0001,
+        revenueBonus: 0.005
+      },
+      {
+        id: "declaration_rights",
+        name: "Declaration of Rights Print",
+        destinationId: "frenchrev",
+        rarity: "rare",
+        description: "Original pamphlet of human rights declaration",
+        dropRate: 0.0003,
+        revenueBonus: 0.005
+      },
+      {
+        id: "tricolor_cockade",
+        name: "Tricolor Cockade",
+        destinationId: "frenchrev",
+        rarity: "uncommon",
+        description: "Revolutionary ribbon badge in red, white, and blue",
+        dropRate: 0.0008,
+        revenueBonus: 0.005
+      },
+      {
+        id: "assignat_note",
+        name: "Assignat Currency Note",
+        destinationId: "frenchrev",
+        rarity: "common",
+        description: "Revolutionary paper money from the new republic",
+        dropRate: 0.002,
+        revenueBonus: 0.005
+      }
+    ],
+    setBonusDescription: "Complete set grants +10% revenue for French Revolution",
+    setBonusMultiplier: 0.10
+  },
+  {
+    destinationId: "americanrev",
+    name: "American Revolution Collection",
+    artifacts: [
+      {
+        id: "liberty_bell",
+        name: "Liberty Bell Fragment",
+        destinationId: "americanrev",
+        rarity: "legendary",
+        description: "Piece of the iconic symbol of American freedom",
+        dropRate: 0.00005,
+        revenueBonus: 0.005
+      },
+      {
+        id: "washington_musket",
+        name: "Washington's Musket",
+        destinationId: "americanrev",
+        rarity: "epic",
+        description: "Flintlock rifle from the Continental Army",
+        dropRate: 0.0001,
+        revenueBonus: 0.005
+      },
+      {
+        id: "declaration_copy",
+        name: "Declaration of Independence Copy",
+        destinationId: "americanrev",
+        rarity: "rare",
+        description: "Early printed version of the founding document",
+        dropRate: 0.0003,
+        revenueBonus: 0.005
+      },
+      {
+        id: "continental_coin",
+        name: "Continental Currency Coin",
+        destinationId: "americanrev",
+        rarity: "uncommon",
+        description: "Colonial money from the revolutionary period",
+        dropRate: 0.0008,
+        revenueBonus: 0.005
+      },
+      {
+        id: "minuteman_button",
+        name: "Minuteman Uniform Button",
+        destinationId: "americanrev",
+        rarity: "common",
+        description: "Brass button from a militia coat",
+        dropRate: 0.002,
+        revenueBonus: 0.005
+      }
+    ],
+    setBonusDescription: "Complete set grants +10% revenue for American Revolution",
+    setBonusMultiplier: 0.10
+  },
+  {
+    destinationId: "victorian",
+    name: "Victorian Era Collection",
+    artifacts: [
+      {
+        id: "crown_jewels",
+        name: "Victorian Crown Jewel Replica",
+        destinationId: "victorian",
+        rarity: "legendary",
+        description: "Exquisite copy of Queen Victoria's regalia",
+        dropRate: 0.00005,
+        revenueBonus: 0.005
+      },
+      {
+        id: "phonograph",
+        name: "Edison Phonograph",
+        destinationId: "victorian",
+        rarity: "epic",
+        description: "Early sound recording and playback device",
+        dropRate: 0.0001,
+        revenueBonus: 0.005
+      },
+      {
+        id: "pocket_watch",
+        name: "Gold Pocket Watch",
+        destinationId: "victorian",
+        rarity: "rare",
+        description: "Ornate timepiece with chain and fob",
+        dropRate: 0.0003,
+        revenueBonus: 0.005
+      },
+      {
+        id: "calling_card",
+        name: "Calling Card Case",
+        destinationId: "victorian",
+        rarity: "uncommon",
+        description: "Silver case for social visiting cards",
+        dropRate: 0.0008,
+        revenueBonus: 0.005
+      },
+      {
+        id: "tea_set",
+        name: "Porcelain Tea Cup",
+        destinationId: "victorian",
+        rarity: "common",
+        description: "Fine china from an afternoon tea service",
+        dropRate: 0.002,
+        revenueBonus: 0.005
+      }
+    ],
+    setBonusDescription: "Complete set grants +10% revenue for Victorian Era",
+    setBonusMultiplier: 0.10
+  },
+  {
+    destinationId: "ww1",
+    name: "World War I Collection",
+    artifacts: [
+      {
+        id: "red_baron_goggles",
+        name: "Red Baron's Flight Goggles",
+        destinationId: "ww1",
+        rarity: "legendary",
+        description: "Aviator goggles from the legendary ace pilot",
+        dropRate: 0.00005,
+        revenueBonus: 0.005
+      },
+      {
+        id: "trench_periscope",
+        name: "Trench Periscope",
+        destinationId: "ww1",
+        rarity: "epic",
+        description: "Optical device for observing over the trenches",
+        dropRate: 0.0001,
+        revenueBonus: 0.005
+      },
+      {
+        id: "gas_mask",
+        name: "Gas Mask",
+        destinationId: "ww1",
+        rarity: "rare",
+        description: "Protective equipment from chemical warfare",
+        dropRate: 0.0003,
+        revenueBonus: 0.005
+      },
+      {
+        id: "victory_medal",
+        name: "Victory Medal",
+        destinationId: "ww1",
+        rarity: "uncommon",
+        description: "Campaign medal awarded to veterans",
+        dropRate: 0.0008,
+        revenueBonus: 0.005
+      },
+      {
+        id: "mess_kit",
+        name: "Soldier's Mess Kit",
+        destinationId: "ww1",
+        rarity: "common",
+        description: "Metal eating utensils from the trenches",
+        dropRate: 0.002,
+        revenueBonus: 0.005
+      }
+    ],
+    setBonusDescription: "Complete set grants +10% revenue for World War I",
+    setBonusMultiplier: 0.10
+  },
+  {
+    destinationId: "ww2",
+    name: "World War II Collection",
+    artifacts: [
+      {
+        id: "enigma_machine",
+        name: "Enigma Cipher Machine",
+        destinationId: "ww2",
+        rarity: "legendary",
+        description: "German encryption device that changed the war",
+        dropRate: 0.00005,
+        revenueBonus: 0.005
+      },
+      {
+        id: "spitfire_propeller",
+        name: "Spitfire Propeller Blade",
+        destinationId: "ww2",
+        rarity: "epic",
+        description: "Blade from the iconic British fighter aircraft",
+        dropRate: 0.0001,
+        revenueBonus: 0.005
+      },
+      {
+        id: "paratrooper_badge",
+        name: "Paratrooper's Wings Badge",
+        destinationId: "ww2",
+        rarity: "rare",
+        description: "Airborne division insignia from D-Day",
+        dropRate: 0.0003,
+        revenueBonus: 0.005
+      },
+      {
+        id: "ration_tin",
+        name: "K-Ration Tin",
+        destinationId: "ww2",
+        rarity: "uncommon",
+        description: "Military field ration container",
+        dropRate: 0.0008,
+        revenueBonus: 0.005
+      },
+      {
+        id: "dog_tags",
+        name: "Soldier's Dog Tags",
+        destinationId: "ww2",
+        rarity: "common",
+        description: "Identification tags worn by servicemen",
+        dropRate: 0.002,
+        revenueBonus: 0.005
+      }
+    ],
+    setBonusDescription: "Complete set grants +10% revenue for World War II",
+    setBonusMultiplier: 0.10
+  },
+  {
+    destinationId: "digital",
+    name: "Digital Age Collection",
+    artifacts: [
+      {
+        id: "first_iphone",
+        name: "First Generation iPhone",
+        destinationId: "digital",
+        rarity: "legendary",
+        description: "Revolutionary device that changed communication",
+        dropRate: 0.00005,
+        revenueBonus: 0.005
+      },
+      {
+        id: "bitcoin_wallet",
+        name: "Genesis Block Bitcoin Wallet",
+        destinationId: "digital",
+        rarity: "epic",
+        description: "Digital wallet from cryptocurrency's beginning",
+        dropRate: 0.0001,
+        revenueBonus: 0.005
+      },
+      {
+        id: "google_server",
+        name: "Original Google Server Board",
+        destinationId: "digital",
+        rarity: "rare",
+        description: "Circuit board from the first search engine servers",
+        dropRate: 0.0003,
+        revenueBonus: 0.005
+      },
+      {
+        id: "floppy_disk",
+        name: "3.5-inch Floppy Disk",
+        destinationId: "digital",
+        rarity: "uncommon",
+        description: "Obsolete storage medium from computing history",
+        dropRate: 0.0008,
+        revenueBonus: 0.005
+      },
+      {
+        id: "dialup_modem",
+        name: "Dial-Up Modem",
+        destinationId: "digital",
+        rarity: "common",
+        description: "Early internet connection device",
+        dropRate: 0.002,
+        revenueBonus: 0.005
+      }
+    ],
+    setBonusDescription: "Complete set grants +10% revenue for Digital Age",
+    setBonusMultiplier: 0.10
+  },
+  {
+    destinationId: "camelot",
+    name: "Camelot Collection",
+    artifacts: [
+      {
+        id: "round_table_wood",
+        name: "Round Table Fragment",
+        destinationId: "camelot",
+        rarity: "legendary",
+        description: "Wood from the legendary table of equality",
+        dropRate: 0.00005,
+        revenueBonus: 0.005
+      },
+      {
+        id: "merlin_staff",
+        name: "Merlin's Crystal Staff",
+        destinationId: "camelot",
+        rarity: "epic",
+        description: "Magical focus of the great wizard",
+        dropRate: 0.0001,
+        revenueBonus: 0.005
+      },
+      {
+        id: "lady_lake_scabbard",
+        name: "Lady of the Lake's Scabbard",
+        destinationId: "camelot",
+        rarity: "rare",
+        description: "Enchanted sheath that protects its bearer",
+        dropRate: 0.0003,
+        revenueBonus: 0.005
+      },
+      {
+        id: "knight_token",
+        name: "Knight's Quest Token",
+        destinationId: "camelot",
+        rarity: "uncommon",
+        description: "Symbol carried on a noble quest",
+        dropRate: 0.0008,
+        revenueBonus: 0.005
+      },
+      {
+        id: "castle_stone",
+        name: "Camelot Castle Stone",
+        destinationId: "camelot",
+        rarity: "common",
+        description: "Ordinary brick from the legendary fortress",
+        dropRate: 0.002,
+        revenueBonus: 0.005
+      }
+    ],
+    setBonusDescription: "Complete set grants +10% revenue for Camelot",
+    setBonusMultiplier: 0.10
+  },
+  {
+    destinationId: "olympus",
+    name: "Mount Olympus Collection",
+    artifacts: [
+      {
+        id: "zeus_thunderbolt",
+        name: "Zeus's Thunderbolt Shard",
+        destinationId: "olympus",
+        rarity: "legendary",
+        description: "Fragment of the king of gods' divine weapon",
+        dropRate: 0.00005,
+        revenueBonus: 0.005
+      },
+      {
+        id: "athena_aegis",
+        name: "Athena's Aegis Shield",
+        destinationId: "olympus",
+        rarity: "epic",
+        description: "Protective shield bearing Medusa's head",
+        dropRate: 0.0001,
+        revenueBonus: 0.005
+      },
+      {
+        id: "apollo_lyre",
+        name: "Apollo's Golden Lyre",
+        destinationId: "olympus",
+        rarity: "rare",
+        description: "Divine musical instrument of the sun god",
+        dropRate: 0.0003,
+        revenueBonus: 0.005
+      },
+      {
+        id: "ambrosia_cup",
+        name: "Ambrosia Chalice",
+        destinationId: "olympus",
+        rarity: "uncommon",
+        description: "Cup that held the nectar of immortality",
+        dropRate: 0.0008,
+        revenueBonus: 0.005
+      },
+      {
+        id: "olive_branch",
+        name: "Sacred Olive Branch",
+        destinationId: "olympus",
+        rarity: "common",
+        description: "Branch from Athena's blessed tree",
+        dropRate: 0.002,
+        revenueBonus: 0.005
+      }
+    ],
+    setBonusDescription: "Complete set grants +10% revenue for Mount Olympus",
+    setBonusMultiplier: 0.10
+  },
+  {
+    destinationId: "dieselpunk",
+    name: "Dieselpunk Era Collection",
+    artifacts: [
+      {
+        id: "zeppelin_propeller",
+        name: "Zeppelin Propeller Blade",
+        destinationId: "dieselpunk",
+        rarity: "legendary",
+        description: "Massive blade from a luxury airship",
+        dropRate: 0.00005,
+        revenueBonus: 0.005
+      },
+      {
+        id: "diesel_raygun",
+        name: "Diesel-Powered Ray Gun",
+        destinationId: "dieselpunk",
+        rarity: "epic",
+        description: "Retro-futuristic energy weapon prototype",
+        dropRate: 0.0001,
+        revenueBonus: 0.005
+      },
+      {
+        id: "pneumatic_gauntlet",
+        name: "Pneumatic Power Gauntlet",
+        destinationId: "dieselpunk",
+        rarity: "rare",
+        description: "Air-powered mechanical strength enhancer",
+        dropRate: 0.0003,
+        revenueBonus: 0.005
+      },
+      {
+        id: "propaganda_poster",
+        name: "Art Deco Propaganda Poster",
+        destinationId: "dieselpunk",
+        rarity: "uncommon",
+        description: "Stylized industrial age recruitment art",
+        dropRate: 0.0008,
+        revenueBonus: 0.005
+      },
+      {
+        id: "oil_can",
+        name: "Industrial Oil Can",
+        destinationId: "dieselpunk",
+        rarity: "common",
+        description: "Utilitarian container for machine lubrication",
+        dropRate: 0.002,
+        revenueBonus: 0.005
+      }
+    ],
+    setBonusDescription: "Complete set grants +10% revenue for Dieselpunk Era",
+    setBonusMultiplier: 0.10
+  },
+  {
+    destinationId: "postapoc",
+    name: "Post-Apocalypse Collection",
+    artifacts: [
+      {
+        id: "fusion_core",
+        name: "Intact Fusion Core",
+        destinationId: "postapoc",
+        rarity: "legendary",
+        description: "Rare working power source from the old world",
+        dropRate: 0.00005,
+        revenueBonus: 0.005
+      },
+      {
+        id: "hazmat_suit",
+        name: "Pre-War Hazmat Suit",
+        destinationId: "postapoc",
+        rarity: "epic",
+        description: "Sealed radiation protection from before the fall",
+        dropRate: 0.0001,
+        revenueBonus: 0.005
+      },
+      {
+        id: "water_purifier",
+        name: "Portable Water Purifier",
+        destinationId: "postapoc",
+        rarity: "rare",
+        description: "Life-saving device for clean drinking water",
+        dropRate: 0.0003,
+        revenueBonus: 0.005
+      },
+      {
+        id: "canned_food",
+        name: "Preserved Pre-War Food",
+        destinationId: "postapoc",
+        rarity: "uncommon",
+        description: "Miraculously edible sealed rations",
+        dropRate: 0.0008,
+        revenueBonus: 0.005
+      },
+      {
+        id: "scrap_metal",
+        name: "Salvaged Scrap Metal",
+        destinationId: "postapoc",
+        rarity: "common",
+        description: "Useful materials from ruined buildings",
+        dropRate: 0.002,
+        revenueBonus: 0.005
+      }
+    ],
+    setBonusDescription: "Complete set grants +10% revenue for Post-Apocalypse",
+    setBonusMultiplier: 0.10
+  },
+  {
+    destinationId: "asteroid",
+    name: "Asteroid Belt Mining Collection",
+    artifacts: [
+      {
+        id: "platinum_asteroid",
+        name: "Platinum-Rich Asteroid Core",
+        destinationId: "asteroid",
+        rarity: "legendary",
+        description: "Massive chunk of precious metal from space",
+        dropRate: 0.00005,
+        revenueBonus: 0.005
+      },
+      {
+        id: "mining_laser",
+        name: "Industrial Mining Laser",
+        destinationId: "asteroid",
+        rarity: "epic",
+        description: "High-powered tool for cutting through rock",
+        dropRate: 0.0001,
+        revenueBonus: 0.005
+      },
+      {
+        id: "space_ore",
+        name: "Rare Element Ore Sample",
+        destinationId: "asteroid",
+        rarity: "rare",
+        description: "Valuable mineral found only in asteroids",
+        dropRate: 0.0003,
+        revenueBonus: 0.005
+      },
+      {
+        id: "zero_g_wrench",
+        name: "Zero-G Adjustable Wrench",
+        destinationId: "asteroid",
+        rarity: "uncommon",
+        description: "Magnetized tool for weightless repairs",
+        dropRate: 0.0008,
+        revenueBonus: 0.005
+      },
+      {
+        id: "asteroid_dust",
+        name: "Asteroid Dust Sample",
+        destinationId: "asteroid",
+        rarity: "common",
+        description: "Fine regolith from mining operations",
+        dropRate: 0.002,
+        revenueBonus: 0.005
+      }
+    ],
+    setBonusDescription: "Complete set grants +10% revenue for Asteroid Belt Mining",
+    setBonusMultiplier: 0.10
+  },
+  {
+    destinationId: "jupiter",
+    name: "Jupiter Station Collection",
+    artifacts: [
+      {
+        id: "antimatter_containment",
+        name: "Antimatter Containment Pod",
+        destinationId: "jupiter",
+        rarity: "legendary",
+        description: "Magnetic bottle holding universe's most powerful fuel",
+        dropRate: 0.00005,
+        revenueBonus: 0.005
+      },
+      {
+        id: "storm_data",
+        name: "Great Red Spot Data Core",
+        destinationId: "jupiter",
+        rarity: "epic",
+        description: "Scientific readings from inside the giant storm",
+        dropRate: 0.0001,
+        revenueBonus: 0.005
+      },
+      {
+        id: "europa_ice",
+        name: "Europa Ice Sample",
+        destinationId: "jupiter",
+        rarity: "rare",
+        description: "Water ice from the potentially life-bearing moon",
+        dropRate: 0.0003,
+        revenueBonus: 0.005
+      },
+      {
+        id: "radiation_badge",
+        name: "Radiation Exposure Badge",
+        destinationId: "jupiter",
+        rarity: "uncommon",
+        description: "Monitoring device from the intense radiation zone",
+        dropRate: 0.0008,
+        revenueBonus: 0.005
+      },
+      {
+        id: "station_ration",
+        name: "Station Food Ration",
+        destinationId: "jupiter",
+        rarity: "common",
+        description: "Standard meal pack for orbital workers",
+        dropRate: 0.002,
+        revenueBonus: 0.005
+      }
+    ],
+    setBonusDescription: "Complete set grants +10% revenue for Jupiter Station",
+    setBonusMultiplier: 0.10
+  },
+  {
+    destinationId: "interstellar",
+    name: "Interstellar Age Collection",
+    artifacts: [
+      {
+        id: "ftl_drive",
+        name: "First FTL Drive Core",
+        destinationId: "interstellar",
+        rarity: "legendary",
+        description: "Prototype faster-than-light propulsion system",
+        dropRate: 0.00005,
+        revenueBonus: 0.005
+      },
+      {
+        id: "alien_artifact",
+        name: "First Contact Artifact",
+        destinationId: "interstellar",
+        rarity: "epic",
+        description: "Object from humanity's first alien encounter",
+        dropRate: 0.0001,
+        revenueBonus: 0.005
+      },
+      {
+        id: "star_map",
+        name: "Interstellar Navigation Chart",
+        destinationId: "interstellar",
+        rarity: "rare",
+        description: "Map of traversable wormholes and jump points",
+        dropRate: 0.0003,
+        revenueBonus: 0.005
+      },
+      {
+        id: "colony_seed",
+        name: "Colony Ship Seed Vault",
+        destinationId: "interstellar",
+        rarity: "uncommon",
+        description: "Genetic material for terraforming new worlds",
+        dropRate: 0.0008,
+        revenueBonus: 0.005
+      },
+      {
+        id: "space_lichen",
+        name: "Void-Adapted Lichen",
+        destinationId: "interstellar",
+        rarity: "common",
+        description: "Hardy organism surviving in deep space",
+        dropRate: 0.002,
+        revenueBonus: 0.005
+      }
+    ],
+    setBonusDescription: "Complete set grants +10% revenue for Interstellar Age",
+    setBonusMultiplier: 0.10
+  },
+  {
+    destinationId: "galactic",
+    name: "Galactic Empire Collection",
+    artifacts: [
+      {
+        id: "emperor_crown",
+        name: "Galactic Emperor's Crown",
+        destinationId: "galactic",
+        rarity: "legendary",
+        description: "Ceremonial headpiece of the supreme ruler",
+        dropRate: 0.00005,
+        revenueBonus: 0.005
+      },
+      {
+        id: "senate_sigil",
+        name: "Galactic Senate Sigil",
+        destinationId: "galactic",
+        rarity: "epic",
+        description: "Seal of authority from the governing body",
+        dropRate: 0.0001,
+        revenueBonus: 0.005
+      },
+      {
+        id: "dreadnought_plaque",
+        name: "Imperial Dreadnought Plaque",
+        destinationId: "galactic",
+        rarity: "rare",
+        description: "Commemorative plate from a capital ship",
+        dropRate: 0.0003,
+        revenueBonus: 0.005
+      },
+      {
+        id: "citizenship_chip",
+        name: "Galactic Citizenship Chip",
+        destinationId: "galactic",
+        rarity: "uncommon",
+        description: "Digital ID granting rights across all systems",
+        dropRate: 0.0008,
+        revenueBonus: 0.005
+      },
+      {
+        id: "credit_chit",
+        name: "Standard Credit Chit",
+        destinationId: "galactic",
+        rarity: "common",
+        description: "Universal currency token of the empire",
+        dropRate: 0.002,
+        revenueBonus: 0.005
+      }
+    ],
+    setBonusDescription: "Complete set grants +10% revenue for Galactic Empire",
+    setBonusMultiplier: 0.10
+  },
+  {
+    destinationId: "singularity",
+    name: "Singularity Collection",
+    artifacts: [
+      {
+        id: "ai_consciousness",
+        name: "First AI Consciousness Core",
+        destinationId: "singularity",
+        rarity: "legendary",
+        description: "The moment artificial intelligence became self-aware",
+        dropRate: 0.00005,
+        revenueBonus: 0.005
+      },
+      {
+        id: "mind_upload",
+        name: "Human Mind Upload Module",
+        destinationId: "singularity",
+        rarity: "epic",
+        description: "Device containing a digitized human consciousness",
+        dropRate: 0.0001,
+        revenueBonus: 0.005
+      },
+      {
+        id: "nano_swarm",
+        name: "Programmable Nano-Swarm",
+        destinationId: "singularity",
+        rarity: "rare",
+        description: "Self-replicating molecular machines",
+        dropRate: 0.0003,
+        revenueBonus: 0.005
+      },
+      {
+        id: "augment_chip",
+        name: "Universal Augmentation Chip",
+        destinationId: "singularity",
+        rarity: "uncommon",
+        description: "Upgrade module for post-human enhancement",
+        dropRate: 0.0008,
+        revenueBonus: 0.005
+      },
+      {
+        id: "data_crystal",
+        name: "Quantum Data Crystal",
+        destinationId: "singularity",
+        rarity: "common",
+        description: "Storage medium with near-infinite capacity",
+        dropRate: 0.002,
+        revenueBonus: 0.005
+      }
+    ],
+    setBonusDescription: "Complete set grants +10% revenue for Singularity",
+    setBonusMultiplier: 0.10
+  },
+  {
+    destinationId: "postscarcity",
+    name: "Post-Scarcity Society Collection",
+    artifacts: [
+      {
+        id: "matter_compiler",
+        name: "Universal Matter Compiler",
+        destinationId: "postscarcity",
+        rarity: "legendary",
+        description: "Device that creates anything from raw atoms",
+        dropRate: 0.00005,
+        revenueBonus: 0.005
+      },
+      {
+        id: "energy_tap",
+        name: "Zero-Point Energy Tap",
+        destinationId: "postscarcity",
+        rarity: "epic",
+        description: "Unlimited power from vacuum fluctuations",
+        dropRate: 0.0001,
+        revenueBonus: 0.005
+      },
+      {
+        id: "immortality_serum",
+        name: "Biological Immortality Serum",
+        destinationId: "postscarcity",
+        rarity: "rare",
+        description: "Treatment that halts aging permanently",
+        dropRate: 0.0003,
+        revenueBonus: 0.005
+      },
+      {
+        id: "desire_fulfiller",
+        name: "Personal Desire Fulfillment Unit",
+        destinationId: "postscarcity",
+        rarity: "uncommon",
+        description: "AI companion that grants all reasonable wishes",
+        dropRate: 0.0008,
+        revenueBonus: 0.005
+      },
+      {
+        id: "recycler_node",
+        name: "Atomic Recycler Node",
+        destinationId: "postscarcity",
+        rarity: "common",
+        description: "Breaks down waste into base elements",
+        dropRate: 0.002,
+        revenueBonus: 0.005
+      }
+    ],
+    setBonusDescription: "Complete set grants +10% revenue for Post-Scarcity Society",
+    setBonusMultiplier: 0.10
+  },
+  {
+    destinationId: "timeloop",
+    name: "Time Loop Nexus Collection",
+    artifacts: [
+      {
+        id: "loop_anchor",
+        name: "Temporal Loop Anchor",
+        destinationId: "timeloop",
+        rarity: "legendary",
+        description: "Device that created the eternal recursion",
+        dropRate: 0.00005,
+        revenueBonus: 0.005
+      },
+      {
+        id: "memory_preserver",
+        name: "Cross-Loop Memory Preserver",
+        destinationId: "timeloop",
+        rarity: "epic",
+        description: "Allows retention of memories across resets",
+        dropRate: 0.0001,
+        revenueBonus: 0.005
+      },
+      {
+        id: "causality_map",
+        name: "Causality Deviation Map",
+        destinationId: "timeloop",
+        rarity: "rare",
+        description: "Chart of all possible timeline variations",
+        dropRate: 0.0003,
+        revenueBonus: 0.005
+      },
+      {
+        id: "iteration_counter",
+        name: "Loop Iteration Counter",
+        destinationId: "timeloop",
+        rarity: "uncommon",
+        description: "Device tracking number of time cycles",
+        dropRate: 0.0008,
+        revenueBonus: 0.005
+      },
+      {
+        id: "paradox_token",
+        name: "Temporal Paradox Token",
+        destinationId: "timeloop",
+        rarity: "common",
+        description: "Object that shouldn't exist in this timeline",
+        dropRate: 0.002,
+        revenueBonus: 0.005
+      }
+    ],
+    setBonusDescription: "Complete set grants +10% revenue for Time Loop Nexus",
+    setBonusMultiplier: 0.10
+  },
+  {
+    destinationId: "multiversal",
+    name: "Multiversal Hub Collection",
+    artifacts: [
+      {
+        id: "dimension_key",
+        name: "Master Dimension Key",
+        destinationId: "multiversal",
+        rarity: "legendary",
+        description: "Opens portals to any parallel universe",
+        dropRate: 0.00005,
+        revenueBonus: 0.005
+      },
+      {
+        id: "alternate_self",
+        name: "Alternate Self Recorder",
+        destinationId: "multiversal",
+        rarity: "epic",
+        description: "Logs encounters with versions of yourself",
+        dropRate: 0.0001,
+        revenueBonus: 0.005
+      },
+      {
+        id: "reality_anchor",
+        name: "Personal Reality Anchor",
+        destinationId: "multiversal",
+        rarity: "rare",
+        description: "Prevents dissolution when crossing dimensions",
+        dropRate: 0.0003,
+        revenueBonus: 0.005
+      },
+      {
+        id: "universe_compass",
+        name: "Universe Navigation Compass",
+        destinationId: "multiversal",
+        rarity: "uncommon",
+        description: "Points toward desired parallel worlds",
+        dropRate: 0.0008,
+        revenueBonus: 0.005
+      },
+      {
+        id: "dimensional_dust",
+        name: "Dimensional Boundary Dust",
+        destinationId: "multiversal",
+        rarity: "common",
+        description: "Residue from traveling between realities",
+        dropRate: 0.002,
+        revenueBonus: 0.005
+      }
+    ],
+    setBonusDescription: "Complete set grants +10% revenue for Multiversal Hub",
+    setBonusMultiplier: 0.10
+  },
+  {
+    destinationId: "temporal",
+    name: "Temporal Singularity Collection",
+    artifacts: [
+      {
+        id: "time_throne",
+        name: "Throne of Eternity",
+        destinationId: "temporal",
+        rarity: "legendary",
+        description: "Seat of power at the end of time itself",
+        dropRate: 0.00005,
+        revenueBonus: 0.005
+      },
+      {
+        id: "chrono_scepter",
+        name: "Chronomancer's Scepter",
+        destinationId: "temporal",
+        rarity: "epic",
+        description: "Staff that commands the flow of time",
+        dropRate: 0.0001,
+        revenueBonus: 0.005
+      },
+      {
+        id: "entropy_reverser",
+        name: "Entropy Reversal Engine",
+        destinationId: "temporal",
+        rarity: "rare",
+        description: "Device that can reverse the arrow of time",
+        dropRate: 0.0003,
+        revenueBonus: 0.005
+      },
+      {
+        id: "temporal_compass",
+        name: "Temporal Navigation Compass",
+        destinationId: "temporal",
+        rarity: "uncommon",
+        description: "Points to any moment in history or future",
+        dropRate: 0.0008,
+        revenueBonus: 0.005
+      },
+      {
+        id: "time_dust",
+        name: "Crystallized Time Dust",
+        destinationId: "temporal",
+        rarity: "common",
+        description: "Frozen moments collected as particles",
+        dropRate: 0.002,
+        revenueBonus: 0.005
+      }
+    ],
+    setBonusDescription: "Complete set grants +10% revenue for Temporal Singularity",
+    setBonusMultiplier: 0.10
+  },
+  {
+    destinationId: "farfuture",
+    name: "Far Future Collection",
+    artifacts: [
+      {
+        id: "heat_death_recorder",
+        name: "Heat Death Observation Device",
+        destinationId: "farfuture",
+        rarity: "legendary",
+        description: "Witnessed the universe's final moments",
+        dropRate: 0.00005,
+        revenueBonus: 0.005
+      },
+      {
+        id: "star_forge",
+        name: "Stellar Forge Remnant",
+        destinationId: "farfuture",
+        rarity: "epic",
+        description: "Fragment of machine that created artificial stars",
+        dropRate: 0.0001,
+        revenueBonus: 0.005
+      },
+      {
+        id: "dyson_sphere",
+        name: "Dyson Sphere Blueprint",
+        destinationId: "farfuture",
+        rarity: "rare",
+        description: "Plans for enclosing an entire star",
+        dropRate: 0.0003,
+        revenueBonus: 0.005
+      },
+      {
+        id: "proton_decay",
+        name: "Proton Decay Detector",
+        destinationId: "farfuture",
+        rarity: "uncommon",
+        description: "Instrument measuring matter's ultimate fate",
+        dropRate: 0.0008,
+        revenueBonus: 0.005
+      },
+      {
+        id: "void_crystal",
+        name: "Void Between Stars Crystal",
+        destinationId: "farfuture",
+        rarity: "common",
+        description: "Frozen darkness from the empty universe",
+        dropRate: 0.002,
+        revenueBonus: 0.005
+      }
+    ],
+    setBonusDescription: "Complete set grants +10% revenue for Far Future",
+    setBonusMultiplier: 0.10
   }
 ];
 
