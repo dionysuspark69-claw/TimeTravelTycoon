@@ -111,11 +111,16 @@ export function CollectionsPanel() {
                         <p className={`text-sm ${discovered ? 'text-gray-400' : 'text-gray-600'}`}>
                           {discovered ? artifact.description : 'Complete trips to discover'}
                         </p>
-                        {discovered && (
-                          <div className="mt-2 text-xs text-green-400">
-                            +{(artifact.revenueBonus * 100).toFixed(1)}% revenue
+                        <div className="mt-2 flex gap-3 text-xs">
+                          {discovered && (
+                            <div className="text-green-400">
+                              +{(artifact.revenueBonus * 100).toFixed(1)}% revenue
+                            </div>
+                          )}
+                          <div className={discovered ? 'text-gray-500' : 'text-gray-600'}>
+                            Drop chance: {(artifact.dropRate * 100).toFixed(3)}%
                           </div>
-                        )}
+                        </div>
                       </div>
                       <Badge className={`${RARITY_COLORS[artifact.rarity]} text-white capitalize`}>
                         {artifact.rarity}

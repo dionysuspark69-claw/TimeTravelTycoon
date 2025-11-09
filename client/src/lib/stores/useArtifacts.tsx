@@ -32,7 +32,7 @@ export const ARTIFACT_COLLECTIONS: ArtifactCollection[] = [
         destinationId: "dinosaur",
         rarity: "legendary",
         description: "A massive fossilized tooth from the apex predator",
-        dropRate: 0.0002,
+        dropRate: 0.00005,
         revenueBonus: 0.005
       },
       {
@@ -41,7 +41,7 @@ export const ARTIFACT_COLLECTIONS: ArtifactCollection[] = [
         destinationId: "dinosaur",
         rarity: "epic",
         description: "A razor-sharp claw from a clever hunter",
-        dropRate: 0.0005,
+        dropRate: 0.0001,
         revenueBonus: 0.005
       },
       {
@@ -50,7 +50,7 @@ export const ARTIFACT_COLLECTIONS: ArtifactCollection[] = [
         destinationId: "dinosaur",
         rarity: "rare",
         description: "Ancient tree sap with preserved prehistoric insect",
-        dropRate: 0.001,
+        dropRate: 0.0003,
         revenueBonus: 0.005
       },
       {
@@ -59,7 +59,7 @@ export const ARTIFACT_COLLECTIONS: ArtifactCollection[] = [
         destinationId: "dinosaur",
         rarity: "uncommon",
         description: "Fragment from a massive prehistoric egg",
-        dropRate: 0.002,
+        dropRate: 0.0008,
         revenueBonus: 0.005
       },
       {
@@ -68,7 +68,7 @@ export const ARTIFACT_COLLECTIONS: ArtifactCollection[] = [
         destinationId: "dinosaur",
         rarity: "common",
         description: "Perfectly preserved ancient plant impression",
-        dropRate: 0.005,
+        dropRate: 0.002,
         revenueBonus: 0.005
       }
     ],
@@ -85,7 +85,7 @@ export const ARTIFACT_COLLECTIONS: ArtifactCollection[] = [
         destinationId: "egypt",
         rarity: "legendary",
         description: "Symbol of eternal life crafted in pure gold",
-        dropRate: 0.0002,
+        dropRate: 0.00005,
         revenueBonus: 0.005
       },
       {
@@ -94,7 +94,7 @@ export const ARTIFACT_COLLECTIONS: ArtifactCollection[] = [
         destinationId: "egypt",
         rarity: "epic",
         description: "Sacred beetle carved from lapis lazuli",
-        dropRate: 0.0005,
+        dropRate: 0.0001,
         revenueBonus: 0.005
       },
       {
@@ -103,7 +103,7 @@ export const ARTIFACT_COLLECTIONS: ArtifactCollection[] = [
         destinationId: "egypt",
         rarity: "rare",
         description: "Ancient hieroglyphic writings on preserved papyrus",
-        dropRate: 0.001,
+        dropRate: 0.0003,
         revenueBonus: 0.005
       },
       {
@@ -112,7 +112,7 @@ export const ARTIFACT_COLLECTIONS: ArtifactCollection[] = [
         destinationId: "egypt",
         rarity: "uncommon",
         description: "Ornate jar used in mummification rituals",
-        dropRate: 0.002,
+        dropRate: 0.0008,
         revenueBonus: 0.005
       },
       {
@@ -121,7 +121,7 @@ export const ARTIFACT_COLLECTIONS: ArtifactCollection[] = [
         destinationId: "egypt",
         rarity: "common",
         description: "Simple tablet with early written records",
-        dropRate: 0.005,
+        dropRate: 0.002,
         revenueBonus: 0.005
       }
     ],
@@ -138,7 +138,7 @@ export const ARTIFACT_COLLECTIONS: ArtifactCollection[] = [
         destinationId: "medieval",
         rarity: "legendary",
         description: "Fragment of the legendary sword of kings",
-        dropRate: 0.0002,
+        dropRate: 0.00005,
         revenueBonus: 0.005
       },
       {
@@ -147,7 +147,7 @@ export const ARTIFACT_COLLECTIONS: ArtifactCollection[] = [
         destinationId: "medieval",
         rarity: "epic",
         description: "Piece of the sacred chalice",
-        dropRate: 0.0005,
+        dropRate: 0.0001,
         revenueBonus: 0.005
       },
       {
@@ -156,7 +156,7 @@ export const ARTIFACT_COLLECTIONS: ArtifactCollection[] = [
         destinationId: "medieval",
         rarity: "rare",
         description: "Royal seal ring of a noble knight",
-        dropRate: 0.001,
+        dropRate: 0.0003,
         revenueBonus: 0.005
       },
       {
@@ -165,7 +165,7 @@ export const ARTIFACT_COLLECTIONS: ArtifactCollection[] = [
         destinationId: "medieval",
         rarity: "uncommon",
         description: "Forged iron link from battle armor",
-        dropRate: 0.002,
+        dropRate: 0.0008,
         revenueBonus: 0.005
       },
       {
@@ -174,7 +174,7 @@ export const ARTIFACT_COLLECTIONS: ArtifactCollection[] = [
         destinationId: "medieval",
         rarity: "common",
         description: "Worn fragment of a soldier's shield",
-        dropRate: 0.005,
+        dropRate: 0.002,
         revenueBonus: 0.005
       }
     ],
@@ -191,7 +191,7 @@ export const ARTIFACT_COLLECTIONS: ArtifactCollection[] = [
         destinationId: "renaissance",
         rarity: "legendary",
         description: "Original drawing by the master himself",
-        dropRate: 0.0002,
+        dropRate: 0.00005,
         revenueBonus: 0.005
       },
       {
@@ -200,7 +200,7 @@ export const ARTIFACT_COLLECTIONS: ArtifactCollection[] = [
         destinationId: "renaissance",
         rarity: "epic",
         description: "Glass lens from the astronomer's telescope",
-        dropRate: 0.0005,
+        dropRate: 0.0001,
         revenueBonus: 0.005
       },
       {
@@ -209,7 +209,7 @@ export const ARTIFACT_COLLECTIONS: ArtifactCollection[] = [
         destinationId: "renaissance",
         rarity: "rare",
         description: "Currency from the banking dynasty",
-        dropRate: 0.001,
+        dropRate: 0.0003,
         revenueBonus: 0.005
       },
       {
@@ -218,7 +218,7 @@ export const ARTIFACT_COLLECTIONS: ArtifactCollection[] = [
         destinationId: "renaissance",
         rarity: "uncommon",
         description: "Well-used painting palette with original pigments",
-        dropRate: 0.002,
+        dropRate: 0.0008,
         revenueBonus: 0.005
       },
       {
@@ -227,7 +227,7 @@ export const ARTIFACT_COLLECTIONS: ArtifactCollection[] = [
         destinationId: "renaissance",
         rarity: "common",
         description: "Wooden block from early printing press",
-        dropRate: 0.005,
+        dropRate: 0.002,
         revenueBonus: 0.005
       }
     ],
@@ -244,7 +244,7 @@ export const ARTIFACT_COLLECTIONS: ArtifactCollection[] = [
         destinationId: "industrial",
         rarity: "legendary",
         description: "Original Watt governor from a steam engine",
-        dropRate: 0.0002,
+        dropRate: 0.00005,
         revenueBonus: 0.005
       },
       {
@@ -253,7 +253,7 @@ export const ARTIFACT_COLLECTIONS: ArtifactCollection[] = [
         destinationId: "industrial",
         rarity: "epic",
         description: "First successful incandescent prototype",
-        dropRate: 0.0005,
+        dropRate: 0.0001,
         revenueBonus: 0.005
       },
       {
@@ -262,7 +262,7 @@ export const ARTIFACT_COLLECTIONS: ArtifactCollection[] = [
         destinationId: "industrial",
         rarity: "rare",
         description: "Original plans for revolutionary machinery",
-        dropRate: 0.001,
+        dropRate: 0.0003,
         revenueBonus: 0.005
       },
       {
@@ -271,7 +271,7 @@ export const ARTIFACT_COLLECTIONS: ArtifactCollection[] = [
         destinationId: "industrial",
         rarity: "uncommon",
         description: "Precision gear from early machines",
-        dropRate: 0.002,
+        dropRate: 0.0008,
         revenueBonus: 0.005
       },
       {
@@ -280,7 +280,7 @@ export const ARTIFACT_COLLECTIONS: ArtifactCollection[] = [
         destinationId: "industrial",
         rarity: "common",
         description: "Fuel that powered the revolution",
-        dropRate: 0.005,
+        dropRate: 0.002,
         revenueBonus: 0.005
       }
     ],
@@ -297,7 +297,7 @@ export const ARTIFACT_COLLECTIONS: ArtifactCollection[] = [
         destinationId: "future",
         rarity: "legendary",
         description: "Stabilized quantum computing processor",
-        dropRate: 0.0002,
+        dropRate: 0.00005,
         revenueBonus: 0.005
       },
       {
@@ -306,7 +306,7 @@ export const ARTIFACT_COLLECTIONS: ArtifactCollection[] = [
         destinationId: "future",
         rarity: "epic",
         description: "Direct brain-computer interface prototype",
-        dropRate: 0.0005,
+        dropRate: 0.0001,
         revenueBonus: 0.005
       },
       {
@@ -315,7 +315,7 @@ export const ARTIFACT_COLLECTIONS: ArtifactCollection[] = [
         destinationId: "future",
         rarity: "rare",
         description: "Miniature fusion reactor",
-        dropRate: 0.001,
+        dropRate: 0.0003,
         revenueBonus: 0.005
       },
       {
@@ -324,7 +324,7 @@ export const ARTIFACT_COLLECTIONS: ArtifactCollection[] = [
         destinationId: "future",
         rarity: "uncommon",
         description: "3D hologram emitter device",
-        dropRate: 0.002,
+        dropRate: 0.0008,
         revenueBonus: 0.005
       },
       {
@@ -333,7 +333,7 @@ export const ARTIFACT_COLLECTIONS: ArtifactCollection[] = [
         destinationId: "future",
         rarity: "common",
         description: "Self-cleaning programmable textile",
-        dropRate: 0.005,
+        dropRate: 0.002,
         revenueBonus: 0.005
       }
     ],
