@@ -97,9 +97,8 @@ export function GameUI() {
           )}
           
           <div className="flex gap-2">
-            {isMobile ? (
-              <SettingsDialog />
-            ) : (
+            <SettingsDialog />
+            {!isMobile && (
               <>
                 <StatsPanel />
                 <Button

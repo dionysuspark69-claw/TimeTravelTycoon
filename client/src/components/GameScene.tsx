@@ -5,6 +5,7 @@ import { CharacterManager } from "./CharacterManager";
 import { Starfield } from "./Starfield";
 import { SpaceshipFleet } from "./SpaceshipFleet";
 import { Component, ErrorInfo, ReactNode } from "react";
+import { useIdleGame } from "@/lib/stores/useIdleGame";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -41,6 +42,22 @@ class WebGLErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryStat
 }
 
 function Scene() {
+  const timeMachineCount = useIdleGame(state => state.timeMachineCount);
+  
+  const timeMachines = [];
+  for (let i = 0; i < timeMachineCount; i++) {
+    const angle = (i / timeMachineCount) * Math.PI * 2;
+    const radius = timeMachineCount === 1 ? 0 : 4;
+    const x = Math.cos(angle) * radius;
+    const z = Math.sin(angle) * radius;
+    
+    timeMachines.push(
+      <group key={i} position={[x, 0, z]}>
+        <TimeMachine />
+      </group>
+    );
+  }
+  
   return (
     <>
       <Starfield />
@@ -54,7 +71,7 @@ function Scene() {
         <meshStandardMaterial color="#34495e" metalness={0.3} roughness={0.8} />
       </mesh>
       
-      <TimeMachine />
+      {timeMachines}
       
       <CharacterManager />
       

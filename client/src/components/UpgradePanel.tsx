@@ -72,7 +72,7 @@ export function UpgradePanel() {
       </div>
       
       {isExpanded && (
-        <div className="p-4 max-h-[40vh] overflow-y-auto">
+        <div className="p-4 max-h-[50vh] sm:max-h-[40vh] overflow-y-auto">
           <Tabs defaultValue="upgrades" className="w-full">
         <TabsList className="grid w-full grid-cols-7 bg-gray-900">
           <TabsTrigger value="upgrades" className="flex items-center gap-2">
