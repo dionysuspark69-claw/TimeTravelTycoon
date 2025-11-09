@@ -993,9 +993,11 @@ export const useIdleGame = create<IdleGameState>()(
     
     prestige: () => {
       const state = get();
-      if (state.totalEarned < 100000) return;
+      if (state.totalEarned < 50000000) return;
+      if (state.timeMachineLevel < 25) return;
+      if (state.timeMachineCount < 5) return;
       
-      const points = Math.floor(state.totalEarned / 50000);
+      const points = Math.max(1, Math.floor(state.totalEarned / 10000000));
       
       set({
         chronocoins: 0,

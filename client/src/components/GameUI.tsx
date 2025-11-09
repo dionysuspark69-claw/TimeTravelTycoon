@@ -19,6 +19,7 @@ export function GameUI() {
     timeMachineLevel,
     timeMachineCapacity,
     timeMachineSpeed,
+    timeMachineCount,
     customerGenerationRate,
     currentDestination,
     unlockedDestinations,
@@ -171,7 +172,7 @@ export function GameUI() {
           )}
         </div>
         
-        {totalEarned >= 100000 && (
+        {totalEarned >= 50000000 && timeMachineLevel >= 25 && timeMachineCount >= 5 && (
           <div className="pointer-events-auto">
             <Button
               onClick={prestige}

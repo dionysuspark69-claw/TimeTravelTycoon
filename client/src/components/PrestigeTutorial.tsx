@@ -13,19 +13,21 @@ import { Trophy, Sparkles, RefreshCcw } from "lucide-react";
 export function PrestigeTutorial() {
   const totalEarned = useIdleGame(state => state.totalEarned);
   const prestigeLevel = useIdleGame(state => state.prestigeLevel);
+  const timeMachineLevel = useIdleGame(state => state.timeMachineLevel);
+  const timeMachineCount = useIdleGame(state => state.timeMachineCount);
   const prestigeTutorialShown = useIdleGame(state => state.prestigeTutorialShown);
   const setPrestigeTutorialShown = useIdleGame(state => state.setPrestigeTutorialShown);
   const prestige = useIdleGame(state => state.prestige);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    if (!prestigeTutorialShown && totalEarned >= 100000 && prestigeLevel === 0) {
+    if (!prestigeTutorialShown && totalEarned >= 50000000 && timeMachineLevel >= 25 && timeMachineCount >= 5 && prestigeLevel === 0) {
       const timer = setTimeout(() => {
         setOpen(true);
       }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [totalEarned, prestigeLevel, prestigeTutorialShown]);
+  }, [totalEarned, timeMachineLevel, timeMachineCount, prestigeLevel, prestigeTutorialShown]);
 
   const handleDismiss = () => {
     setOpen(false);
