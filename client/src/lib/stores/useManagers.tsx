@@ -93,6 +93,294 @@ export const MANAGER_TYPES: Omit<Manager, "level">[] = [
         type: "passive"
       }
     ]
+  },
+  {
+    id: "timeline-optimizer",
+    name: "Timeline Optimizer",
+    description: "Optimizes the flow of customers across multiple timelines",
+    baseCost: 4000,
+    maxLevel: 30,
+    bonusType: "customerRate",
+    bonusPerLevel: 0.09,
+    color: "#9b59b6",
+    perks: [
+      {
+        level: 10,
+        name: "Multi-Timeline Recruitment",
+        description: "Customers arrive in groups of 3 instead of 1",
+        type: "passive"
+      },
+      {
+        level: 25,
+        name: "Timeline Convergence",
+        description: "Every 5 minutes, instantly gain 50 customers from parallel timelines",
+        type: "passive"
+      }
+    ]
+  },
+  {
+    id: "chrono-mechanic",
+    name: "Chrono-Mechanic",
+    description: "Maintains and upgrades your time machine's temporal engines",
+    baseCost: 6000,
+    maxLevel: 30,
+    bonusType: "speed",
+    bonusPerLevel: 0.08,
+    color: "#1abc9c",
+    perks: [
+      {
+        level: 10,
+        name: "Emergency Repairs",
+        description: "25% of trips complete 2x faster due to optimized machinery",
+        type: "passive"
+      },
+      {
+        level: 25,
+        name: "Temporal Shortcut",
+        description: "Active ability: Next 20 trips are instant (8min cooldown)",
+        type: "active"
+      }
+    ]
+  },
+  {
+    id: "temporal-marketing",
+    name: "Temporal Marketing Expert",
+    description: "Advertises your time travel services across all eras",
+    baseCost: 8000,
+    maxLevel: 30,
+    bonusType: "customerRate",
+    bonusPerLevel: 0.11,
+    color: "#e74c3c",
+    perks: [
+      {
+        level: 10,
+        name: "Viral Campaign",
+        description: "Every customer has a 20% chance to bring a friend",
+        type: "passive"
+      },
+      {
+        level: 25,
+        name: "Celebrity Endorsement",
+        description: "Historical figures boost customer rate by 50% permanently",
+        type: "passive"
+      }
+    ]
+  },
+  {
+    id: "paradox-handler",
+    name: "Paradox Handler",
+    description: "Resolves temporal paradoxes to prevent travel delays",
+    baseCost: 10000,
+    maxLevel: 30,
+    bonusType: "speed",
+    bonusPerLevel: 0.10,
+    color: "#34495e",
+    perks: [
+      {
+        level: 10,
+        name: "Paradox Prevention",
+        description: "Eliminates 30% of random travel delays",
+        type: "passive"
+      },
+      {
+        level: 25,
+        name: "Reality Anchor",
+        description: "All trips ignore time paradoxes, maintaining constant maximum speed",
+        type: "passive"
+      }
+    ]
+  },
+  {
+    id: "time-banker",
+    name: "Time Banker",
+    description: "Invests your ChronoCoins in temporal stock markets",
+    baseCost: 15000,
+    maxLevel: 30,
+    bonusType: "revenue",
+    bonusPerLevel: 0.13,
+    color: "#16a085",
+    perks: [
+      {
+        level: 10,
+        name: "Interest Accrual",
+        description: "Every trip earns an additional 15% based on current coin total",
+        type: "passive"
+      },
+      {
+        level: 25,
+        name: "Future Dividends",
+        description: "10% chance any trip pays out 5x revenue from future investments",
+        type: "passive"
+      }
+    ]
+  },
+  {
+    id: "dimension-scout",
+    name: "Dimension Scout",
+    description: "Finds customers from alternate dimensions and realities",
+    baseCost: 18000,
+    maxLevel: 30,
+    bonusType: "customerRate",
+    bonusPerLevel: 0.10,
+    color: "#8e44ad",
+    perks: [
+      {
+        level: 10,
+        name: "Dimensional Portal",
+        description: "Opens a portal every 90 seconds bringing 5 extra-dimensional customers",
+        type: "passive"
+      },
+      {
+        level: 25,
+        name: "Multiverse Access",
+        description: "Customer rate permanently increases by 100%",
+        type: "passive"
+      }
+    ]
+  },
+  {
+    id: "warp-engineer",
+    name: "Warp Engineer",
+    description: "Creates wormhole shortcuts for faster time travel",
+    baseCost: 22000,
+    maxLevel: 30,
+    bonusType: "speed",
+    bonusPerLevel: 0.09,
+    color: "#2980b9",
+    perks: [
+      {
+        level: 10,
+        name: "Wormhole Network",
+        description: "40% of trips use wormholes and complete 3x faster",
+        type: "passive"
+      },
+      {
+        level: 25,
+        name: "Stable Wormhole",
+        description: "Active ability: All trips take 0.1 seconds for 15s (10min cooldown)",
+        type: "active"
+      }
+    ]
+  },
+  {
+    id: "temporal-economist",
+    name: "Temporal Economist",
+    description: "Optimizes pricing strategies across different time periods",
+    baseCost: 28000,
+    maxLevel: 30,
+    bonusType: "revenue",
+    bonusPerLevel: 0.14,
+    color: "#d35400",
+    perks: [
+      {
+        level: 10,
+        name: "Dynamic Pricing",
+        description: "Revenue increases by 1% for every 10 consecutive trips",
+        type: "passive"
+      },
+      {
+        level: 25,
+        name: "Market Manipulation",
+        description: "Can predict future prices, base revenue permanently increases by 75%",
+        type: "passive"
+      }
+    ]
+  },
+  {
+    id: "chrono-influencer",
+    name: "Chrono-Influencer",
+    description: "A social media star across all time periods",
+    baseCost: 35000,
+    maxLevel: 30,
+    bonusType: "customerRate",
+    bonusPerLevel: 0.12,
+    color: "#e91e63",
+    perks: [
+      {
+        level: 10,
+        name: "Trending Timeline",
+        description: "Every 2 minutes, gain customers equal to 10% of total trips completed",
+        type: "passive"
+      },
+      {
+        level: 25,
+        name: "Viral Moment",
+        description: "Active ability: Instantly gain 200 customers (12min cooldown)",
+        type: "active"
+      }
+    ]
+  },
+  {
+    id: "quantum-accelerator",
+    name: "Quantum Accelerator",
+    description: "Uses quantum mechanics to accelerate time machine to impossible speeds",
+    baseCost: 40000,
+    maxLevel: 30,
+    bonusType: "speed",
+    bonusPerLevel: 0.11,
+    color: "#00bcd4",
+    perks: [
+      {
+        level: 10,
+        name: "Quantum Tunneling",
+        description: "20% of trips phase through time barriers instantly",
+        type: "passive"
+      },
+      {
+        level: 25,
+        name: "Superposition Travel",
+        description: "Time machine exists in multiple states, all trips 50% faster permanently",
+        type: "passive"
+      }
+    ]
+  },
+  {
+    id: "future-trader",
+    name: "Future Trader",
+    description: "Trades commodities and stocks from the future for massive profits",
+    baseCost: 45000,
+    maxLevel: 30,
+    bonusType: "revenue",
+    bonusPerLevel: 0.12,
+    color: "#ff9800",
+    perks: [
+      {
+        level: 10,
+        name: "Insider Trading",
+        description: "Knowing the future, revenue increases by 25% permanently",
+        type: "passive"
+      },
+      {
+        level: 25,
+        name: "Cryptocurrency Boom",
+        description: "15% chance any trip discovers a crypto jackpot worth 10x revenue",
+        type: "passive"
+      }
+    ]
+  },
+  {
+    id: "chrono-investor",
+    name: "Chrono-Investor",
+    description: "Invests in companies centuries before they become profitable",
+    baseCost: 50000,
+    maxLevel: 30,
+    bonusType: "revenue",
+    bonusPerLevel: 0.15,
+    color: "#4caf50",
+    perks: [
+      {
+        level: 10,
+        name: "Long-Term Portfolio",
+        description: "Each trip adds 0.5% to a growing revenue multiplier (stacks infinitely)",
+        type: "passive"
+      },
+      {
+        level: 25,
+        name: "Historical Monopoly",
+        description: "Owning key historical businesses doubles all revenue permanently",
+        type: "passive"
+      }
+    ]
   }
 ];
 

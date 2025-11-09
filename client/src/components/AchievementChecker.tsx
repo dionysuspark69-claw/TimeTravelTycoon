@@ -9,7 +9,11 @@ export function AchievementChecker() {
     totalEarned,
     timeMachineLevel,
     unlockedDestinations,
-    prestigeLevel
+    prestigeLevel,
+    timeMachineCount,
+    totalTripsCompleted,
+    totalManagerUpgrades,
+    chronocoins
   } = useIdleGame();
   
   const { checkAchievements } = useAchievements();
@@ -22,7 +26,11 @@ export function AchievementChecker() {
       totalEarned,
       timeMachineLevel,
       unlockedDestinationsCount: unlockedDestinations.length,
-      prestigeLevel
+      prestigeLevel,
+      timeMachineCount,
+      totalTripsCompleted,
+      totalManagerUpgrades,
+      currentCoins: chronocoins
     };
     
     const newAchievements = checkAchievements(stats);
@@ -30,7 +38,7 @@ export function AchievementChecker() {
     if (newAchievements.length > 0) {
       setQueue(prev => [...prev, ...newAchievements]);
     }
-  }, [totalCustomersServed, totalEarned, timeMachineLevel, unlockedDestinations.length, prestigeLevel]);
+  }, [totalCustomersServed, totalEarned, timeMachineLevel, unlockedDestinations.length, prestigeLevel, timeMachineCount, totalTripsCompleted, totalManagerUpgrades, chronocoins]);
   
   useEffect(() => {
     if (queue.length > 0 && !currentNotification) {
