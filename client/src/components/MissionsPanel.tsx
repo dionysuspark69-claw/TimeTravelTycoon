@@ -4,6 +4,7 @@ import { Card } from "./ui/card";
 import { Progress } from "./ui/progress";
 import { CheckCircle2 } from "lucide-react";
 import { useEffect } from "react";
+import { formatChronoValue } from "@/lib/utils";
 
 export function MissionsPanel() {
   const { missions, initializeMissions } = useMissions();
@@ -12,12 +13,6 @@ export function MissionsPanel() {
   useEffect(() => {
     initializeMissions();
   }, [initializeMissions]);
-  
-  const formatNumber = (num: number) => {
-    if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
-    if (num >= 1000) return (num / 1000).toFixed(1) + "K";
-    return Math.floor(num).toString();
-  };
   
   return (
     <div className="space-y-2 mt-4">
@@ -46,7 +41,7 @@ export function MissionsPanel() {
                   <div>
                     <div className="text-white font-semibold">{mission.description}</div>
                     <div className="text-gray-400 text-xs">
-                      Progress: {formatNumber(mission.progress)} / {formatNumber(mission.target)}
+                      Progress: {formatChronoValue(mission.progress)} / {formatChronoValue(mission.target)}
                     </div>
                   </div>
                 </div>
@@ -54,7 +49,7 @@ export function MissionsPanel() {
                 <div className="flex items-center gap-2">
                   {isComplete && <CheckCircle2 className="w-5 h-5 text-green-400" />}
                   <div className="text-right">
-                    <div className="text-cyan-400 font-semibold">+{formatNumber(mission.reward)}</div>
+                    <div className="text-cyan-400 font-semibold">+{formatChronoValue(mission.reward)}</div>
                     <div className="text-gray-500 text-xs">ChronoCoins</div>
                   </div>
                 </div>

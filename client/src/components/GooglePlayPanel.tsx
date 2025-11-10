@@ -6,6 +6,7 @@ import { useGooglePlay } from "@/lib/stores/useGooglePlay";
 import { useIdleGame } from "@/lib/stores/useIdleGame";
 import { useState, useEffect } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { formatChronoValue } from "@/lib/utils";
 
 export function GooglePlayPanel() {
   const { 
@@ -81,13 +82,6 @@ export function GooglePlayPanel() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const formatNumber = (num: number) => {
-    if (num >= 1000000000) return (num / 1000000000).toFixed(1) + "B";
-    if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
-    if (num >= 1000) return (num / 1000).toFixed(1) + "K";
-    return Math.floor(num).toString();
   };
 
   return (
@@ -199,7 +193,7 @@ export function GooglePlayPanel() {
                           </div>
                         </div>
                         <div className="text-green-400 font-bold">
-                          {formatNumber(entry.score)}
+                          {formatChronoValue(entry.score)}
                         </div>
                       </div>
                     ))

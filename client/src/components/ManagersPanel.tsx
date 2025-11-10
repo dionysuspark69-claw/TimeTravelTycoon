@@ -4,6 +4,7 @@ import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { ArrowUp, Users, Zap, DollarSign, Star, Crown, Sparkles, Bolt } from "lucide-react";
 import { useState, useEffect } from "react";
+import { formatChronoValue } from "@/lib/utils";
 
 export function ManagersPanel() {
   const { chronocoins, spendChronocoins } = useIdleGame();
@@ -31,12 +32,6 @@ export function ManagersPanel() {
     
     return () => clearInterval(interval);
   }, [overclockEndsAt, overclockCooldownEndsAt]);
-  
-  const formatNumber = (num: number) => {
-    if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
-    if (num >= 1000) return (num / 1000).toFixed(1) + "K";
-    return Math.floor(num).toString();
-  };
   
   const getIcon = (bonusType: string) => {
     switch (bonusType) {
@@ -152,7 +147,7 @@ export function ManagersPanel() {
                     className="bg-cyan-600 hover:bg-cyan-700 min-h-[44px]"
                   >
                     <ArrowUp className="w-4 h-4 mr-1" />
-                    {formatNumber(cost)}
+                    {formatChronoValue(cost)}
                   </Button>
                 ) : (
                   <div className="text-yellow-400 text-sm font-semibold">MAX</div>

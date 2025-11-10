@@ -3,6 +3,7 @@ import { useIdleGame } from "@/lib/stores/useIdleGame";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { Clock, Coins } from "lucide-react";
+import { formatChronoValue } from "@/lib/utils";
 
 export function OfflineEarningsDialog() {
   const [show, setShow] = useState(false);
@@ -22,12 +23,6 @@ export function OfflineEarningsDialog() {
     setShow(false);
   };
   
-  const formatNumber = (num: number) => {
-    if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
-    if (num >= 1000) return (num / 1000).toFixed(1) + "K";
-    return Math.floor(num).toString();
-  };
-  
   return (
     <Dialog open={show} onOpenChange={setShow}>
       <DialogContent className="bg-gradient-to-br from-gray-900 to-blue-900 border-cyan-500/50">
@@ -45,7 +40,7 @@ export function OfflineEarningsDialog() {
           <div className="text-gray-400 text-sm mb-2">You earned</div>
           <div className="text-5xl font-bold text-yellow-400 flex items-center justify-center gap-3">
             <Coins className="w-12 h-12" />
-            {formatNumber(earnings)}
+            {formatChronoValue(earnings)}
           </div>
           <div className="text-gray-400 text-sm mt-2">ChronoCoins</div>
         </div>

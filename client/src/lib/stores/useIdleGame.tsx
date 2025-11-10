@@ -19,13 +19,40 @@ export interface TimePeriod {
   cons: string[];
 }
 
+/**
+ * Computes the unlock cost for a destination based on its index.
+ * 
+ * Scaling Strategy:
+ * - First 6 destinations (indices 0-5): Manual costs for smooth onboarding [0, 500, 1500, 2000, 3500, 5000]
+ * - Remaining destinations (indices 6+): Exponential scaling with base 20,000 and exponent 1.22
+ * - Costs are rounded to nearest 5,000 for clean numbers
+ * 
+ * This hybrid approach preserves the early game experience while making
+ * mid/late game destinations ~1.6x more expensive to extend progression.
+ */
+function computeUnlockCost(index: number): number {
+  // First 6 destinations (0-5) keep their current costs
+  const manualCosts = [0, 500, 1500, 2000, 3500, 5000];
+  if (index < 6) {
+    return manualCosts[index];
+  }
+  
+  // Remaining destinations use exponential scaling
+  const baseCost = 20000;
+  const exponent = 1.22;
+  const cost = baseCost * Math.pow(exponent, index - 6);
+  
+  // Round to nearest 5000
+  return Math.round(cost / 5000) * 5000;
+}
+
 export const TIME_PERIODS: TimePeriod[] = [
   {
     id: "dinosaur",
     name: "Dinosaur Era",
     era: "65 Million BC",
     baseFare: 10,
-    unlockCost: 0,
+    unlockCost: computeUnlockCost(0),
     color: "#2ecc71",
     description: "Watch the mighty dinosaurs roam!",
     speedModifier: 1.0,
@@ -39,7 +66,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Ancient Egypt",
     era: "2500 BC",
     baseFare: 25,
-    unlockCost: 500,
+    unlockCost: computeUnlockCost(1),
     color: "#f39c12",
     description: "Visit the pyramids being built!",
     speedModifier: 0.8,
@@ -53,7 +80,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Ancient Rome",
     era: "100 AD",
     baseFare: 40,
-    unlockCost: 1500,
+    unlockCost: computeUnlockCost(2),
     color: "#c0392b",
     description: "Witness the glory of the Roman Empire!",
     speedModifier: 1.1,
@@ -67,7 +94,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Medieval Times",
     era: "1200 AD",
     baseFare: 50,
-    unlockCost: 2000,
+    unlockCost: computeUnlockCost(3),
     color: "#9b59b6",
     description: "Experience knights and castles!",
     speedModifier: 1.0,
@@ -81,7 +108,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Viking Age",
     era: "900 AD",
     baseFare: 60,
-    unlockCost: 3500,
+    unlockCost: computeUnlockCost(4),
     color: "#34495e",
     description: "Sail with legendary Norse warriors!",
     speedModifier: 0.9,
@@ -95,7 +122,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Renaissance",
     era: "1500 AD",
     baseFare: 75,
-    unlockCost: 5000,
+    unlockCost: computeUnlockCost(5),
     color: "#e67e22",
     description: "Witness the rebirth of art and science!",
     speedModifier: 1.2,
@@ -109,7 +136,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Industrial Revolution",
     era: "1850 AD",
     baseFare: 100,
-    unlockCost: 10000,
+    unlockCost: computeUnlockCost(6),
     color: "#95a5a6",
     description: "See the age of steam and steel!",
     speedModifier: 1.5,
@@ -123,7 +150,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Wild West",
     era: "1880 AD",
     baseFare: 125,
-    unlockCost: 20000,
+    unlockCost: computeUnlockCost(7),
     color: "#e74c3c",
     description: "Live the cowboy adventure!",
     speedModifier: 0.7,
@@ -137,7 +164,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Roaring Twenties",
     era: "1925 AD",
     baseFare: 175,
-    unlockCost: 35000,
+    unlockCost: computeUnlockCost(8),
     color: "#f1c40f",
     description: "Dance through the jazz age!",
     speedModifier: 1.3,
@@ -151,7 +178,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Space Age",
     era: "1969 AD",
     baseFare: 225,
-    unlockCost: 50000,
+    unlockCost: computeUnlockCost(9),
     color: "#3498db",
     description: "Join the race to the moon!",
     speedModifier: 1.8,
@@ -165,7 +192,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Future City",
     era: "2500 AD",
     baseFare: 300,
-    unlockCost: 75000,
+    unlockCost: computeUnlockCost(10),
     color: "#1abc9c",
     description: "See the world of tomorrow!",
     speedModifier: 2.0,
@@ -179,7 +206,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Cyberpunk Metropolis",
     era: "2077 AD",
     baseFare: 350,
-    unlockCost: 100000,
+    unlockCost: computeUnlockCost(11),
     color: "#e91e63",
     description: "Neon-lit streets and corporate intrigue!",
     speedModifier: 1.6,
@@ -193,7 +220,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Far Future",
     era: "5000 AD",
     baseFare: 500,
-    unlockCost: 150000,
+    unlockCost: computeUnlockCost(12),
     color: "#9b59b6",
     description: "Explore the distant future!",
     speedModifier: 0.5,
@@ -207,7 +234,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Triassic Period",
     era: "230 Million BC",
     baseFare: 550,
-    unlockCost: 200000,
+    unlockCost: computeUnlockCost(13),
     color: "#8B4513",
     description: "Dawn of the dinosaurs!",
     speedModifier: 0.9,
@@ -221,7 +248,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Cambrian Explosion",
     era: "540 Million BC",
     baseFare: 600,
-    unlockCost: 250000,
+    unlockCost: computeUnlockCost(14),
     color: "#20B2AA",
     description: "Witness life's grand diversity burst!",
     speedModifier: 0.7,
@@ -235,7 +262,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Ice Age",
     era: "12,000 BC",
     baseFare: 650,
-    unlockCost: 300000,
+    unlockCost: computeUnlockCost(15),
     color: "#B0E0E6",
     description: "Brave the frozen tundra!",
     speedModifier: 0.6,
@@ -249,7 +276,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Stone Age",
     era: "10,000 BC",
     baseFare: 700,
-    unlockCost: 350000,
+    unlockCost: computeUnlockCost(16),
     color: "#A0522D",
     description: "Experience humanity's first steps!",
     speedModifier: 0.8,
@@ -263,7 +290,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Bronze Age",
     era: "3000 BC",
     baseFare: 750,
-    unlockCost: 400000,
+    unlockCost: computeUnlockCost(17),
     color: "#CD7F32",
     description: "See the birth of civilization!",
     speedModifier: 1.0,
@@ -277,7 +304,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Ancient Mesopotamia",
     era: "3500 BC",
     baseFare: 800,
-    unlockCost: 450000,
+    unlockCost: computeUnlockCost(18),
     color: "#DAA520",
     description: "Visit the cradle of civilization!",
     speedModifier: 0.9,
@@ -291,7 +318,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Ancient Greece",
     era: "500 BC",
     baseFare: 850,
-    unlockCost: 500000,
+    unlockCost: computeUnlockCost(19),
     color: "#4169E1",
     description: "Walk with philosophers and heroes!",
     speedModifier: 1.1,
@@ -305,7 +332,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Ancient China",
     era: "200 BC",
     baseFare: 900,
-    unlockCost: 550000,
+    unlockCost: computeUnlockCost(20),
     color: "#DC143C",
     description: "Discover the Great Wall and Silk Road!",
     speedModifier: 1.2,
@@ -319,7 +346,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Mayan Empire",
     era: "600 AD",
     baseFare: 950,
-    unlockCost: 600000,
+    unlockCost: computeUnlockCost(21),
     color: "#228B22",
     description: "Explore mysterious jungle temples!",
     speedModifier: 0.8,
@@ -333,7 +360,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Aztec Empire",
     era: "1400 AD",
     baseFare: 1000,
-    unlockCost: 650000,
+    unlockCost: computeUnlockCost(22),
     color: "#FF4500",
     description: "Witness the power of Tenochtitlan!",
     speedModifier: 0.9,
@@ -347,7 +374,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Inca Empire",
     era: "1450 AD",
     baseFare: 1100,
-    unlockCost: 700000,
+    unlockCost: computeUnlockCost(23),
     color: "#FFD700",
     description: "Trek to Machu Picchu's heights!",
     speedModifier: 0.7,
@@ -361,7 +388,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Feudal Japan",
     era: "1200 AD",
     baseFare: 1200,
-    unlockCost: 750000,
+    unlockCost: computeUnlockCost(24),
     color: "#E75480",
     description: "Train with samurai warriors!",
     speedModifier: 1.1,
@@ -375,7 +402,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Mongol Empire",
     era: "1250 AD",
     baseFare: 1300,
-    unlockCost: 800000,
+    unlockCost: computeUnlockCost(25),
     color: "#8B0000",
     description: "Ride with the great Khan!",
     speedModifier: 1.5,
@@ -389,7 +416,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Age of Discovery",
     era: "1492 AD",
     baseFare: 1400,
-    unlockCost: 850000,
+    unlockCost: computeUnlockCost(26),
     color: "#4682B4",
     description: "Sail to new worlds!",
     speedModifier: 1.3,
@@ -403,7 +430,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "French Revolution",
     era: "1789 AD",
     baseFare: 1500,
-    unlockCost: 900000,
+    unlockCost: computeUnlockCost(27),
     color: "#0055A4",
     description: "Liberty, equality, fraternity!",
     speedModifier: 0.9,
@@ -417,7 +444,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "American Revolution",
     era: "1776 AD",
     baseFare: 1600,
-    unlockCost: 950000,
+    unlockCost: computeUnlockCost(28),
     color: "#B22234",
     description: "Witness the birth of a nation!",
     speedModifier: 1.0,
@@ -431,7 +458,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Victorian Era",
     era: "1860 AD",
     baseFare: 1700,
-    unlockCost: 1000000,
+    unlockCost: computeUnlockCost(29),
     color: "#800020",
     description: "Experience British elegance!",
     speedModifier: 1.4,
@@ -445,7 +472,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "World War I",
     era: "1918 AD",
     baseFare: 1800,
-    unlockCost: 1100000,
+    unlockCost: computeUnlockCost(30),
     color: "#556B2F",
     description: "The war to end all wars!",
     speedModifier: 0.8,
@@ -459,7 +486,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "World War II",
     era: "1945 AD",
     baseFare: 1900,
-    unlockCost: 1200000,
+    unlockCost: computeUnlockCost(31),
     color: "#2F4F4F",
     description: "History's greatest conflict!",
     speedModifier: 0.7,
@@ -473,7 +500,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Moon Landing",
     era: "1969 AD",
     baseFare: 2000,
-    unlockCost: 1300000,
+    unlockCost: computeUnlockCost(32),
     color: "#C0C0C0",
     description: "One small step for man!",
     speedModifier: 1.6,
@@ -487,7 +514,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Digital Age",
     era: "2000 AD",
     baseFare: 2100,
-    unlockCost: 1400000,
+    unlockCost: computeUnlockCost(33),
     color: "#00CED1",
     description: "The dawn of the internet!",
     speedModifier: 1.7,
@@ -501,7 +528,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Atlantis",
     era: "Mythical",
     baseFare: 2200,
-    unlockCost: 1500000,
+    unlockCost: computeUnlockCost(34),
     color: "#00BFFF",
     description: "Discover the lost city beneath the waves!",
     speedModifier: 0.8,
@@ -515,7 +542,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Camelot",
     era: "Mythical",
     baseFare: 2300,
-    unlockCost: 1600000,
+    unlockCost: computeUnlockCost(35),
     color: "#FFD700",
     description: "Join King Arthur's round table!",
     speedModifier: 1.0,
@@ -529,7 +556,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Mount Olympus",
     era: "Mythical",
     baseFare: 2400,
-    unlockCost: 1700000,
+    unlockCost: computeUnlockCost(36),
     color: "#FFFACD",
     description: "Mingle with the Greek gods!",
     speedModifier: 1.2,
@@ -543,7 +570,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Steampunk Era",
     era: "Alternate 1890s",
     baseFare: 2500,
-    unlockCost: 1800000,
+    unlockCost: computeUnlockCost(37),
     color: "#B87333",
     description: "Brass, steam, and Victorian sci-fi!",
     speedModifier: 1.3,
@@ -557,7 +584,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Dieselpunk Era",
     era: "Alternate 1940s",
     baseFare: 2600,
-    unlockCost: 2000000,
+    unlockCost: computeUnlockCost(38),
     color: "#696969",
     description: "Diesel engines and art deco!",
     speedModifier: 1.4,
@@ -571,7 +598,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Post-Apocalypse",
     era: "2150 AD",
     baseFare: 2700,
-    unlockCost: 2200000,
+    unlockCost: computeUnlockCost(39),
     color: "#8B4726",
     description: "Survive the wasteland!",
     speedModifier: 0.6,
@@ -585,7 +612,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Mars Colony",
     era: "2250 AD",
     baseFare: 2800,
-    unlockCost: 2400000,
+    unlockCost: computeUnlockCost(40),
     color: "#CD5C5C",
     description: "Red planet pioneers!",
     speedModifier: 1.5,
@@ -599,7 +626,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Asteroid Belt",
     era: "2300 AD",
     baseFare: 2900,
-    unlockCost: 2600000,
+    unlockCost: computeUnlockCost(41),
     color: "#778899",
     description: "Mine the cosmic frontier!",
     speedModifier: 1.4,
@@ -613,7 +640,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Jupiter Station",
     era: "2400 AD",
     baseFare: 3000,
-    unlockCost: 2800000,
+    unlockCost: computeUnlockCost(42),
     color: "#DEB887",
     description: "Orbit the gas giant!",
     speedModifier: 1.6,
@@ -627,7 +654,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Interstellar Age",
     era: "3000 AD",
     baseFare: 3200,
-    unlockCost: 3000000,
+    unlockCost: computeUnlockCost(43),
     color: "#191970",
     description: "Cross the stars!",
     speedModifier: 1.8,
@@ -641,7 +668,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Galactic Empire",
     era: "4000 AD",
     baseFare: 3400,
-    unlockCost: 3500000,
+    unlockCost: computeUnlockCost(44),
     color: "#4B0082",
     description: "Rule the galaxy!",
     speedModifier: 1.9,
@@ -655,7 +682,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "The Singularity",
     era: "6000 AD",
     baseFare: 3600,
-    unlockCost: 4000000,
+    unlockCost: computeUnlockCost(45),
     color: "#FF00FF",
     description: "Transcend humanity!",
     speedModifier: 0.9,
@@ -669,7 +696,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Post-Scarcity",
     era: "7500 AD",
     baseFare: 3800,
-    unlockCost: 5000000,
+    unlockCost: computeUnlockCost(46),
     color: "#7FFFD4",
     description: "Unlimited abundance!",
     speedModifier: 2.0,
@@ -683,7 +710,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Time Loop Nexus",
     era: "10,000 AD",
     baseFare: 4000,
-    unlockCost: 6000000,
+    unlockCost: computeUnlockCost(47),
     color: "#00FF7F",
     description: "Stuck in infinite recursion!",
     speedModifier: 0.5,
@@ -697,7 +724,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Multiversal Hub",
     era: "100,000 AD",
     baseFare: 4500,
-    unlockCost: 8000000,
+    unlockCost: computeUnlockCost(48),
     color: "#9400D3",
     description: "Where all realities converge!",
     speedModifier: 1.5,
@@ -711,7 +738,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     name: "Temporal Singularity",
     era: "∞",
     baseFare: 5000,
-    unlockCost: 10000000,
+    unlockCost: computeUnlockCost(49),
     color: "#FF1493",
     description: "Beyond time and space!",
     speedModifier: 1.0,
@@ -779,11 +806,14 @@ interface IdleGameState {
   addChronocoins: (amount: number) => void;
   spendChronocoins: (amount: number) => boolean;
   
-  upgradeTimeMachine: () => boolean;
-  upgradeCapacity: () => boolean;
-  upgradeSpeed: () => boolean;
-  upgradeCustomerRate: () => boolean;
-  buyTimeMachine: () => boolean;
+  calculateBulkCost: (baseCost: number, multiplier: number, currentLevel: number, quantity: number) => number;
+  computeMaxAffordable: (baseCost: number, multiplier: number, currentLevel: number, availableFunds: number) => number;
+  
+  upgradeTimeMachine: (quantity?: number) => boolean;
+  upgradeCapacity: (quantity?: number) => boolean;
+  upgradeSpeed: (quantity?: number) => boolean;
+  upgradeCustomerRate: (quantity?: number) => boolean;
+  buyTimeMachine: (quantity?: number) => boolean;
   
   unlockDestination: (destinationId: string) => boolean;
   setDestination: (destinationId: string) => void;
@@ -802,11 +832,11 @@ interface IdleGameState {
   
   update: (deltaTime: number, managerBonuses?: {customerRate: number, speed: number, revenue: number}, managerPerks?: {hasVIP: boolean, hasSlipstream: boolean, hasTimeShare: boolean, hasTemporalBeacon: boolean}) => void;
   
-  getTimeMachineUpgradeCost: () => number;
-  getCapacityUpgradeCost: () => number;
-  getSpeedUpgradeCost: () => number;
-  getCustomerRateUpgradeCost: () => number;
-  getTimeMachineBuyCost: () => number;
+  getTimeMachineUpgradeCost: (quantity?: number) => number;
+  getCapacityUpgradeCost: (quantity?: number) => number;
+  getSpeedUpgradeCost: (quantity?: number) => number;
+  getCustomerRateUpgradeCost: (quantity?: number) => number;
+  getTimeMachineBuyCost: (quantity?: number) => number;
   
   getRevenueMultiplier: (managerBonus?: number) => number;
   getSpeedMultiplier: (managerBonus?: number) => number;
@@ -871,76 +901,113 @@ export const useIdleGame = create<IdleGameState>()(
       return false;
     },
     
-    getTimeMachineUpgradeCost: () => {
-      const state = get();
-      return Math.floor(100 * Math.pow(1.7, state.timeMachineLevel - 1));
+    calculateBulkCost: (baseCost: number, multiplier: number, currentLevel: number, quantity: number) => {
+      if (quantity === 1) {
+        return Math.floor(baseCost * Math.pow(multiplier, currentLevel - 1));
+      }
+      const firstCost = baseCost * Math.pow(multiplier, currentLevel - 1);
+      const sum = firstCost * (Math.pow(multiplier, quantity) - 1) / (multiplier - 1);
+      return Math.round(sum);
     },
     
-    getCapacityUpgradeCost: () => {
+    computeMaxAffordable: (baseCost: number, multiplier: number, currentLevel: number, availableFunds: number) => {
+      if (availableFunds < baseCost * Math.pow(multiplier, currentLevel - 1)) {
+        return 0;
+      }
+      
+      let lower = 1;
+      let upper = 2;
+      
       const state = get();
-      return Math.floor(50 * Math.pow(1.6, state.timeMachineCapacity - 1));
+      while (state.calculateBulkCost(baseCost, multiplier, currentLevel, upper) <= availableFunds) {
+        lower = upper;
+        upper *= 2;
+        if (upper > 1000) break;
+      }
+      
+      while (lower < upper - 1) {
+        const mid = Math.floor((lower + upper) / 2);
+        const cost = state.calculateBulkCost(baseCost, multiplier, currentLevel, mid);
+        if (cost <= availableFunds) {
+          lower = mid;
+        } else {
+          upper = mid;
+        }
+      }
+      
+      return lower;
     },
     
-    getSpeedUpgradeCost: () => {
+    getTimeMachineUpgradeCost: (quantity: number = 1) => {
       const state = get();
-      return Math.floor(75 * Math.pow(1.65, state.timeMachineSpeed - 1));
+      return state.calculateBulkCost(100, 1.7, state.timeMachineLevel, quantity);
     },
     
-    getCustomerRateUpgradeCost: () => {
+    getCapacityUpgradeCost: (quantity: number = 1) => {
       const state = get();
-      return Math.floor(200 * Math.pow(1.8, state.customerGenerationRate - 1));
+      return state.calculateBulkCost(50, 1.6, state.timeMachineCapacity, quantity);
     },
     
-    getTimeMachineBuyCost: () => {
+    getSpeedUpgradeCost: (quantity: number = 1) => {
       const state = get();
-      return Math.floor(10000 * Math.pow(3, state.timeMachineCount - 1));
+      return state.calculateBulkCost(75, 1.65, state.timeMachineSpeed, quantity);
     },
     
-    upgradeTimeMachine: () => {
+    getCustomerRateUpgradeCost: (quantity: number = 1) => {
       const state = get();
-      const cost = state.getTimeMachineUpgradeCost();
+      return state.calculateBulkCost(200, 1.8, state.customerGenerationRate, quantity);
+    },
+    
+    getTimeMachineBuyCost: (quantity: number = 1) => {
+      const state = get();
+      return state.calculateBulkCost(10000, 3, state.timeMachineCount, quantity);
+    },
+    
+    upgradeTimeMachine: (quantity: number = 1) => {
+      const state = get();
+      const cost = state.getTimeMachineUpgradeCost(quantity);
       if (state.spendChronocoins(cost)) {
-        set({ timeMachineLevel: state.timeMachineLevel + 1 });
+        set({ timeMachineLevel: state.timeMachineLevel + quantity });
         return true;
       }
       return false;
     },
     
-    upgradeCapacity: () => {
+    upgradeCapacity: (quantity: number = 1) => {
       const state = get();
-      const cost = state.getCapacityUpgradeCost();
+      const cost = state.getCapacityUpgradeCost(quantity);
       if (state.spendChronocoins(cost)) {
-        set({ timeMachineCapacity: state.timeMachineCapacity + 1 });
+        set({ timeMachineCapacity: state.timeMachineCapacity + quantity });
         return true;
       }
       return false;
     },
     
-    upgradeSpeed: () => {
+    upgradeSpeed: (quantity: number = 1) => {
       const state = get();
-      const cost = state.getSpeedUpgradeCost();
+      const cost = state.getSpeedUpgradeCost(quantity);
       if (state.spendChronocoins(cost)) {
-        set({ timeMachineSpeed: state.timeMachineSpeed + 1 });
+        set({ timeMachineSpeed: state.timeMachineSpeed + quantity });
         return true;
       }
       return false;
     },
     
-    upgradeCustomerRate: () => {
+    upgradeCustomerRate: (quantity: number = 1) => {
       const state = get();
-      const cost = state.getCustomerRateUpgradeCost();
+      const cost = state.getCustomerRateUpgradeCost(quantity);
       if (state.spendChronocoins(cost)) {
-        set({ customerGenerationRate: state.customerGenerationRate + 1 });
+        set({ customerGenerationRate: state.customerGenerationRate + quantity });
         return true;
       }
       return false;
     },
     
-    buyTimeMachine: () => {
+    buyTimeMachine: (quantity: number = 1) => {
       const state = get();
-      const cost = state.getTimeMachineBuyCost();
+      const cost = state.getTimeMachineBuyCost(quantity);
       if (state.spendChronocoins(cost)) {
-        set({ timeMachineCount: state.timeMachineCount + 1 });
+        set({ timeMachineCount: state.timeMachineCount + quantity });
         return true;
       }
       return false;
@@ -973,7 +1040,7 @@ export const useIdleGame = create<IdleGameState>()(
     clickBoost: () => {
       const state = get();
       const fare = state.getCurrentFare();
-      const clickRevenue = fare * 0.5;
+      const clickRevenue = fare * 5;
       state.addChronocoins(clickRevenue);
       
       const clickTimestamp = Date.now();
@@ -988,7 +1055,7 @@ export const useIdleGame = create<IdleGameState>()(
         if (currentState.lastClickBoostTime === clickTimestamp) {
           set({ coinsPerSecond: 0 });
         }
-      }, 1000);
+      }, 10000);
     },
     
     prestige: () => {
@@ -1027,13 +1094,13 @@ export const useIdleGame = create<IdleGameState>()(
       
       if (minutesAway < 1) return 0;
       
-      const maxMinutes = Math.min(minutesAway, 120);
+      const maxMinutes = Math.min(minutesAway, 240);
       
       const fare = state.getCurrentFare();
       const baseRevenuePerMinute = (fare * state.timeMachineCapacity * state.timeMachineCount * state.customerGenerationRate * 0.5 * 60) / (3000 / 1000);
       const revenueMultiplier = 1 + (state.prestigePoints * 0.1);
       
-      return Math.floor(baseRevenuePerMinute * maxMinutes * revenueMultiplier * 0.5);
+      return Math.floor(baseRevenuePerMinute * maxMinutes * revenueMultiplier * 0.4);
     },
     
     claimOfflineEarnings: () => {

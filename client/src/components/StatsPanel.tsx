@@ -6,6 +6,7 @@ import { useIdleGame } from "@/lib/stores/useIdleGame";
 import { useManagers, MANAGER_TYPES } from "@/lib/stores/useManagers";
 import { useArtifacts } from "@/lib/stores/useArtifacts";
 import { useMissions } from "@/lib/stores/useMissions";
+import { formatChronoValue } from "@/lib/utils";
 
 export function StatsPanel() {
   const {
@@ -23,13 +24,6 @@ export function StatsPanel() {
   const { getManagerLevel, getTotalManagerLevels } = useManagers();
   const { discoveries, totalDrops } = useArtifacts();
   const { completedMissionIds } = useMissions();
-  
-  const formatNumber = (num: number) => {
-    if (num >= 1000000000) return (num / 1000000000).toFixed(2) + "B";
-    if (num >= 1000000) return (num / 1000000).toFixed(2) + "M";
-    if (num >= 1000) return (num / 1000).toFixed(2) + "K";
-    return Math.floor(num).toString();
-  };
   
   return (
     <Dialog>
@@ -54,7 +48,7 @@ export function StatsPanel() {
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
                 <div className="text-gray-400">Total Earned</div>
-                <div className="text-xl font-bold text-green-400">{formatNumber(totalEarned)}</div>
+                <div className="text-xl font-bold text-green-400">{formatChronoValue(totalEarned)}</div>
               </div>
               <div>
                 <div className="text-gray-400">Prestige Level</div>
@@ -68,11 +62,11 @@ export function StatsPanel() {
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
                 <div className="text-gray-400">Trips Completed</div>
-                <div className="text-xl font-bold">{formatNumber(totalTripsCompleted)}</div>
+                <div className="text-xl font-bold">{formatChronoValue(totalTripsCompleted)}</div>
               </div>
               <div>
                 <div className="text-gray-400">Customers Served</div>
-                <div className="text-xl font-bold">{formatNumber(totalCustomersServed)}</div>
+                <div className="text-xl font-bold">{formatChronoValue(totalCustomersServed)}</div>
               </div>
             </div>
           </Card>

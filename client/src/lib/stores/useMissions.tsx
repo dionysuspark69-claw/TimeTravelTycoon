@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
+import { formatChronoValue } from "@/lib/utils";
 
 export type MissionType = "earn_coins" | "complete_trips" | "hire_manager" | "use_boosts" | "unlock_destination";
 
@@ -27,7 +28,7 @@ interface MissionsState {
 const MISSION_TEMPLATES = [
   {
     type: "earn_coins" as MissionType,
-    descriptionTemplate: (target: number) => `Earn ${formatShortNumber(target)} ChronoCoins`,
+    descriptionTemplate: (target: number) => `Earn ${formatChronoValue(target)} ChronoCoins`,
     targetRange: [500, 50000],
     rewardMultiplier: 0.2,
     icon: "💰"
@@ -61,12 +62,6 @@ const MISSION_TEMPLATES = [
     icon: "🌍"
   }
 ];
-
-function formatShortNumber(num: number): string {
-  if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-  if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
-  return num.toString();
-}
 
 export const useMissions = create<MissionsState>()(
   subscribeWithSelector((set, get) => ({

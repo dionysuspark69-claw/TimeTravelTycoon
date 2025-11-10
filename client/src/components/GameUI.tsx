@@ -8,6 +8,7 @@ import { SettingsDialog } from "./SettingsDialog";
 import { useIsMobile } from "@/hooks/use-is-mobile";
 import { useAdBoosts } from "@/lib/stores/useAdBoosts";
 import { useState, useEffect } from "react";
+import { formatChronoValue } from "@/lib/utils";
 
 export function GameUI() {
   const {
@@ -43,17 +44,10 @@ export function GameUI() {
     return () => clearInterval(interval);
   }, []);
   
-  const formatNumber = (num: number) => {
-    if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
-    if (num >= 1000) return (num / 1000).toFixed(1) + "K";
-    return Math.floor(num).toString();
-  };
-  
   const formatCoinsPerSecond = (num: number) => {
-    if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
-    if (num >= 1000) return (num / 1000).toFixed(1) + "K";
-    if (num >= 1) return num.toFixed(1);
-    return num.toFixed(2);
+    if (num < 1) return num.toFixed(2);
+    if (num < 10) return num.toFixed(1);
+    return formatChronoValue(num, 1);
   };
   
   const formatTime = (ms: number) => {
@@ -84,8 +78,8 @@ export function GameUI() {
           <div className="grid grid-cols-2 gap-2 md:contents">
             <Card className="bg-black/80 backdrop-blur-sm border-cyan-500/30 p-3 md:p-4 min-w-0 md:min-w-[200px]">
               <div className="text-cyan-400 text-xs md:text-sm mb-1 md:mb-2">ChronoCoins</div>
-              <div className="text-white text-2xl md:text-3xl font-bold">{formatNumber(chronocoins)}</div>
-              <div className="text-gray-400 text-xs mt-1">Total: {formatNumber(totalEarned)}</div>
+              <div className="text-white text-2xl md:text-3xl font-bold">{formatChronoValue(chronocoins)}</div>
+              <div className="text-gray-400 text-xs mt-1">Total: {formatChronoValue(totalEarned)}</div>
               {coinsPerSecond > 0 && (
                 <div className="text-green-400 text-xs mt-1">+{formatCoinsPerSecond(coinsPerSecond)}/sec</div>
               )}
@@ -161,7 +155,7 @@ export function GameUI() {
           </div>
           <div className="flex gap-1 items-center bg-black/60 backdrop-blur-sm border border-purple-500/30 rounded-full px-2 md:px-3 py-1 md:py-1.5">
             <div className="text-purple-400 text-xs md:text-sm font-semibold">Done:</div>
-            <div className="text-white text-sm md:text-base font-bold">{formatNumber(totalCustomersServed)}</div>
+            <div className="text-white text-sm md:text-base font-bold">{formatChronoValue(totalCustomersServed)}</div>
           </div>
           {getActiveBoostTimer() && (
             <div className="flex gap-1 items-center bg-gradient-to-r from-yellow-600/80 to-orange-600/80 backdrop-blur-sm border border-yellow-400/50 rounded-full px-2 md:px-3 py-1 md:py-1.5 animate-pulse">

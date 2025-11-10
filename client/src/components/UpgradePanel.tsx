@@ -2,6 +2,7 @@ import { useIdleGame, TIME_PERIODS } from "@/lib/stores/useIdleGame";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
 import { ArrowUp, MapPin, Users, Trophy, Settings, Plus, Minus, Target, Sparkles, ChevronDown, ChevronUp, Tv } from "lucide-react";
 import { ManagersPanel } from "./ManagersPanel";
 import { AchievementsPanel } from "./AchievementsPanel";
@@ -10,9 +11,12 @@ import { CollectionsPanel } from "./CollectionsPanel";
 import { AdBoostPanel } from "./AdBoostPanel";
 import { useAchievements } from "@/lib/stores/useAchievements";
 import { useState } from "react";
+import { formatChronoValue } from "@/lib/utils";
 
 export function UpgradePanel() {
   const [isExpanded, setIsExpanded] = useState(true);
+  const [multiplier, setMultiplier] = useState<number | 'max'>(1);
+  
   const {
     chronocoins,
     timeMachineLevel,
@@ -36,16 +40,42 @@ export function UpgradePanel() {
     getSpeedUpgradeCost,
     getCustomerRateUpgradeCost,
     getTimeMachineBuyCost,
+    
+    computeMaxAffordable,
   } = useIdleGame();
   
   const { getUnclaimedAchievements } = useAchievements();
   const unclaimedCount = getUnclaimedAchievements().length;
   
-  const formatNumber = (num: number) => {
-    if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
-    if (num >= 1000) return (num / 1000).toFixed(1) + "K";
-    return Math.floor(num).toString();
-  };
+  const timeMachineEffectiveMultiplier = multiplier === 'max' 
+    ? computeMaxAffordable(100, 1.7, timeMachineLevel, chronocoins)
+    : multiplier;
+  const timeMachineCost = getTimeMachineUpgradeCost(timeMachineEffectiveMultiplier);
+  const canAffordTimeMachine = chronocoins >= timeMachineCost && timeMachineEffectiveMultiplier > 0;
+  
+  const capacityEffectiveMultiplier = multiplier === 'max'
+    ? computeMaxAffordable(50, 1.6, timeMachineCapacity, chronocoins)
+    : multiplier;
+  const capacityCost = getCapacityUpgradeCost(capacityEffectiveMultiplier);
+  const canAffordCapacity = chronocoins >= capacityCost && capacityEffectiveMultiplier > 0;
+  
+  const speedEffectiveMultiplier = multiplier === 'max'
+    ? computeMaxAffordable(75, 1.65, timeMachineSpeed, chronocoins)
+    : multiplier;
+  const speedCost = getSpeedUpgradeCost(speedEffectiveMultiplier);
+  const canAffordSpeed = chronocoins >= speedCost && speedEffectiveMultiplier > 0;
+  
+  const customerRateEffectiveMultiplier = multiplier === 'max'
+    ? computeMaxAffordable(200, 1.8, customerGenerationRate, chronocoins)
+    : multiplier;
+  const customerRateCost = getCustomerRateUpgradeCost(customerRateEffectiveMultiplier);
+  const canAffordCustomerRate = chronocoins >= customerRateCost && customerRateEffectiveMultiplier > 0;
+  
+  const buyTimeMachineEffectiveMultiplier = multiplier === 'max'
+    ? computeMaxAffordable(10000, 3, timeMachineCount, chronocoins)
+    : multiplier;
+  const buyTimeMachineCost = getTimeMachineBuyCost(buyTimeMachineEffectiveMultiplier);
+  const canAffordBuyTimeMachine = chronocoins >= buyTimeMachineCost && buyTimeMachineEffectiveMultiplier > 0;
   
   return (
     <div className="w-full bg-black/80 backdrop-blur-sm border-t border-cyan-500/30" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
@@ -109,95 +139,151 @@ export function UpgradePanel() {
         </TabsList>
         
         <TabsContent value="upgrades" className="space-y-2 mt-4 max-h-[40vh] md:max-h-[45vh] overflow-y-auto pr-2 pb-4">
+          <div className="mb-3">
+            <div className="text-cyan-400 text-xs font-semibold mb-2">Purchase Quantity</div>
+            <ToggleGroup 
+              type="single" 
+              value={String(multiplier)} 
+              onValueChange={(value) => value && setMultiplier(value === 'max' ? 'max' : Number(value))}
+              className="justify-start flex-wrap gap-1"
+            >
+              <ToggleGroupItem value="1" className="text-xs px-2 py-1 min-h-[32px] data-[state=on]:bg-cyan-600 data-[state=on]:text-white">
+                1×
+              </ToggleGroupItem>
+              <ToggleGroupItem value="5" className="text-xs px-2 py-1 min-h-[32px] data-[state=on]:bg-cyan-600 data-[state=on]:text-white">
+                5×
+              </ToggleGroupItem>
+              <ToggleGroupItem value="10" className="text-xs px-2 py-1 min-h-[32px] data-[state=on]:bg-cyan-600 data-[state=on]:text-white">
+                10×
+              </ToggleGroupItem>
+              <ToggleGroupItem value="100" className="text-xs px-2 py-1 min-h-[32px] data-[state=on]:bg-cyan-600 data-[state=on]:text-white">
+                100×
+              </ToggleGroupItem>
+              <ToggleGroupItem value="max" className="text-xs px-2 py-1 min-h-[32px] data-[state=on]:bg-purple-600 data-[state=on]:text-white">
+                Max
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </div>
+          
           <Card className="bg-gray-900/50 border-cyan-500/30 p-3">
             <div className="flex items-center justify-between">
-              <div>
+              <div className="flex-1">
                 <div className="text-white font-semibold">Time Machine Level</div>
                 <div className="text-gray-400 text-sm">Level {timeMachineLevel} - Increase fare per trip</div>
+                {multiplier !== 1 && !canAffordTimeMachine && timeMachineEffectiveMultiplier === 0 && (
+                  <div className="text-yellow-400 text-xs mt-1">Max: 0 (need more coins)</div>
+                )}
+                {typeof multiplier === 'number' && canAffordTimeMachine && timeMachineEffectiveMultiplier < multiplier && (
+                  <div className="text-yellow-400 text-xs mt-1">Max: {timeMachineEffectiveMultiplier}</div>
+                )}
               </div>
               <Button
-                onClick={upgradeTimeMachine}
-                disabled={chronocoins < getTimeMachineUpgradeCost()}
+                onClick={() => upgradeTimeMachine(timeMachineEffectiveMultiplier)}
+                disabled={!canAffordTimeMachine}
                 size="sm"
                 className="bg-cyan-600 hover:bg-cyan-700"
               >
                 <ArrowUp className="w-4 h-4 mr-1" />
-                {formatNumber(getTimeMachineUpgradeCost())}
+                Buy {timeMachineEffectiveMultiplier}× - {formatChronoValue(timeMachineCost)}
               </Button>
             </div>
           </Card>
           
           <Card className="bg-gray-900/50 border-cyan-500/30 p-3">
             <div className="flex items-center justify-between">
-              <div>
+              <div className="flex-1">
                 <div className="text-white font-semibold">Capacity</div>
                 <div className="text-gray-400 text-sm">Level {timeMachineCapacity} - Customers per trip</div>
+                {multiplier !== 1 && !canAffordCapacity && capacityEffectiveMultiplier === 0 && (
+                  <div className="text-yellow-400 text-xs mt-1">Max: 0 (need more coins)</div>
+                )}
+                {typeof multiplier === 'number' && canAffordCapacity && capacityEffectiveMultiplier < multiplier && (
+                  <div className="text-yellow-400 text-xs mt-1">Max: {capacityEffectiveMultiplier}</div>
+                )}
               </div>
               <Button
-                onClick={upgradeCapacity}
-                disabled={chronocoins < getCapacityUpgradeCost()}
+                onClick={() => upgradeCapacity(capacityEffectiveMultiplier)}
+                disabled={!canAffordCapacity}
                 size="sm"
                 className="bg-cyan-600 hover:bg-cyan-700"
               >
                 <ArrowUp className="w-4 h-4 mr-1" />
-                {formatNumber(getCapacityUpgradeCost())}
+                Buy {capacityEffectiveMultiplier}× - {formatChronoValue(capacityCost)}
               </Button>
             </div>
           </Card>
           
           <Card className="bg-gray-900/50 border-cyan-500/30 p-3">
             <div className="flex items-center justify-between">
-              <div>
+              <div className="flex-1">
                 <div className="text-white font-semibold">Speed</div>
                 <div className="text-gray-400 text-sm">Level {timeMachineSpeed} - Faster trips</div>
+                {multiplier !== 1 && !canAffordSpeed && speedEffectiveMultiplier === 0 && (
+                  <div className="text-yellow-400 text-xs mt-1">Max: 0 (need more coins)</div>
+                )}
+                {typeof multiplier === 'number' && canAffordSpeed && speedEffectiveMultiplier < multiplier && (
+                  <div className="text-yellow-400 text-xs mt-1">Max: {speedEffectiveMultiplier}</div>
+                )}
               </div>
               <Button
-                onClick={upgradeSpeed}
-                disabled={chronocoins < getSpeedUpgradeCost()}
+                onClick={() => upgradeSpeed(speedEffectiveMultiplier)}
+                disabled={!canAffordSpeed}
                 size="sm"
                 className="bg-cyan-600 hover:bg-cyan-700"
               >
                 <ArrowUp className="w-4 h-4 mr-1" />
-                {formatNumber(getSpeedUpgradeCost())}
+                Buy {speedEffectiveMultiplier}× - {formatChronoValue(speedCost)}
               </Button>
             </div>
           </Card>
           
           <Card className="bg-gray-900/50 border-cyan-500/30 p-3">
             <div className="flex items-center justify-between">
-              <div>
+              <div className="flex-1">
                 <div className="text-white font-semibold">Customer Generation</div>
                 <div className="text-gray-400 text-sm">Level {customerGenerationRate} - More customers</div>
+                {multiplier !== 1 && !canAffordCustomerRate && customerRateEffectiveMultiplier === 0 && (
+                  <div className="text-yellow-400 text-xs mt-1">Max: 0 (need more coins)</div>
+                )}
+                {typeof multiplier === 'number' && canAffordCustomerRate && customerRateEffectiveMultiplier < multiplier && (
+                  <div className="text-yellow-400 text-xs mt-1">Max: {customerRateEffectiveMultiplier}</div>
+                )}
               </div>
               <Button
-                onClick={upgradeCustomerRate}
-                disabled={chronocoins < getCustomerRateUpgradeCost()}
+                onClick={() => upgradeCustomerRate(customerRateEffectiveMultiplier)}
+                disabled={!canAffordCustomerRate}
                 size="sm"
                 className="bg-cyan-600 hover:bg-cyan-700"
               >
                 <ArrowUp className="w-4 h-4 mr-1" />
-                {formatNumber(getCustomerRateUpgradeCost())}
+                Buy {customerRateEffectiveMultiplier}× - {formatChronoValue(customerRateCost)}
               </Button>
             </div>
           </Card>
           
           <Card className="bg-purple-900/50 border-purple-500/30 p-3">
             <div className="flex items-center justify-between">
-              <div>
+              <div className="flex-1">
                 <div className="text-white font-semibold flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-purple-400" />
                   Time Machines
                 </div>
                 <div className="text-gray-400 text-sm">Own {timeMachineCount} - {timeMachineCount * timeMachineCapacity} total capacity</div>
+                {multiplier !== 1 && !canAffordBuyTimeMachine && buyTimeMachineEffectiveMultiplier === 0 && (
+                  <div className="text-yellow-400 text-xs mt-1">Max: 0 (need more coins)</div>
+                )}
+                {typeof multiplier === 'number' && canAffordBuyTimeMachine && buyTimeMachineEffectiveMultiplier < multiplier && (
+                  <div className="text-yellow-400 text-xs mt-1">Max: {buyTimeMachineEffectiveMultiplier}</div>
+                )}
               </div>
               <Button
-                onClick={buyTimeMachine}
-                disabled={chronocoins < getTimeMachineBuyCost()}
+                onClick={() => buyTimeMachine(buyTimeMachineEffectiveMultiplier)}
+                disabled={!canAffordBuyTimeMachine}
                 size="sm"
                 className="bg-purple-600 hover:bg-purple-700"
               >
                 <Plus className="w-4 h-4 mr-1" />
-                {formatNumber(getTimeMachineBuyCost())}
+                Buy {buyTimeMachineEffectiveMultiplier}× - {formatChronoValue(buyTimeMachineCost)}
               </Button>
             </div>
           </Card>
@@ -279,7 +365,7 @@ export function UpgradePanel() {
                       size="sm"
                       className="bg-purple-600 hover:bg-purple-700"
                     >
-                      Unlock {formatNumber(destination.unlockCost)}
+                      Unlock {formatChronoValue(destination.unlockCost)}
                     </Button>
                   ) : !isCurrent ? (
                     <Button

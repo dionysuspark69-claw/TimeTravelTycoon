@@ -5,6 +5,7 @@ import { LogIn, LogOut, Upload, Download, Trophy } from "lucide-react";
 import { useGooglePlay } from "@/lib/stores/useGooglePlay";
 import { useIdleGame } from "@/lib/stores/useIdleGame";
 import { useState, useEffect } from "react";
+import { formatChronoValue } from "@/lib/utils";
 
 export function GooglePlayTab() {
   const { 
@@ -80,13 +81,6 @@ export function GooglePlayTab() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const formatNumber = (num: number) => {
-    if (num >= 1000000000) return (num / 1000000000).toFixed(1) + "B";
-    if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
-    if (num >= 1000) return (num / 1000).toFixed(1) + "K";
-    return Math.floor(num).toString();
   };
 
   if (!isSignedIn) {
@@ -182,7 +176,7 @@ export function GooglePlayTab() {
                   <div className="text-sm font-semibold">{entry.playerName}</div>
                 </div>
                 <div className="text-green-400 font-bold text-sm">
-                  {formatNumber(entry.score)}
+                  {formatChronoValue(entry.score)}
                 </div>
               </div>
             ))
