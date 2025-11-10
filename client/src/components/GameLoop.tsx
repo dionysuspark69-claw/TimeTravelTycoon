@@ -21,8 +21,12 @@ export function GameLoop() {
   const totalEarned = useIdleGame(state => state.totalEarned);
   const totalManagerUpgrades = useIdleGame(state => state.totalManagerUpgrades);
   const unlockedDestinations = useIdleGame(state => state.unlockedDestinations);
+  const timeMachineLevel = useIdleGame(state => state.timeMachineLevel);
+  const totalUpgradesPurchased = useIdleGame(state => 
+    state.timeMachineCapacity + state.timeMachineSpeed + state.customerGenerationRate
+  );
   
-  const { checkProgress } = useMissions();
+  const { checkProgress, getStreakBonus } = useMissions();
   const eventsUpdate = useEvents(state => state.update);
   const getActiveMultipliers = useEvents(state => state.getActiveMultipliers);
   const adBoostsUpdate = useAdBoosts(state => state.update);
@@ -58,11 +62,12 @@ export function GameLoop() {
       const adRevenueBoost = getAdRevenueMultiplier();
       const adCustomerBoost = getAdCustomerMultiplier();
       const adSpeedBoost = getAdSpeedMultiplier();
+      const streakBonus = getStreakBonus();
       
       const bonuses = {
         customerRate: (1 + managerCustomerBonus) * eventMultipliers.customers * adCustomerBoost - 1,
-        speed: (1 + managerSpeedBonus) * overclockMultiplier * eventMultipliers.speed * adSpeedBoost - 1,
-        revenue: (1 + managerRevenueBonus) * eventMultipliers.revenue * adRevenueBoost - 1
+        speed: (1 + managerSpeedBonus) * overclockMultiplier * eventMultipliers.speed * adSpeedBoost * (1 + streakBonus.speedBonus) - 1,
+        revenue: (1 + managerRevenueBonus) * eventMultipliers.revenue * adRevenueBoost * (1 + streakBonus.revenueBonus) - 1
       };
       
       const perks = {
@@ -74,7 +79,7 @@ export function GameLoop() {
       
       update(deltaTime, bonuses, perks);
       
-      checkProgress(totalEarned, totalTrips, totalManagerUpgrades, totalBoostsUsed, unlockedDestinations.length);
+      checkProgress(totalEarned, totalTrips, totalManagerUpgrades, totalBoostsUsed, unlockedDestinations.length, timeMachineLevel, totalUpgradesPurchased);
       
       animationFrameId = requestAnimationFrame(gameLoop);
     };
@@ -86,7 +91,7 @@ export function GameLoop() {
         cancelAnimationFrame(animationFrameId);
       }
     };
-  }, [update, getCustomerRateBonus, getSpeedBonus, getRevenueBonus, updatePerkTimers, hasPerk, overclockActive, incrementCompoundInterest, totalTrips, totalEarned, totalManagerUpgrades, totalBoostsUsed, unlockedDestinations, checkProgress, eventsUpdate, getActiveMultipliers, adBoostsUpdate, getAdRevenueMultiplier, getAdCustomerMultiplier, getAdSpeedMultiplier]);
+  }, [update, getCustomerRateBonus, getSpeedBonus, getRevenueBonus, updatePerkTimers, hasPerk, overclockActive, incrementCompoundInterest, totalTrips, totalEarned, totalManagerUpgrades, totalBoostsUsed, unlockedDestinations, checkProgress, eventsUpdate, getActiveMultipliers, adBoostsUpdate, getAdRevenueMultiplier, getAdCustomerMultiplier, getAdSpeedMultiplier, timeMachineLevel, totalUpgradesPurchased, getStreakBonus]);
   
   return null;
 }

@@ -3,12 +3,23 @@ import { useIdleGame } from "@/lib/stores/useIdleGame";
 import { useAudio } from "@/lib/stores/useAudio";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
-import { Trophy, Lock, Gift } from "lucide-react";
+import { Trophy, Lock, Gift, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { useRef, useEffect } from "react";
 
 export function AchievementsPanel() {
   const { isUnlocked, isClaimed, getUnlockedCount, claimAchievement } = useAchievements();
   const addChronocoins = useIdleGame(state => state.addChronocoins);
+  const firstClaimableRef = useRef<HTMLDivElement>(null);
+  
+  const claimableAchievements = ACHIEVEMENTS.filter(a => isUnlocked(a.id) && !isClaimed(a.id));
+  const claimableCount = claimableAchievements.length;
+  
+  useEffect(() => {
+    if (firstClaimableRef.current) {
+      firstClaimableRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, []);
   
   const handleClaim = (achievementId: string, achievementName: string) => {
     const reward = claimAchievement(achievementId);
@@ -22,25 +33,63 @@ export function AchievementsPanel() {
     }
   };
   
+  const handleClaimAll = () => {
+    if (claimableAchievements.length === 0) return;
+    
+    let totalReward = 0;
+    let count = 0;
+    
+    claimableAchievements.forEach(achievement => {
+      const reward = claimAchievement(achievement.id);
+      if (reward > 0) {
+        totalReward += reward;
+        count++;
+      }
+    });
+    
+    if (totalReward > 0) {
+      addChronocoins(totalReward);
+      useAudio.getState().playAchievement();
+      toast.success(`${count} achievements claimed!`, {
+        description: `+${totalReward} ChronoCoins`,
+        duration: 3000,
+      });
+    }
+  };
+  
   return (
     <div className="space-y-2 mt-4">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-white font-semibold text-lg">Achievements</h3>
-        <div className="text-cyan-400 text-sm">
-          {getUnlockedCount()}/{ACHIEVEMENTS.length}
+        <div className="flex items-center gap-2">
+          {claimableCount > 0 && (
+            <Button
+              onClick={handleClaimAll}
+              size="sm"
+              className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white text-xs px-3 min-h-[44px] gap-1"
+            >
+              <Sparkles className="w-3 h-3" />
+              Claim All ({claimableCount})
+            </Button>
+          )}
+          <div className="text-cyan-400 text-sm">
+            {getUnlockedCount()}/{ACHIEVEMENTS.length}
+          </div>
         </div>
       </div>
       
-      {ACHIEVEMENTS.map((achievement) => {
+      {ACHIEVEMENTS.map((achievement, index) => {
         const unlocked = isUnlocked(achievement.id);
         const claimed = isClaimed(achievement.id);
+        const isFirstClaimable = unlocked && !claimed && claimableAchievements[0]?.id === achievement.id;
         
         return (
           <Card
             key={achievement.id}
+            ref={isFirstClaimable ? firstClaimableRef : null}
             className={`p-3 ${
               unlocked && !claimed
-                ? "bg-gradient-to-r from-yellow-900/40 to-orange-900/40 border-yellow-500/70 shadow-lg shadow-yellow-500/20"
+                ? "bg-gradient-to-r from-yellow-900/40 to-orange-900/40 border-yellow-500/70 shadow-lg shadow-yellow-500/20 animate-pulse"
                 : unlocked && claimed
                 ? "bg-gradient-to-r from-green-900/30 to-emerald-900/30 border-green-500/50"
                 : "bg-gray-900/50 border-gray-700/30"
