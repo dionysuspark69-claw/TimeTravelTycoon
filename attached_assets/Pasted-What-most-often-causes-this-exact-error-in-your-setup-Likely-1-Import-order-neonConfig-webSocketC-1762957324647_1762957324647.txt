@@ -1,0 +1,205 @@
+What most often causes this exact error in your setup
+
+Likely 1. Import order
+
+neonConfig.webSocketConstructor = ws runs after the Pool is created, or after a library that creates its own Pool is imported. The driver then attempts WebSockets with typeof WebSocket === undefined. Fix by setting neonConfig.webSocketConstructor before any Pool creation or any session store import that might create one. 
+Neon
+
+Likely 2. Two copies of @neondatabase/serverless
+
+Your session store, for example connect-pg-simple, is using an aliased pg that resolves to a different physical copy of @neondatabase/serverless than the one you configure in your app. You set neonConfig on one copy, the store uses another copy, so the constructor is not set for the copy that actually opens the socket. Fix by deduping and pinning a single version, and by passing your own Pool into the store. 
+GitHub
++1
+
+Likely 3. The store creates the Pool for you
+
+If you give connect-pg-simple a connection string instead of a Pool, it will construct its own Pool. That Pool will not have your WebSocket constructor unless it happens to share the same configured module instance. Fix by constructing the Pool yourself, then pass it in with the pool option. 
+GitHub
++1
+
+Likely 4. Node version mismatch for the driver
+
+Neon serverless driver version one point zero and higher requires Node nineteen or newer. If your runtime is older, the WebSocket path is more fragile and the HTTP path may still work. Fix by confirming Node version in Replit, or pin the driver to a version compatible with older Node. 
+Neon
+
+Less common 5. Browser or build accidentally imports the server DB code
+
+If a client bundle pulls in a module that touches Pool, a browser will try and fail to open the socket. Fix by ensuring server only code is not imported from browser code. The driver docs call out environment specific rules for Pool. 
+GitHub
+
+Fast pinpoint checklist
+
+Follow these in order. I kept each command separate.
+
+Command 1, list every installed copy of the driver and related libs
+
+npm ls @neondatabase/serverless pg ws connect-pg-simple
+
+
+Look for more than one @neondatabase/serverless. If you see a nested copy under another package, that is a red flag. 
+GitHub
+
+Command 2, open a Node REPL to read the Node version without flags
+
+node
+
+
+At the > prompt, type:
+
+process.versions.node
+
+
+Then:
+
+.exit
+
+
+If the version is below nineteen and your driver is one point zero or newer, upgrade Node in Replit or pin the driver. 
+Neon
+
+Command 3, quick grep to find any remaining WebSocket based imports
+
+grep -R "drizzle-orm/neon-serverless\|new Pool\|from '@neondatabase/serverless'" server
+
+
+Make sure only your session code uses Pool. Your data and auth paths should use drizzle-orm/neon-http or neon from the driver. 
+Drizzle ORM
+
+Fix the root cause in code
+1. Guarantee constructor setup runs first
+
+Move this block to the very top of your server entry, before any session store import, and before any code that might create a Pool.
+
+// server/bootstrap-db.ts
+import { neonConfig } from "@neondatabase/serverless";
+import ws from "ws";
+
+// must run before any Pool is created
+neonConfig.webSocketConstructor = ws;
+
+
+Then import this file as your first import in server/index.ts:
+
+import "./bootstrap-db"; // must be first
+
+
+Why this matters: the driver needs a WebSocket constructor in Node before any Pool is created. The official docs show setting neonConfig.webSocketConstructor = ws for Node. 
+Neon
+
+2. Ensure the session store uses your Pool instance
+
+Construct one Pool and pass it to the store. Do not give the store a connection string.
+
+// server/session.ts
+import session from "express-session";
+import pgSimple from "connect-pg-simple";
+import { Pool } from "@neondatabase/serverless";
+
+const PgSession = pgSimple(session);
+
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+
+export const sessionMiddleware = session({
+  store: new PgSession({
+    pool,
+    tableName: "session",
+  }),
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+});
+
+
+connect-pg-simple supports a pool option. Passing your Pool prevents the package from creating its own, which avoids hidden imports and double copies. 
+npm
+
+3. Force a single copy of the driver
+
+Add overrides so anything that asks for pg actually uses your single @neondatabase/serverless copy, at the same version you depend on.
+
+{
+  "dependencies": {
+    "@neondatabase/serverless": "1.0.1",
+    "ws": "^8.17.0",
+    "connect-pg-simple": "^10.0.0"
+  },
+  "overrides": {
+    "pg": "npm:@neondatabase/serverless@1.0.1",
+    "@neondatabase/serverless": "1.0.1"
+  }
+}
+
+
+This pattern is documented by the driver. It eliminates the two copies problem. After editing, dedupe. 
+GitHub
+
+Command 4, dedupe
+
+npm dedupe
+
+
+Command 5, recheck
+
+npm ls @neondatabase/serverless pg
+
+
+You should now see one version of the driver.
+
+4. Add a tiny runtime assert near session setup
+
+Right before creating the Pool for sessions, log these once:
+
+import { neonConfig } from "@neondatabase/serverless";
+
+console.log("neonConfig ws type:", typeof neonConfig.webSocketConstructor);
+console.log("global WebSocket type:", typeof globalThis.WebSocket);
+
+
+You want to see function for the first line in Node, which confirms the constructor is set before Pool creation. 
+GitHub
+
+Sanity tests
+
+Command 6, start clean
+
+pkill node || true
+
+
+Command 7, run your app
+
+npm run dev
+
+
+Now hit these in order:
+
+Call your /api/db/test route to confirm HTTP driver path is still good.
+
+Hit an endpoint that uses the session, for example a login that reads or writes the session. You should not see the WebSocket error, and your console should show the constructor type as expected.
+
+If you still see the error, run Command 1 again to confirm there is still only one driver copy, and search for any other imports that might instantiate a Pool.
+
+Why this explains your symptoms
+
+Your HTTP path works, so your connection string and Neon project are fine. The driver docs confirm HTTP is ideal for one shot queries and does not need WebSockets. 
+Neon
+
+The remaining error appears only when session code runs, which uses Pool or Client. Pool and Client always use WebSockets and require a constructor in Node. 
+Neon
+
+If the constructor is not set in the exact module instance that creates the Pool, the driver throws the same message you pasted. Ensuring import order, passing your own Pool into the store, and unifying on a single driver copy resolve that. 
+GitHub
++1
+
+Optional hardening
+
+Close the session Pool on shutdown, and do not create multiple listeners during dev hot reload.
+
+Keep Node at nineteen or newer if you stay on driver one point zero or higher. 
+Neon
+
+Keep using HTTP for everything that is not a session or interactive transaction. Drizzle neon http is a good fit. 
+Drizzle ORM
+
+Summary
+
+Your HTTP path is correct. The lingering WebSocket error is almost certainly coming from the session layer creating or using a Pool without a properly configured WebSocket constructor, often due to import order or a second copy of the driver. Set neonConfig.webSocketConstructor = ws before any Pool creation, pass a single Pool instance into the session store, and force a single driver version with overrides and dedupe.

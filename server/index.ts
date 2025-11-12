@@ -1,8 +1,11 @@
+// CRITICAL: This must be the first import to configure WebSocket constructor
+// before any Pool is created
+import "./bootstrap-db";
+
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
-import { Pool } from "@neondatabase/serverless";
-import ws from "ws";
+import { Pool, neonConfig } from "@neondatabase/serverless";
 import passport from "./passport-config";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
@@ -11,10 +14,13 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Runtime assertion: verify WebSocket constructor is set before creating Pool
+console.log("✓ neonConfig.webSocketConstructor type:", typeof neonConfig.webSocketConstructor);
+console.log("✓ globalThis.WebSocket type:", typeof globalThis.WebSocket);
+
 const PgSession = connectPgSimple(session);
 const pool = new Pool({ 
-  connectionString: process.env.DATABASE_URL,
-  webSocketConstructor: ws as any
+  connectionString: process.env.DATABASE_URL
 });
 
 app.use(
