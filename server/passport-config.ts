@@ -4,8 +4,8 @@ import { eq } from "drizzle-orm";
 import { db } from "./db";
 import { users, type User } from "@shared/schema";
 
-const callbackURL = process.env.REPL_SLUG
-  ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co/auth/google/callback`
+const callbackURL = process.env.REPLIT_DEPLOYMENT
+  ? "https://time-travel-tycoon-billnye.replit.app/auth/google/callback"
   : "http://localhost:5000/auth/google/callback";
 
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
