@@ -1,23 +1,50 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { eq, desc } from "drizzle-orm";
+import passport from "./passport-config";
 import { db } from "./db";
-import { gameSaves } from "@shared/schema";
-import { requireAuth, getUserFromHeader } from "./auth";
+import { gameSaves, type User } from "@shared/schema";
+
+declare global {
+  namespace Express {
+    interface User {
+      id: number;
+      googleId: string | null;
+      email: string | null;
+      username: string;
+      createdAt: Date;
+    }
+  }
+}
+
+function requireAuth(req: Request, res: Response, next: NextFunction) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.status(401).json({ message: "Unauthorized" });
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+
+  app.get(
+    "/auth/google/callback",
+    passport.authenticate("google", { failureRedirect: "/" }),
+    (req, res) => {
+      res.redirect("/");
+    }
+  );
+
   app.get("/api/auth/user", async (req, res) => {
     try {
-      const user = await getUserFromHeader(req);
-      
-      if (!user) {
+      if (!req.user) {
         return res.status(401).json({ message: "Not authenticated" });
       }
 
       res.json({
-        id: user.id,
-        username: user.username,
-        replitUserId: user.replitUserId,
+        id: req.user.id,
+        username: req.user.username,
+        googleId: req.user.googleId,
       });
     } catch (error) {
       console.error("Get user error:", error);
@@ -27,17 +54,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/auth/logout", async (req, res) => {
     try {
-      if (req.session) {
-        req.session.destroy((err) => {
-          if (err) {
-            console.error("Session destroy error:", err);
-            return res.status(500).json({ message: "Failed to logout" });
-          }
-          res.json({ success: true });
-        });
-      } else {
+      req.logout((err) => {
+        if (err) {
+          console.error("Logout error:", err);
+          return res.status(500).json({ message: "Failed to logout" });
+        }
         res.json({ success: true });
-      }
+      });
     } catch (error) {
       console.error("Logout error:", error);
       res.status(500).json({ message: "Failed to logout" });

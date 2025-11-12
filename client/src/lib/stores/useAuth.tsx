@@ -3,7 +3,7 @@ import { create } from "zustand";
 export interface User {
   id: number;
   username: string;
-  replitUserId: string;
+  googleId: string;
 }
 
 interface AuthState {
@@ -40,6 +40,7 @@ export const useAuth = create<AuthState>((set) => ({
     try {
       await fetch("/api/auth/logout", { method: "POST" });
       set({ user: null, isAuthenticated: false });
+      window.location.reload();
     } catch (error) {
       console.error("Error logging out:", error);
     }

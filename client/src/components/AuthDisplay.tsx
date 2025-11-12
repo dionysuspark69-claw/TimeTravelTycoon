@@ -13,10 +13,14 @@ export function AuthDisplay() {
   if (!isAuthenticated || !user) {
     return (
       <Card className="bg-black/80 backdrop-blur-sm border-cyan-500/30 p-2 px-3 min-h-[44px] flex items-center">
-        <div className="flex items-center gap-2">
-          <User className="w-3 h-3 text-gray-400" />
-          <span className="text-xs text-gray-400">Not signed in</span>
-        </div>
+        <Button
+          onClick={() => window.location.href = "/auth/google"}
+          variant="default"
+          size="sm"
+          className="bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 border border-cyan-500/30"
+        >
+          Sign in with Google
+        </Button>
       </Card>
     );
   }
