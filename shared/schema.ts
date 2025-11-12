@@ -5,6 +5,7 @@ import { z } from "zod";
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   googleId: text("google_id").unique(),
+  replitUserId: text("replit_user_id").unique(),
   email: text("email"),
   username: text("username").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -20,6 +21,7 @@ export const gameSaves = pgTable("game_saves", {
 
 export const insertUserSchema = createInsertSchema(users).pick({
   googleId: true,
+  replitUserId: true,
   email: true,
   username: true,
 });
