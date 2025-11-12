@@ -1,15 +1,16 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, or } from "drizzle-orm";
 import passport from "./passport-config";
 import { db } from "./db";
-import { gameSaves, type User } from "@shared/schema";
+import { gameSaves, users, type User } from "@shared/schema";
 
 declare global {
   namespace Express {
     interface User {
       id: number;
       googleId: string | null;
+      replitUserId: string | null;
       email: string | null;
       username: string;
       createdAt: Date;
@@ -35,6 +36,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   );
 
+  app.post("/auth/replit", async (req, res) => {
+    try {
+      const replitUserId = req.headers['x-replit-user-id'] as string;
+      const replitUserName = req.headers['x-replit-user-name'] as string;
+
+      if (!replitUserId || !replitUserName) {
+        return res.status(401).json({ message: "Not authenticated with Replit" });
+      }
+
+      const existingUsers = await db
+        .select()
+        .from(users)
+        .where(eq(users.replitUserId, replitUserId))
+        .limit(1);
+
+      let user: User;
+      if (existingUsers.length > 0) {
+        user = existingUsers[0];
+      } else {
+        const newUsers = await db
+          .insert(users)
+          .values({
+            replitUserId,
+            username: replitUserName,
+            email: null,
+            googleId: null,
+          })
+          .returning();
+        user = newUsers[0];
+      }
+
+      req.login(user, (err) => {
+        if (err) {
+          console.error("Replit Auth login error:", err);
+          return res.status(500).json({ message: "Failed to log in" });
+        }
+        res.json({ success: true, user: { id: user.id, username: user.username } });
+      });
+    } catch (error) {
+      console.error("Replit Auth error:", error);
+      res.status(500).json({ message: "Failed to authenticate" });
+    }
+  });
+
   app.get("/api/auth/user", async (req, res) => {
     try {
       if (!req.user) {
@@ -45,6 +90,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         id: req.user.id,
         username: req.user.username,
         googleId: req.user.googleId,
+        replitUserId: req.user.replitUserId,
       });
     } catch (error) {
       console.error("Get user error:", error);
