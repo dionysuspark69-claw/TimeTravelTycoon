@@ -271,6 +271,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      res.set("Cache-Control", "no-store");
       res.json({ success: true });
     } catch (error) {
       console.error("Save error:", error);
@@ -291,6 +292,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .orderBy(desc(gameSaves.lastUpdated))
         .limit(1);
 
+      res.set("Cache-Control", "no-store");
       res.json({ gameState: saves.length > 0 ? saves[0].gameState : null });
     } catch (error) {
       console.error("Load error:", error);
