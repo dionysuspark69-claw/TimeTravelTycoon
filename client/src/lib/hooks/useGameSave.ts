@@ -4,17 +4,17 @@ import { useSaveState } from "../stores/useSaveState";
 
 export function useGameSave() {
   const { isAuthenticated } = useAuth();
-  const { saveGame, loadGame, isSaving, lastSaved, hasLoadedOnce, setHasLoadedOnce } = useSaveState();
+  const { isSaving, lastSaved, hasLoadedOnce, setHasLoadedOnce } = useSaveState();
 
   useEffect(() => {
     if (isAuthenticated && !hasLoadedOnce) {
       const doLoad = async () => {
-        await loadGame();
+        await useSaveState.getState().loadGame();
         setHasLoadedOnce(true);
       };
       doLoad();
     }
-  }, [isAuthenticated, hasLoadedOnce]);
+  }, [isAuthenticated, hasLoadedOnce, setHasLoadedOnce]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -22,15 +22,15 @@ export function useGameSave() {
     }
 
     const interval = setInterval(() => {
-      saveGame();
+      useSaveState.getState().saveGame();
     }, 60000);
 
     return () => clearInterval(interval);
   }, [isAuthenticated]);
 
   return {
-    saveGame,
-    loadGame,
+    saveGame: useSaveState.getState().saveGame,
+    loadGame: useSaveState.getState().loadGame,
     isSaving,
     lastSaved,
   };

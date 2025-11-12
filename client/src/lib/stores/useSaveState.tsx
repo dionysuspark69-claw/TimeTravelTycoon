@@ -38,6 +38,8 @@ export const useSaveState = create<SaveState>((set, get) => ({
         customerGenerationRate: state.customerGenerationRate,
         waitingCustomers: state.waitingCustomers,
         processingCustomers: state.processingCustomers,
+        customerEntities: state.customerEntities,
+        nextCustomerId: state.nextCustomerId,
         unlockedDestinations: state.unlockedDestinations,
         currentDestination: state.currentDestination,
         prestigeLevel: state.prestigeLevel,
@@ -88,6 +90,13 @@ export const useSaveState = create<SaveState>((set, get) => ({
 
       const data = await response.json();
       if (data.gameState) {
+        const now = Date.now();
+        const restoredEntities = (data.gameState.customerEntities || []).map((entity: any) => ({
+          ...entity,
+          hasReachedTarget: false,
+          stateChangedTime: now
+        }));
+
         useIdleGame.setState({
           chronocoins: data.gameState.chronocoins,
           totalEarned: data.gameState.totalEarned,
@@ -100,12 +109,16 @@ export const useSaveState = create<SaveState>((set, get) => ({
           customerGenerationRate: data.gameState.customerGenerationRate,
           waitingCustomers: data.gameState.waitingCustomers,
           processingCustomers: data.gameState.processingCustomers,
+          customerEntities: restoredEntities,
+          nextCustomerId: data.gameState.nextCustomerId || 0,
           unlockedDestinations: data.gameState.unlockedDestinations,
           currentDestination: data.gameState.currentDestination,
           prestigeLevel: data.gameState.prestigeLevel,
           prestigePoints: data.gameState.prestigePoints,
           tutorialShown: data.gameState.tutorialShown,
         });
+
+        useIdleGame.getState().updateCustomerStates();
 
         toast.success("Game progress loaded from cloud!");
       }
