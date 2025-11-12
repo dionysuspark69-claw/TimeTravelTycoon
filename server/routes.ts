@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { eq, desc, or, sql } from "drizzle-orm";
 import passport from "./passport-config";
 import { getUserInfo } from "@replit/repl-auth";
+import bcrypt from "bcrypt";
 import { db } from "./db";
 import { gameSaves, users, type User } from "@shared/schema";
 
@@ -62,15 +63,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/auth/username", async (req, res) => {
     try {
-      const { username } = req.body;
+      const { username, password } = req.body;
 
       if (!username || typeof username !== "string" || username.trim().length === 0) {
         return res.status(400).json({ message: "Username is required" });
       }
 
+      if (!password || typeof password !== "string" || password.length === 0) {
+        return res.status(400).json({ message: "Password is required" });
+      }
+
       const trimmedUsername = username.trim();
       if (trimmedUsername.length < 2 || trimmedUsername.length > 50) {
         return res.status(400).json({ message: "Username must be between 2 and 50 characters" });
+      }
+
+      if (password.length < 4) {
+        return res.status(400).json({ message: "Password must be at least 4 characters" });
       }
 
       const existingUsers = await db
@@ -82,12 +91,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let user: User;
       if (existingUsers.length > 0) {
         user = existingUsers[0];
-        console.log("✓ Existing user found:", user.username);
+        
+        if (!user.password) {
+          return res.status(400).json({ message: "This account was created without a password. Please contact support." });
+        }
+        
+        const passwordMatch = await bcrypt.compare(password, user.password);
+        if (!passwordMatch) {
+          console.log("✗ Invalid password for user:", user.username);
+          return res.status(401).json({ message: "Invalid username or password" });
+        }
+        
+        console.log("✓ Existing user authenticated:", user.username);
       } else {
+        const hashedPassword = await bcrypt.hash(password, 10);
         const newUsers = await db
           .insert(users)
           .values({
             username: trimmedUsername,
+            password: hashedPassword,
             email: null,
             googleId: null,
             replitUserId: null,

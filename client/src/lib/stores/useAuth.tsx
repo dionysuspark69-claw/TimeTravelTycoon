@@ -12,7 +12,7 @@ interface AuthState {
   loading: boolean;
   isAuthenticated: boolean;
   fetchUser: () => Promise<void>;
-  loginWithUsername: (username: string) => Promise<{ success: boolean; error?: string }>;
+  loginWithUsername: (username: string, password: string) => Promise<{ success: boolean; error?: string }>;
   loginWithReplit: () => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -39,12 +39,12 @@ export const useAuth = create<AuthState>((set) => ({
     }
   },
 
-  loginWithUsername: async (username: string) => {
+  loginWithUsername: async (username: string, password: string) => {
     try {
       const response = await fetch("/auth/username", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username }),
+        body: JSON.stringify({ username, password }),
       });
 
       if (response.ok) {
