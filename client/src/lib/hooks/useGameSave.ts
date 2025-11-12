@@ -8,10 +8,13 @@ export function useGameSave() {
 
   useEffect(() => {
     if (isAuthenticated && !hasLoadedOnce) {
-      loadGame();
-      setHasLoadedOnce(true);
+      const doLoad = async () => {
+        await loadGame();
+        setHasLoadedOnce(true);
+      };
+      doLoad();
     }
-  }, [isAuthenticated, hasLoadedOnce, loadGame]);
+  }, [isAuthenticated, hasLoadedOnce]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -23,7 +26,7 @@ export function useGameSave() {
     }, 60000);
 
     return () => clearInterval(interval);
-  }, [isAuthenticated, saveGame]);
+  }, [isAuthenticated]);
 
   return {
     saveGame,
