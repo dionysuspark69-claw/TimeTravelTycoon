@@ -47,6 +47,11 @@ export const useSaveState = create<SaveState>((set, get) => ({
         tutorialShown: state.tutorialShown,
       };
 
+      console.log("Attempting to save game...", { 
+        url: "/api/save",
+        entityCount: state.customerEntities.length 
+      });
+
       const response = await fetch("/api/save", {
         method: "POST",
         headers: {
@@ -56,9 +61,16 @@ export const useSaveState = create<SaveState>((set, get) => ({
         body: JSON.stringify({ gameState }),
       });
 
+      console.log("Save response:", response.status, response.statusText);
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error("Save failed:", response.status, errorData);
+        console.error("Save failed:", { 
+          status: response.status, 
+          statusText: response.statusText,
+          errorData,
+          url: response.url
+        });
         throw new Error(errorData.message || "Failed to save game");
       }
 
@@ -66,7 +78,7 @@ export const useSaveState = create<SaveState>((set, get) => ({
       console.log("Game saved successfully");
     } catch (error) {
       console.error("Error saving game:", error);
-      toast.error("Failed to save game progress");
+      toast.error(`Failed to save: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       set({ isSaving: false });
     }
