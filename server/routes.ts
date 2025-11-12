@@ -33,7 +33,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     "/auth/google/callback",
     passport.authenticate("google", { failureRedirect: "/" }),
     (req, res) => {
-      res.redirect("/");
+      console.log("🔑 OAuth callback - User authenticated:", req.user ? `${req.user.username} (ID: ${req.user.id})` : "NO USER");
+      console.log("🔑 Session ID:", req.sessionID);
+      
+      if (!req.user) {
+        console.error("✗ No user in session after OAuth callback!");
+        return res.status(500).send("Authentication failed: No user in session");
+      }
+      
+      // Explicitly save session before redirecting to ensure it's persisted to PostgreSQL
+      req.session.save((err) => {
+        if (err) {
+          console.error("✗ Session save error:", err, err.stack);
+          return res.status(500).send("Authentication failed: Could not save session");
+        }
+        
+        // Verify user is authenticated after session save
+        if (!req.isAuthenticated()) {
+          console.error("✗ User not authenticated after session save!");
+          return res.status(500).send("Authentication failed: Session not persisted");
+        }
+        
+        console.log("✓ Session saved successfully, redirecting to game");
+        res.redirect("/");
+      });
     }
   );
 
@@ -85,6 +108,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/auth/user", async (req, res) => {
     try {
+      console.log("👤 /api/auth/user - Session ID:", req.sessionID);
+      console.log("👤 /api/auth/user - Authenticated:", req.isAuthenticated());
+      console.log("👤 /api/auth/user - User:", req.user ? `${req.user.username} (ID: ${req.user.id})` : "NO USER");
+      
       if (!req.user) {
         return res.status(401).json({ message: "Not authenticated" });
       }

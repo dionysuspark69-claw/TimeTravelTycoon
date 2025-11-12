@@ -54,10 +54,13 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 }
 
 passport.serializeUser((user, done) => {
-  done(null, (user as User).id);
+  const userId = (user as User).id;
+  console.log("🔐 Serializing user:", userId);
+  done(null, userId);
 });
 
 passport.deserializeUser(async (id: number, done) => {
+  console.log("🔓 Deserializing user:", id);
   try {
     const result = await db
       .select()
@@ -66,11 +69,14 @@ passport.deserializeUser(async (id: number, done) => {
       .limit(1);
 
     if (result.length > 0) {
+      console.log("✓ User found:", result[0].username);
       done(null, result[0]);
     } else {
+      console.error("✗ User not found in database:", id);
       done(new Error("User not found"));
     }
   } catch (error) {
+    console.error("✗ Deserialize error:", error);
     done(error);
   }
 });
