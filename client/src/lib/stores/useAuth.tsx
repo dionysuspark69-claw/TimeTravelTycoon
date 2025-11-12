@@ -3,7 +3,8 @@ import { create } from "zustand";
 export interface User {
   id: number;
   username: string;
-  googleId: string;
+  googleId: string | null;
+  replitUserId: string | null;
 }
 
 interface AuthState {
@@ -11,6 +12,7 @@ interface AuthState {
   loading: boolean;
   isAuthenticated: boolean;
   fetchUser: () => Promise<void>;
+  loginWithReplit: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -33,6 +35,23 @@ export const useAuth = create<AuthState>((set) => ({
     } catch (error) {
       console.error("Error fetching user:", error);
       set({ user: null, isAuthenticated: false, loading: false });
+    }
+  },
+
+  loginWithReplit: async () => {
+    try {
+      const response = await fetch("/auth/replit", { method: "POST" });
+      
+      if (response.ok) {
+        const data = await response.json();
+        set({ user: data.user, isAuthenticated: true });
+        window.location.reload();
+      } else {
+        const error = await response.json();
+        console.error("Replit Auth failed:", error.message);
+      }
+    } catch (error) {
+      console.error("Error logging in with Replit:", error);
     }
   },
 
