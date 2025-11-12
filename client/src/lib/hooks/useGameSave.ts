@@ -34,6 +34,7 @@ export function useGameSave() {
         currentDestination: state.currentDestination,
         prestigeLevel: state.prestigeLevel,
         prestigePoints: state.prestigePoints,
+        tutorialShown: state.tutorialShown,
       };
 
       const response = await fetch("/api/save", {
@@ -92,6 +93,7 @@ export function useGameSave() {
         state.currentDestination = data.gameState.currentDestination ?? state.currentDestination;
         state.prestigeLevel = data.gameState.prestigeLevel ?? state.prestigeLevel;
         state.prestigePoints = data.gameState.prestigePoints ?? state.prestigePoints;
+        state.tutorialShown = data.gameState.tutorialShown ?? state.tutorialShown;
 
         useIdleGame.setState({
           chronocoins: state.chronocoins,
@@ -109,6 +111,7 @@ export function useGameSave() {
           currentDestination: state.currentDestination,
           prestigeLevel: state.prestigeLevel,
           prestigePoints: state.prestigePoints,
+          tutorialShown: state.tutorialShown,
         });
 
         toast.success("Game progress loaded from cloud!");
@@ -133,7 +136,7 @@ export function useGameSave() {
 
     const interval = setInterval(() => {
       saveGame();
-    }, 30000);
+    }, 60000);
 
     return () => clearInterval(interval);
   }, [isAuthenticated, saveGame]);
