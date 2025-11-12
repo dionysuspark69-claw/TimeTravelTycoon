@@ -12,6 +12,7 @@ interface AuthState {
   loading: boolean;
   isAuthenticated: boolean;
   fetchUser: () => Promise<void>;
+  loginWithUsername: (username: string) => Promise<{ success: boolean; error?: string }>;
   loginWithReplit: () => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -35,6 +36,28 @@ export const useAuth = create<AuthState>((set) => ({
     } catch (error) {
       console.error("Error fetching user:", error);
       set({ user: null, isAuthenticated: false, loading: false });
+    }
+  },
+
+  loginWithUsername: async (username: string) => {
+    try {
+      const response = await fetch("/auth/username", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        set({ user: data.user, isAuthenticated: true });
+        return { success: true };
+      } else {
+        const error = await response.json();
+        return { success: false, error: error.message };
+      }
+    } catch (error) {
+      console.error("Error logging in with username:", error);
+      return { success: false, error: "Failed to connect to server" };
     }
   },
 

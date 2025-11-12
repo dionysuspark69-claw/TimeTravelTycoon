@@ -60,6 +60,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   );
 
+  app.post("/auth/username", async (req, res) => {
+    try {
+      const { username } = req.body;
+
+      if (!username || typeof username !== "string" || username.trim().length === 0) {
+        return res.status(400).json({ message: "Username is required" });
+      }
+
+      const trimmedUsername = username.trim();
+      if (trimmedUsername.length < 2 || trimmedUsername.length > 50) {
+        return res.status(400).json({ message: "Username must be between 2 and 50 characters" });
+      }
+
+      const existingUsers = await db
+        .select()
+        .from(users)
+        .where(eq(users.username, trimmedUsername))
+        .limit(1);
+
+      let user: User;
+      if (existingUsers.length > 0) {
+        user = existingUsers[0];
+        console.log("✓ Existing user found:", user.username);
+      } else {
+        const newUsers = await db
+          .insert(users)
+          .values({
+            username: trimmedUsername,
+            email: null,
+            googleId: null,
+            replitUserId: null,
+          })
+          .returning();
+        user = newUsers[0];
+        console.log("✓ New user created:", user.username);
+      }
+
+      req.login(user, (err) => {
+        if (err) {
+          console.error("✗ Username login error:", err);
+          return res.status(500).json({ message: "Failed to log in" });
+        }
+        
+        req.session.save((saveErr) => {
+          if (saveErr) {
+            console.error("✗ Session save error:", saveErr);
+            return res.status(500).json({ message: "Failed to save session" });
+          }
+          
+          console.log("✓ User logged in successfully:", user.username);
+          res.json({ 
+            success: true, 
+            user: { 
+              id: user.id, 
+              username: user.username, 
+              replitUserId: user.replitUserId, 
+              googleId: user.googleId 
+            } 
+          });
+        });
+      });
+    } catch (error) {
+      console.error("✗ Username auth error:", error);
+      res.status(500).json({ message: "Failed to authenticate" });
+    }
+  });
+
   app.post("/auth/replit", async (req, res) => {
     try {
       const replitUserInfo = getUserInfo(req);

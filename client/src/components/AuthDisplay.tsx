@@ -1,10 +1,35 @@
+import { useState } from "react";
 import { useAuth } from "@/lib/stores/useAuth";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
-import { LogOut, User } from "lucide-react";
+import { Input } from "./ui/input";
+import { LogOut, User, LogIn } from "lucide-react";
 
 export function AuthDisplay() {
-  const { user, isAuthenticated, loading, logout } = useAuth();
+  const { user, isAuthenticated, loading, loginWithUsername, logout } = useAuth();
+  const [username, setUsername] = useState("");
+  const [loggingIn, setLoggingIn] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleLogin = async () => {
+    if (!username.trim()) {
+      setError("Please enter a username");
+      return;
+    }
+
+    setLoggingIn(true);
+    setError("");
+    
+    const result = await loginWithUsername(username);
+    
+    if (result.success) {
+      setUsername("");
+    } else {
+      setError(result.error || "Login failed");
+    }
+    
+    setLoggingIn(false);
+  };
 
   if (loading) {
     return null;
@@ -12,23 +37,30 @@ export function AuthDisplay() {
 
   if (!isAuthenticated || !user) {
     return (
-      <Card className="bg-black/80 backdrop-blur-sm border-cyan-500/30 p-2 px-3 min-h-[44px] flex items-center gap-2">
-        <Button
-          onClick={() => window.location.href = "/auth/google"}
-          variant="default"
-          size="sm"
-          className="bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 border border-cyan-500/30"
-        >
-          Sign in with Google
-        </Button>
-        <Button
-          onClick={() => useAuth.getState().loginWithReplit()}
-          variant="default"
-          size="sm"
-          className="bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 border border-purple-500/30"
-        >
-          Sign in with Replit
-        </Button>
+      <Card className="bg-black/80 backdrop-blur-sm border-cyan-500/30 p-3 min-h-[44px]">
+        <div className="flex items-center gap-2">
+          <Input
+            type="text"
+            placeholder="Enter username..."
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+            disabled={loggingIn}
+            className="h-8 bg-black/50 border-cyan-500/30 text-white placeholder:text-gray-500 text-sm"
+          />
+          <Button
+            onClick={handleLogin}
+            disabled={loggingIn || !username.trim()}
+            size="sm"
+            className="bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 border border-cyan-500/30 h-8"
+          >
+            <LogIn className="w-4 h-4 mr-1" />
+            {loggingIn ? "..." : "Login"}
+          </Button>
+        </div>
+        {error && (
+          <p className="text-red-400 text-xs mt-2">{error}</p>
+        )}
       </Card>
     );
   }
