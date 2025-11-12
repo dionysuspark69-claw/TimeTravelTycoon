@@ -45,7 +45,3 @@ export const useAuth = create<AuthState>((set) => ({
     }
   },
 }));
-
-if (typeof window !== 'undefined') {
-  useAuth.getState().fetchUser();
-}

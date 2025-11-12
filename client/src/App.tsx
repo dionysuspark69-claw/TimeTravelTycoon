@@ -17,9 +17,13 @@ import { useGameSave } from "./lib/hooks/useGameSave";
 
 function App() {
   const [showGame, setShowGame] = useState(false);
-  const { loading: authLoading } = useAuth();
+  const { loading: authLoading, fetchUser } = useAuth();
   
   useGameSave();
+
+  useEffect(() => {
+    fetchUser();
+  }, [fetchUser]);
 
   useEffect(() => {
     setShowGame(true);
