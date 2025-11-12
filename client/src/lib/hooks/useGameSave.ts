@@ -1,13 +1,12 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useCallback } from "react";
 import { useAuth } from "../stores/useAuth";
 import { useIdleGame } from "../stores/useIdleGame";
+import { useSaveState } from "../stores/useSaveState";
 import { toast } from "sonner";
 
 export function useGameSave() {
   const { isAuthenticated, user } = useAuth();
-  const [isSaving, setIsSaving] = useState(false);
-  const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+  const { isSaving, lastSaved, hasLoadedOnce, setIsSaving, setLastSaved, setHasLoadedOnce } = useSaveState();
 
   const saveGame = useCallback(async () => {
     if (!isAuthenticated) {
