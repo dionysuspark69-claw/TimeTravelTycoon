@@ -11,6 +11,7 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
+app.set("trust proxy", 1);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -37,13 +38,23 @@ app.use(
       maxAge: 30 * 24 * 60 * 60 * 1000,
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      path: "/",
     },
+    proxy: true,
   })
 );
 
 app.use(passport.initialize());
 app.use(passport.session());
+
+app.use((req, res, next) => {
+  if (req.path.startsWith("/api")) {
+    console.log(`🍪 ${req.method} ${req.path} - SessionID: ${req.sessionID || 'NONE'}, Authenticated: ${req.isAuthenticated()}, User: ${req.user ? req.user.username : 'NONE'}`);
+    console.log(`🍪 Cookie header:`, req.headers.cookie ? 'present' : 'MISSING');
+  }
+  next();
+});
 
 app.use((req, res, next) => {
   const start = Date.now();
