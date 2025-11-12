@@ -1,0 +1,237 @@
+2025-11-12 13:26:16.12
+69c502f7
+User
+👤 /api/auth/user - Authenticated: false
+2025-11-12 13:26:16.12
+69c502f7
+User
+👤 /api/auth/user - User: NO USER
+2025-11-12 13:26:16.12
+69c502f7
+User
+6:26:16 PM [express] GET /api/auth/user 401 in 1ms :: {"message":"Not authenticated"}
+2025-11-12 13:26:31.36
+69c502f7
+User
+6:26:31 PM [express] POST /api/save 401 in 0ms :: {"message":"Unauthorized"}
+2025-11-12 13:26:46.08
+69c502f7
+User
+6:26:46 PM [express] POST /api/save 401 in 0ms :: {"message":"Unauthorized"}
+2025-11-12 13:27:02.36
+69c502f7
+User
+6:27:02 PM [express] POST /api/save 401 in 1ms :: {"message":"Unauthorized"}
+2025-11-12 13:27:02.36
+69c502f7
+User
+6:27:02 PM [express] POST /api/save 401 in 0ms :: {"message":"Unauthorized"}
+2025-11-12 13:28:02.36
+69c502f7
+User
+6:28:02 PM [express] POST /api/save 401 in 1ms :: {"message":"Unauthorized"}
+2025-11-12 13:28:02.36
+69c502f7
+User
+6:28:02 PM [express] POST /api/save 401 in 0ms :: {"message":"Unauthorized"}
+2025-11-12 13:29:02.39
+69c502f7
+User
+6:29:02 PM [express] POST /api/save 401 in 1ms :: {"message":"Unauthorized"}
+2025-11-12 13:29:02.40
+69c502f7
+User
+6:29:02 PM [express] POST /api/save 401 in 1ms :: {"message":"Unauthorized"}
+2025-11-12 13:30:02.43
+69c502f7
+User
+6:30:02 PM [express] POST /api/save 401 in 0ms :: {"message":"Unauthorized"}
+2025-11-12 13:30:02.43
+69c502f7
+User
+6:30:02 PM [express] POST /api/save 401 in 1ms :: {"message":"Unauthorized"}
+2025-11-12 13:31:02.35
+69c502f7
+User
+6:31:02 PM [express] POST /api/save 401 in 1ms :: {"message":"Unauthorized"}
+2025-11-12 13:31:02.38
+69c502f7
+User
+6:31:02 PM [express] POST /api/save 401 in 0ms :: {"message":"Unauthorized"}
+2025-11-12 13:32:02.41
+69c502f7
+User
+6:32:02 PM [express] POST /api/save 401 in 1ms :: {"message":"Unauthorized"}
+2025-11-12 13:32:02.41
+69c502f7
+User
+6:32:02 PM [express] POST /api/save 401 in 1ms :: {"message":"Unauthorized"}
+2025-11-12 13:34:02.37
+69c502f7
+User
+6:34:02 PM [express] POST /api/save 401 in 1ms :: {"message":"Unauthorized"}
+2025-11-12 13:34:02.38
+69c502f7
+User
+6:34:02 PM [express] POST /api/save 401 in 0ms :: {"message":"Unauthorized"}
+2025-11-12 13:35:02.41
+69c502f7
+User
+6:35:02 PM [express] POST /api/save 401 in 1ms :: {"message":"Unauthorized"}
+2025-11-12 13:35:02.42
+69c502f7
+User
+6:35:02 PM [express] POST /api/save 401 in 1ms :: {"message":"Unauthorized"}
+2025-11-12 13:36:02.60
+69c502f7
+User
+6:36:02 PM [express] POST /api/save 401 in 1ms :: {"message":"Unauthorized"}
+2025-11-12 13:36:02.60
+69c502f7
+User
+6:36:02 PM [express] POST /api/save 401 in 1ms :: {"message":"Unauthorized"}
+2025-11-12 13:36:02.80
+69c502f7
+User
+👤 /api/auth/user - Session ID: Qp4_pEGJHfjABNuAknu-zzSLtEZJku60
+2025-11-12 13:36:02.80
+69c502f7
+User
+👤 /api/auth/user - Authenticated: false
+2025-11-12 13:36:02.80
+69c502f7
+User
+👤 /api/auth/user - User: NO USER
+2025-11-12 13:36:02.80
+69c502f7
+User
+6:36:02 PM [express] GET /api/auth/user 401 in 1ms :: {"message":"Not authenticated"}
+2025-11-12 13:36:12.00
+69c502f7
+User
+✓ Existing user authenticated: Dicbut
+2025-11-12 13:36:12.16
+69c502f7
+User
+🔐 Serializing user: 6
+2025-11-12 13:36:12.23
+69c502f7
+User
+✓ User logged in successfully: Dicbut
+2025-11-12 13:36:12.41
+69c502f7
+User
+6:36:12 PM [express] GET /api/load 401 in 1ms :: {"message":"Unauthorized"}
+2025-11-12 13:36:18.78
+69c502f7
+User
+6:36:18 PM [express] POST /api/save 401 in 0ms :: {"message":"Unauthorized"}
+2025-11-12 13:37:02.35
+69c502f7
+User
+6:37:02 PM [express] POST /api/save 401 in 0ms :: {"message":"Unauthorized"}
+2025-11-12 13:37:02.37
+69c502f7
+User
+6:37:02 PM [express] POST /api/save 401 in 1ms :: {"message":"Unauthorized"}
+2025-11-12 13:38:02.38
+69c502f7
+User
+6:38:02 PM [express] POST /api/save 401 in 0ms :: {"message":"Unauthorized"}
+2025-11-12 13:38:02.38
+69c502f7
+User
+6:38:02 PM [express] POST /api/save 401 in 0ms :: {"message":"Unauthorized"}
+2025-11-12 13:39:02.36
+69c502f7
+User
+6:39:02 PM [express] POST /api/save 401 in 1ms :: {"message":"Unauthorized"}
+2025-11-12 13:39:02.36
+69c502f7
+User
+6:39:02 PM [express] POST /api/save 401 in 0ms :: {"message":"Unauthorized"}
+2025-11-12 13:40:02.35
+69c502f7
+User
+6:40:02 PM [express] POST /api/save 401 in 0ms :: {"message":"Unauthorized"}
+2025-11-12 13:40:02.36
+69c502f7
+User
+6:40:02 PM [express] POST /api/save 401 in 0ms :: {"message":"Unauthorized"}
+2025-11-12 13:41:02.36
+69c502f7
+User
+6:41:02 PM [express] POST /api/save 401 in 0ms :: {"message":"Unauthorized"}
+2025-11-12 13:41:02.38
+69c502f7
+User
+6:41:02 PM [express] POST /api/save 401 in 0ms :: {"message":"Unauthorized"}
+2025-11-12 13:42:02.37
+69c502f7
+User
+6:42:02 PM [express] POST /api/save 401 in 2ms :: {"message":"Unauthorized"}
+2025-11-12 13:42:02.37
+69c502f7
+User
+6:42:02 PM [express] POST /api/save 401 in 0ms :: {"message":"Unauthorized"}
+2025-11-12 13:43:02.34
+69c502f7
+User
+6:43:02 PM [express] POST /api/save 401 in 1ms :: {"message":"Unauthorized"}
+2025-11-12 13:43:02.35
+69c502f7
+User
+6:43:02 PM [express] POST /api/save 401 in 1ms :: {"message":"Unauthorized"}
+2025-11-12 13:44:02.37
+69c502f7
+User
+6:44:02 PM [express] POST /api/save 401 in 1ms :: {"message":"Unauthorized"}
+2025-11-12 13:44:02.37
+69c502f7
+User
+6:44:02 PM [express] POST /api/save 401 in 0ms :: {"message":"Unauthorized"}
+2025-11-12 13:45:02.44
+69c502f7
+User
+6:45:02 PM [express] POST /api/save 401 in 1ms :: {"message":"Unauthorized"}
+2025-11-12 13:45:02.47
+69c502f7
+User
+6:45:02 PM [express] POST /api/save 401 in 0ms :: {"message":"Unauthorized"}
+2025-11-12 13:46:02.38
+69c502f7
+User
+6:46:02 PM [express] POST /api/save 401 in 1ms :: {"message":"Unauthorized"}
+2025-11-12 13:46:02.39
+69c502f7
+User
+6:46:02 PM [express] POST /api/save 401 in 0ms :: {"message":"Unauthorized"}
+
+2025-11-12 13:47:02.38
+69c502f7
+User
+6:47:02 PM [express] POST /api/save 401 in 1ms :: {"message":"Unauthorized"}
+2025-11-12 13:47:02.38
+69c502f7
+User
+6:47:02 PM [express] POST /api/save 401 in 1ms :: {"message":"Unauthorized"}
+2025-11-12 13:48:02.35
+69c502f7
+User
+6:48:02 PM [express] POST /api/save 401 in 1ms :: {"message":"Unauthorized"}
+2025-11-12 13:48:02.39
+69c502f7
+User
+6:48:02 PM [express] POST /api/save 401 in 1ms :: {"message":"Unauthorized"}
+2025-11-12 13:49:02.35
+69c502f7
+User
+6:49:02 PM [express] POST /api/save 401 in 0ms :: {"message":"Unauthorized"}
+2025-11-12 13:49:02.38
+69c502f7
+User
+6:49:02 PM [express] POST /api/save 401 in 0ms :: {"message":"Unauthorized"}
+2025-11-12 13:50:02.41
+69c502f7
+User
+6:50:02 PM [express] POST /api/save 401 in 1ms :: {"message":"Unauthorized"}
