@@ -2,6 +2,7 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { eq, desc, or } from "drizzle-orm";
 import passport from "./passport-config";
+import { getUserInfo } from "@replit/repl-auth";
 import { db } from "./db";
 import { gameSaves, users, type User } from "@shared/schema";
 
@@ -38,12 +39,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/auth/replit", async (req, res) => {
     try {
-      const replitUserId = req.headers['x-replit-user-id'] as string;
-      const replitUserName = req.headers['x-replit-user-name'] as string;
+      const replitUserInfo = getUserInfo(req);
 
-      if (!replitUserId || !replitUserName) {
+      if (!replitUserInfo || !replitUserInfo.id) {
         return res.status(401).json({ message: "Not authenticated with Replit" });
       }
+
+      const replitUserId = replitUserInfo.id;
+      const replitUserName = replitUserInfo.name || "Replit User";
 
       const existingUsers = await db
         .select()
@@ -72,7 +75,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.error("Replit Auth login error:", err);
           return res.status(500).json({ message: "Failed to log in" });
         }
-        res.json({ success: true, user: { id: user.id, username: user.username } });
+        res.json({ success: true, user: { id: user.id, username: user.username, replitUserId: user.replitUserId, googleId: user.googleId } });
       });
     } catch (error) {
       console.error("Replit Auth error:", error);
