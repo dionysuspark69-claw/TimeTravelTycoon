@@ -1,6 +1,6 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
-import { eq, desc, or } from "drizzle-orm";
+import { eq, desc, or, sql } from "drizzle-orm";
 import passport from "./passport-config";
 import { getUserInfo } from "@replit/repl-auth";
 import { db } from "./db";
@@ -113,6 +113,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Logout error:", error);
       res.status(500).json({ message: "Failed to logout" });
+    }
+  });
+
+  app.get("/api/db/test", async (req, res) => {
+    try {
+      const result = await db.execute(sql`SELECT NOW()`);
+      res.json({ ok: true, result });
+    } catch (error) {
+      console.error("Database test error:", error);
+      res.status(500).json({ ok: false, error: error instanceof Error ? error.message : "Database connection failed" });
     }
   });
 
