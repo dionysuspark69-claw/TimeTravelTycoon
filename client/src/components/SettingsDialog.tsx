@@ -41,7 +41,6 @@ export function SettingsDialog() {
     }
     
     await saveGame();
-    toast.success("Game progress saved successfully!");
   };
   
   const formatLastSaved = () => {

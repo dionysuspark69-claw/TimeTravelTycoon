@@ -42,14 +42,18 @@ export function useGameSave() {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({ gameState }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to save game");
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Save failed:", response.status, errorData);
+        throw new Error(errorData.message || "Failed to save game");
       }
 
       setLastSaved(new Date());
+      console.log("Game saved successfully");
     } catch (error) {
       console.error("Error saving game:", error);
       toast.error("Failed to save game progress");
@@ -64,14 +68,18 @@ export function useGameSave() {
     }
 
     try {
-      const response = await fetch("/api/load");
+      const response = await fetch("/api/load", {
+        credentials: "include",
+      });
 
       if (!response.ok) {
         if (response.status === 404) {
           console.log("No saved game found");
           return;
         }
-        throw new Error("Failed to load game");
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Load failed:", response.status, errorData);
+        throw new Error(errorData.message || "Failed to load game");
       }
 
       const data = await response.json();
