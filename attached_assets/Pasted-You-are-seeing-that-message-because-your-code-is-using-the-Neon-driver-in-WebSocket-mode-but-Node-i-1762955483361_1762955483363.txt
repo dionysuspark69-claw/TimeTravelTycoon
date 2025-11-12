@@ -1,0 +1,145 @@
+You are seeing that message because your code is using the Neon driver in WebSocket mode, but Node in your Replit runtime does not have a WebSocket constructor available, so the driver cannot open the socket. Two clean fixes exist. Pick one path below and follow the steps.
+
+Quick choice
+
+1. If your Google OAuth callback only runs single queries, use HTTP mode with the neon function. This avoids WebSockets entirely. 
+
+
+2. If you need sessions or a pool, keep WebSockets and supply a constructor from the ws package. 
+
+
+
+
+---
+
+Path A: switch to HTTP queries for the OAuth flow
+
+Step 1. Install the driver
+
+Command 1
+
+npm install @neondatabase/serverless
+
+Step 2. Ensure your database url is set in Replit Secrets
+
+1. Open Tools, then Secrets.
+
+
+2. Add key DATABASE_URL with the Neon connection string from the Neon console Connect page. 
+
+
+
+Step 3. Use the HTTP helper where your OAuth callback touches the database Create or update the code that runs during the OAuth callback to use the neon function.
+
+// example: auth-db-check.mjs
+import { neon } from "@neondatabase/serverless";
+
+export async function ensureUserRecord(userId, email) {
+  const sql = neon(process.env.DATABASE_URL);
+  // example single query
+  const rows = await sql`select now() as ts`;
+  return rows[0].ts;
+}
+
+The neon function carries each query over fetch using HTTPS, which works in modern JavaScript environments and does not need WebSockets. 
+
+Step 4. Smoke test the connection
+
+Command 2
+
+node -e "import('@neondatabase/serverless').then(async m=>{const sql=m.neon(process.env.DATABASE_URL);console.log(await sql\`select version()\`);})"
+
+If this prints a row, HTTP mode is working and the OAuth callback error should disappear.
+
+
+---
+
+Path B: keep Pool or Client, wire up WebSockets in Node
+
+Step 1. Install the driver and a WebSocket library
+
+Command 1
+
+npm install @neondatabase/serverless ws
+
+Step 2. Provide a WebSocket constructor before creating Pool or Client In Node versions that do not ship a WebSocket global, you must set neonConfig.webSocketConstructor. The README shows the exact pattern. 
+
+// example: db.mjs
+import { Pool, neonConfig } from "@neondatabase/serverless";
+import ws from "ws";
+
+neonConfig.webSocketConstructor = ws;   // important line
+
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+
+export async function pingDb() {
+  const { rows } = await pool.query("select now() as ts");
+  return rows[0].ts;
+}
+
+// call pool.end() on shutdown or at the end of a serverless request
+
+Notes from the docs:
+
+1. Queries through Pool or Client use WebSockets. 
+
+
+2. In Node v21 and earlier, there is no built in WebSocket. Supplying a constructor like ws resolves the “WebSocket undefined” error. 
+
+
+3. In serverless style handlers, connect, use, and close inside one request. Do not keep a long lived socket across requests. 
+
+
+
+Step 3. Smoke test the connection
+
+Command 2
+
+node -e "import('@neondatabase/serverless').then(async m=>{const{Pool,neonConfig}=m;const ws=await import('ws');neonConfig.webSocketConstructor=ws.default;const p=new Pool({connectionString:process.env.DATABASE_URL});const r=await p.query('select version()');console.log(r.rows[0]);await p.end();})"
+
+You should see a Postgres version row printed. If not, recheck that neonConfig.webSocketConstructor is set before creating the pool or client. 
+
+
+---
+
+Why this fixes your exact error
+
+Your message cites the Neon CONFIG guide section for webSocketConstructor and “typeof WebSocket undefined.” That error appears when the driver goes down the WebSocket path but cannot find a constructor in Node. Using HTTP queries prevents any socket attempt. Staying with Pool or Client while setting neonConfig.webSocketConstructor = ws gives the driver a working constructor. Both behaviors are documented in the official README. 
+
+
+---
+
+Summary
+
+1. The error comes from the database layer, not Google OAuth.
+
+
+2. Pick one path.
+
+1. Use neon for one shot queries in your OAuth callback. No socket needed. 
+
+
+2. Keep Pool or Client and set a WebSocket constructor with ws. 
+
+
+
+
+3. Run the provided one line smoke test command to confirm.
+
+
+
+Thought starters
+
+1. Do you need transactions or interactive sessions in the callback, or is a single query enough
+
+
+2. Do you want a tiny health route that checks select now() on boot so future changes do not regress this
+
+
+
+
+---
+
+Simplified explanation
+
+Your code tried to talk to Neon over a WebSocket, but Node inside Replit did not know how to create that socket. Either avoid sockets by using the HTTP helper neon, or keep sockets and give the driver a WebSocket constructor from the ws package. After doing that and confirming DATABASE_URL is set, the OAuth callback should run without the error. 
