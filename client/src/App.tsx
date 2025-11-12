@@ -12,15 +12,20 @@ import { ClickBoostTutorial } from "./components/ClickBoostTutorial";
 import { PrestigeTutorial } from "./components/PrestigeTutorial";
 import { ActiveEventsDisplay } from "./components/ActiveEventsDisplay";
 import { Toaster } from "./components/ui/sonner";
+import { useAuth } from "./lib/stores/useAuth";
+import { useGameSave } from "./lib/hooks/useGameSave";
 
 function App() {
   const [showGame, setShowGame] = useState(false);
+  const { loading: authLoading } = useAuth();
+  
+  useGameSave();
 
   useEffect(() => {
     setShowGame(true);
   }, []);
 
-  if (!showGame) {
+  if (!showGame || authLoading) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900">
         <div className="text-white text-2xl font-bold">Loading ChronoTransit...</div>

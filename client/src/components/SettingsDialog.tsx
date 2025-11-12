@@ -1,15 +1,18 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Settings, Volume2, VolumeX, BarChart3, Trophy } from "lucide-react";
+import { Settings, Volume2, VolumeX, BarChart3, Trophy, Save, Cloud, CloudOff } from "lucide-react";
 import { useIdleGame } from "@/lib/stores/useIdleGame";
 import { useManagers, MANAGER_TYPES } from "@/lib/stores/useManagers";
 import { useArtifacts } from "@/lib/stores/useArtifacts";
 import { useMissions } from "@/lib/stores/useMissions";
 import { useAudio } from "@/lib/stores/useAudio";
+import { useAuth } from "@/lib/stores/useAuth";
+import { useGameSave } from "@/lib/hooks/useGameSave";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GooglePlayTab } from "./GooglePlayTab";
 import { formatChronoValue } from "@/lib/utils";
+import { toast } from "sonner";
 
 export function SettingsDialog() {
   const {
@@ -28,6 +31,30 @@ export function SettingsDialog() {
   const { discoveries } = useArtifacts();
   const { completedMissionIds } = useMissions();
   const { isMuted, toggleMute } = useAudio();
+  const { isAuthenticated } = useAuth();
+  const { saveGame, isSaving, lastSaved } = useGameSave();
+  
+  const handleManualSave = async () => {
+    if (!isAuthenticated) {
+      toast.error("Please sign in to save your progress");
+      return;
+    }
+    
+    await saveGame();
+    toast.success("Game progress saved successfully!");
+  };
+  
+  const formatLastSaved = () => {
+    if (!lastSaved) return "Never";
+    const now = new Date();
+    const diff = now.getTime() - lastSaved.getTime();
+    const seconds = Math.floor(diff / 1000);
+    const minutes = Math.floor(seconds / 60);
+    
+    if (seconds < 60) return `${seconds}s ago`;
+    if (minutes < 60) return `${minutes}m ago`;
+    return lastSaved.toLocaleTimeString();
+  };
   
   return (
     <Dialog>
@@ -86,6 +113,49 @@ export function SettingsDialog() {
                     </>
                   )}
                 </Button>
+              </div>
+            </Card>
+            
+            <Card className="bg-gray-800/50 border-cyan-500/30 p-6">
+              <h3 className="text-lg font-bold text-cyan-400 mb-4">Save Progress</h3>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-white font-semibold">Manual Save</div>
+                    <div className="text-gray-400 text-sm">
+                      {isAuthenticated ? "Save your game progress to the cloud" : "Sign in to enable cloud saves"}
+                    </div>
+                  </div>
+                  <Button
+                    onClick={handleManualSave}
+                    disabled={!isAuthenticated || isSaving}
+                    variant="outline"
+                    size="lg"
+                    className="bg-gray-700 border-cyan-500/30 hover:bg-gray-600 min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSaving ? (
+                      <>
+                        <Cloud className="w-5 h-5 mr-2 animate-pulse" />
+                        Saving...
+                      </>
+                    ) : isAuthenticated ? (
+                      <>
+                        <Save className="w-5 h-5 mr-2" />
+                        Save Now
+                      </>
+                    ) : (
+                      <>
+                        <CloudOff className="w-5 h-5 mr-2" />
+                        Disabled
+                      </>
+                    )}
+                  </Button>
+                </div>
+                {isAuthenticated && (
+                  <div className="text-xs text-gray-400">
+                    Last saved: {formatLastSaved()}
+                  </div>
+                )}
               </div>
             </Card>
           </TabsContent>

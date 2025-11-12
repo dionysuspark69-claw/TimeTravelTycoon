@@ -5,6 +5,7 @@ import { useAudio } from "@/lib/stores/useAudio";
 import { Volume2, VolumeX, Trophy, MapPin, Clock } from "lucide-react";
 import { StatsPanel } from "./StatsPanel";
 import { SettingsDialog } from "./SettingsDialog";
+import { AuthDisplay } from "./AuthDisplay";
 import { useIsMobile } from "@/hooks/use-is-mobile";
 import { useAdBoosts } from "@/lib/stores/useAdBoosts";
 import { useState, useEffect } from "react";
@@ -125,6 +126,7 @@ export function GameUI() {
           </div>
           
           <div className="flex gap-2 justify-end">
+            <AuthDisplay />
             <SettingsDialog />
             {!isMobile && (
               <>
