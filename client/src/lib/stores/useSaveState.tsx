@@ -109,6 +109,10 @@ export const useSaveState = create<SaveState>((set, get) => ({
           stateChangedTime: now
         }));
 
+        const actualProcessingCount = restoredEntities.filter(
+          (e: any) => e.state === "boarding" || e.state === "traveling"
+        ).length;
+
         useIdleGame.setState({
           chronocoins: data.gameState.chronocoins,
           totalEarned: data.gameState.totalEarned,
@@ -120,7 +124,8 @@ export const useSaveState = create<SaveState>((set, get) => ({
           timeMachineCount: data.gameState.timeMachineCount,
           customerGenerationRate: data.gameState.customerGenerationRate,
           waitingCustomers: data.gameState.waitingCustomers,
-          processingCustomers: data.gameState.processingCustomers,
+          processingCustomers: actualProcessingCount,
+          tripEndTime: actualProcessingCount > 0 ? now : null,
           customerEntities: restoredEntities,
           nextCustomerId: data.gameState.nextCustomerId || 0,
           unlockedDestinations: data.gameState.unlockedDestinations,
