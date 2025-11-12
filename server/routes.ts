@@ -1,45 +1,77 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
-
-const gameStates = new Map<string, any>();
-const leaderboard: Array<{ playerId: string; playerName: string; score: number }> = [];
+import { eq, desc } from "drizzle-orm";
+import { db } from "./db";
+import { gameSaves } from "@shared/schema";
+import { requireAuth, getUserFromHeader } from "./auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  app.post("/api/google-play/auth", async (req, res) => {
+  app.get("/api/auth/user", async (req, res) => {
     try {
-      const { code } = req.body;
+      const user = await getUserFromHeader(req);
       
-      if (!code) {
-        return res.status(400).json({ message: "Authorization code required" });
+      if (!user) {
+        return res.status(401).json({ message: "Not authenticated" });
       }
 
-      const mockPlayerData = {
-        playerId: "mock_player_" + Date.now(),
-        playerName: "Player " + Math.floor(Math.random() * 1000),
-        playerAvatar: null,
-        accessToken: "mock_token_" + Date.now(),
-      };
-
-      res.json(mockPlayerData);
+      res.json({
+        id: user.id,
+        username: user.username,
+        replitUserId: user.replitUserId,
+      });
     } catch (error) {
-      console.error("Auth error:", error);
-      res.status(500).json({ message: "Authentication failed" });
+      console.error("Get user error:", error);
+      res.status(500).json({ message: "Failed to get user info" });
     }
   });
 
-  app.post("/api/google-play/save", async (req, res) => {
+  app.post("/api/auth/logout", async (req, res) => {
     try {
-      const authHeader = req.headers.authorization;
-      const token = authHeader?.replace("Bearer ", "");
-      
-      if (!token) {
+      if (req.session) {
+        req.session.destroy((err) => {
+          if (err) {
+            console.error("Session destroy error:", err);
+            return res.status(500).json({ message: "Failed to logout" });
+          }
+          res.json({ success: true });
+        });
+      } else {
+        res.json({ success: true });
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+      res.status(500).json({ message: "Failed to logout" });
+    }
+  });
+
+  app.post("/api/save", requireAuth, async (req, res) => {
+    try {
+      if (!req.user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
 
       const { gameState } = req.body;
-      
-      gameStates.set(token, gameState);
+
+      const existingSaves = await db
+        .select()
+        .from(gameSaves)
+        .where(eq(gameSaves.userId, req.user.id))
+        .limit(1);
+
+      if (existingSaves.length > 0) {
+        await db
+          .update(gameSaves)
+          .set({
+            gameState,
+            lastUpdated: new Date(),
+          })
+          .where(eq(gameSaves.userId, req.user.id));
+      } else {
+        await db.insert(gameSaves).values({
+          userId: req.user.id,
+          gameState,
+        });
+      }
 
       res.json({ success: true });
     } catch (error) {
@@ -48,65 +80,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/google-play/load", async (req, res) => {
+  app.get("/api/load", requireAuth, async (req, res) => {
     try {
-      const authHeader = req.headers.authorization;
-      const token = authHeader?.replace("Bearer ", "");
-      
-      if (!token) {
+      if (!req.user) {
         return res.status(401).json({ message: "Unauthorized" });
       }
 
-      const gameState = gameStates.get(token);
+      const saves = await db
+        .select()
+        .from(gameSaves)
+        .where(eq(gameSaves.userId, req.user.id))
+        .orderBy(desc(gameSaves.lastUpdated))
+        .limit(1);
 
-      res.json({ gameState: gameState || null });
+      res.json({ gameState: saves.length > 0 ? saves[0].gameState : null });
     } catch (error) {
       console.error("Load error:", error);
       res.status(500).json({ message: "Failed to load progress" });
-    }
-  });
-
-  app.post("/api/google-play/leaderboard/submit", async (req, res) => {
-    try {
-      const authHeader = req.headers.authorization;
-      const token = authHeader?.replace("Bearer ", "");
-      
-      if (!token) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-
-      const { score, playerName } = req.body;
-      
-      const existingEntry = leaderboard.find(entry => entry.playerId === token);
-      
-      if (existingEntry) {
-        if (score > existingEntry.score) {
-          existingEntry.score = score;
-        }
-      } else {
-        leaderboard.push({
-          playerId: token,
-          playerName: playerName || "Player " + Math.floor(Math.random() * 1000),
-          score,
-        });
-      }
-
-      leaderboard.sort((a, b) => b.score - a.score);
-      leaderboard.splice(10);
-
-      res.json({ success: true });
-    } catch (error) {
-      console.error("Submit score error:", error);
-      res.status(500).json({ message: "Failed to submit score" });
-    }
-  });
-
-  app.get("/api/google-play/leaderboard", async (req, res) => {
-    try {
-      res.json({ entries: leaderboard.slice(0, 10) });
-    } catch (error) {
-      console.error("Get leaderboard error:", error);
-      res.status(500).json({ message: "Failed to get leaderboard" });
     }
   });
 
