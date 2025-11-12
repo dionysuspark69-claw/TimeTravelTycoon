@@ -8,7 +8,7 @@ import { useArtifacts } from "@/lib/stores/useArtifacts";
 import { useMissions } from "@/lib/stores/useMissions";
 import { useAudio } from "@/lib/stores/useAudio";
 import { useAuth } from "@/lib/stores/useAuth";
-import { useGameSave } from "@/lib/hooks/useGameSave";
+import { useSaveState } from "@/lib/stores/useSaveState";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GooglePlayTab } from "./GooglePlayTab";
 import { formatChronoValue } from "@/lib/utils";
@@ -32,7 +32,7 @@ export function SettingsDialog() {
   const { completedMissionIds } = useMissions();
   const { isMuted, toggleMute } = useAudio();
   const { isAuthenticated } = useAuth();
-  const { saveGame, isSaving, lastSaved } = useGameSave();
+  const { saveGame, isSaving, lastSaved } = useSaveState();
   
   const handleManualSave = async () => {
     if (!isAuthenticated) {
