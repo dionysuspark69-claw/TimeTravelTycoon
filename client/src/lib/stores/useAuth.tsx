@@ -40,18 +40,14 @@ export const useAuth = create<AuthState>((set) => ({
 
   loginWithReplit: async () => {
     try {
-      const response = await fetch("/auth/replit", { method: "POST" });
-      
-      if (response.ok) {
-        const data = await response.json();
-        set({ user: data.user, isAuthenticated: true });
-        window.location.reload();
+      const replitAuthButton = document.querySelector('#replit-auth-container button');
+      if (replitAuthButton) {
+        (replitAuthButton as HTMLButtonElement).click();
       } else {
-        const error = await response.json();
-        console.error("Replit Auth failed:", error.message);
+        console.error("Replit Auth button not found");
       }
     } catch (error) {
-      console.error("Error logging in with Replit:", error);
+      console.error("Error triggering Replit Auth:", error);
     }
   },
 
