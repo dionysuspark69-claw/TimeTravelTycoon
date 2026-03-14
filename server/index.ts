@@ -6,6 +6,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import { Pool, neonConfig } from "@neondatabase/serverless";
+import createMemoryStore from "memorystore";
 import passport from "./passport-config";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
@@ -19,18 +20,22 @@ app.use(express.urlencoded({ extended: false }));
 console.log("✓ neonConfig.webSocketConstructor type:", typeof neonConfig.webSocketConstructor);
 console.log("✓ globalThis.WebSocket type:", typeof globalThis.WebSocket);
 
-const PgSession = connectPgSimple(session);
-const pool = new Pool({ 
-  connectionString: process.env.DATABASE_URL
-});
+// Use memory store if no DATABASE_URL, pg session store otherwise
+const MemoryStore = createMemoryStore(session);
+let sessionStore: session.Store = new MemoryStore({ checkPeriod: 86400000 });
+if (process.env.DATABASE_URL) {
+  const PgSession = connectPgSimple(session);
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  sessionStore = new PgSession({
+    pool,
+    tableName: "session",
+    createTableIfMissing: true,
+  });
+}
 
 app.use(
   session({
-    store: new PgSession({
-      pool,
-      tableName: "session",
-      createTableIfMissing: true,
-    }),
+    store: sessionStore,
     secret: process.env.SESSION_SECRET || "chronotransit-secret-key-change-in-production",
     resave: false,
     saveUninitialized: false,
