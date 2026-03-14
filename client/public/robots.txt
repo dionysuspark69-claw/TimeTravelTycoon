@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://timetraveltycoon.onrender.com/sitemap.xml
