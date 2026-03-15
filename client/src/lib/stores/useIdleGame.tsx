@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 import { useArtifacts } from "./useArtifacts";
 import { useAudio } from "./useAudio";
+import { useChronoMeter } from "./useChronoMeter";
 import { toast } from "sonner";
 
 export interface TimePeriod {
@@ -1239,7 +1240,8 @@ export const useIdleGame = create<IdleGameState>()(
       const artifactsStore = useArtifacts.getState();
       const artifactBonus = artifactsStore.getDestinationRevenueBonus(state.currentDestination);
       
-      let multiplier = (1 + (state.prestigePoints * 0.1) + managerBonus + artifactBonus) * destinationMod;
+      const chronoBonus = useChronoMeter.getState().getBonus();
+      let multiplier = (1 + (state.prestigePoints * 0.1) + managerBonus + artifactBonus + chronoBonus) * destinationMod;
       
       return multiplier;
     },
