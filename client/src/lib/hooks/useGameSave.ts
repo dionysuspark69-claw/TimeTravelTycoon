@@ -23,7 +23,7 @@ export function useGameSave() {
 
     const interval = setInterval(() => {
       useSaveState.getState().saveGame();
-    }, 60000);
+    }, 30000);
 
     return () => clearInterval(interval);
   }, [isAuthenticated]);

@@ -4,7 +4,7 @@ import { useChronoMeter } from "@/lib/stores/useChronoMeter";
 import { formatChronoValue } from "@/lib/utils";
 
 const DRAIN_RATE_MS = 50;        // tick every 50ms
-const DRAIN_PER_TICK = 1.2;      // % drained per tick (~6s to empty)
+const DRAIN_PER_TICK = 0.6;      // % drained per tick (~12s to empty)
 const REFILL_AMOUNT = 100;       // click = full bar
 
 interface FloatingCoin {
