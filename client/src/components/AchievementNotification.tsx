@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { Achievement } from "@/lib/stores/useAchievements";
-import { Card } from "./ui/card";
-import { Trophy, X, Gift } from "lucide-react";
-import { Button } from "./ui/button";
+import { Trophy } from "lucide-react";
 
 interface AchievementNotificationProps {
   achievement: Achievement | null;
@@ -11,22 +9,13 @@ interface AchievementNotificationProps {
 
 export function AchievementNotification({ achievement, onClose }: AchievementNotificationProps) {
   const [visible, setVisible] = useState(false);
-  
+
   useEffect(() => {
     if (achievement) {
       setVisible(false);
-      const showTimer = setTimeout(() => {
-        setVisible(true);
-      }, 50);
-      
-      const hideTimer = setTimeout(() => {
-        setVisible(false);
-      }, 3000);
-      
-      const closeTimer = setTimeout(() => {
-        onClose();
-      }, 3500);
-      
+      const showTimer = setTimeout(() => setVisible(true), 30);
+      const hideTimer = setTimeout(() => setVisible(false), 2500);
+      const closeTimer = setTimeout(() => onClose(), 2900);
       return () => {
         clearTimeout(showTimer);
         clearTimeout(hideTimer);
@@ -36,43 +25,21 @@ export function AchievementNotification({ achievement, onClose }: AchievementNot
       setVisible(false);
     }
   }, [achievement, onClose]);
-  
+
   if (!achievement) return null;
-  
+
   return (
     <div
-      className={`fixed top-20 right-4 z-50 transition-all duration-300 ${
+      className={`fixed right-3 z-50 transition-all duration-250 ${
         visible ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"
       }`}
+      style={{ top: "72px" }}
     >
-      <Card className="bg-gradient-to-r from-yellow-600 to-orange-600 border-yellow-400 p-4 min-w-[300px] shadow-2xl">
-        <div className="flex items-start gap-3">
-          <div className="text-4xl">{achievement.icon}</div>
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <Trophy className="w-4 h-4 text-yellow-200" />
-              <span className="text-white font-bold text-sm">Achievement Unlocked!</span>
-            </div>
-            <div className="text-white font-semibold">{achievement.name}</div>
-            <div className="text-yellow-100 text-sm">{achievement.description}</div>
-            <div className="text-yellow-200 text-sm mt-2 flex items-center gap-1 bg-black/20 px-2 py-1 rounded">
-              <Gift className="w-3 h-3" />
-              Claim {achievement.reward} coins in Achievements tab!
-            </div>
-          </div>
-          <Button
-            onClick={() => {
-              setVisible(false);
-              setTimeout(onClose, 300);
-            }}
-            variant="ghost"
-            size="icon"
-            className="text-white hover:bg-white/20 h-6 w-6"
-          >
-            <X className="w-4 h-4" />
-          </Button>
-        </div>
-      </Card>
+      <div className="flex items-center gap-2 bg-black/85 backdrop-blur-sm border border-yellow-500/40 rounded-full px-3 py-1.5 shadow-lg max-w-[260px]">
+        <Trophy className="w-3.5 h-3.5 text-yellow-400 shrink-0" />
+        <span className="text-yellow-300 text-xs font-semibold truncate">{achievement.name}</span>
+        <span className="text-gray-400 text-xs shrink-0">+{achievement.reward}</span>
+      </div>
     </div>
   );
 }
