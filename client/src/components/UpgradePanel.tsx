@@ -144,39 +144,31 @@ export function UpgradePanel() {
       {isExpanded && (
         <div className="p-2 md:p-4">
           <Tabs defaultValue="upgrades" className="w-full">
-        <TabsList className="grid w-full grid-cols-8 bg-gray-900">
-          <TabsTrigger value="upgrades" className="flex items-center gap-2 text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
+        <TabsList className="grid w-full grid-cols-6 bg-gray-900">
+          <TabsTrigger value="upgrades" className="flex items-center gap-1 text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
             <Settings className="w-4 h-4" />
             <span className="hidden sm:inline">Upgrades</span>
           </TabsTrigger>
-          <TabsTrigger value="managers" className="flex items-center gap-2 text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
+          <TabsTrigger value="managers" className="flex items-center gap-1 text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
             <Users className="w-4 h-4" />
             <span className="hidden sm:inline">Managers</span>
           </TabsTrigger>
-          <TabsTrigger value="destinations" className="flex items-center gap-2 text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
+          <TabsTrigger value="destinations" className="flex items-center gap-1 text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
             <MapPin className="w-4 h-4" />
             <span className="hidden sm:inline">Destinations</span>
           </TabsTrigger>
-          <TabsTrigger value="boosts" className="flex items-center gap-2 text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
-            <Tv className="w-4 h-4" />
-            <span className="hidden sm:inline">Ad Boosts</span>
-          </TabsTrigger>
-          <TabsTrigger value="collections" className="flex items-center gap-2 text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
+          <TabsTrigger value="collections" className="flex items-center gap-1 text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
             <Sparkles className="w-4 h-4" />
             <span className="hidden sm:inline">Collections</span>
           </TabsTrigger>
-          <TabsTrigger value="missions" className="flex items-center gap-2 text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
-            <Target className="w-4 h-4" />
-            <span className="hidden sm:inline">Missions</span>
-          </TabsTrigger>
-          <TabsTrigger value="achievements" className="flex items-center gap-2 relative text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
+          <TabsTrigger value="progress" className="flex items-center gap-1 relative text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
             <Trophy className="w-4 h-4" />
-            <span className="hidden sm:inline">Achievements</span>
+            <span className="hidden sm:inline">Progress</span>
             {unclaimedCount > 0 && (
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border border-gray-900" />
             )}
           </TabsTrigger>
-          <TabsTrigger value="prestige" className="flex items-center gap-2 relative text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
+          <TabsTrigger value="prestige" className="flex items-center gap-1 relative text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
             <Star className={`w-4 h-4 ${prestigeReady ? "text-yellow-400" : ""}`} />
             <span className="hidden sm:inline">Prestige</span>
             {prestigeReady && (
@@ -338,22 +330,20 @@ export function UpgradePanel() {
         
         <TabsContent value="managers" className="space-y-2 mt-4 max-h-[40vh] md:max-h-[45vh] overflow-y-auto pr-2 pb-4">
           <ManagersPanel />
-        </TabsContent>
-        
-        <TabsContent value="boosts" className="space-y-2 mt-4 max-h-[40vh] md:max-h-[45vh] overflow-y-auto pr-2 pb-4">
-          <AdBoostPanel />
-        </TabsContent>
-        
-        <TabsContent value="achievements" className="space-y-2 mt-4 max-h-[40vh] md:max-h-[45vh] overflow-y-auto pr-2 pb-4">
-          <AchievementsPanel />
+          <div className="border-t border-cyan-500/20 mt-4 pt-4">
+            <AdBoostPanel />
+          </div>
         </TabsContent>
         
         <TabsContent value="collections" className="space-y-2 mt-4 max-h-[40vh] md:max-h-[45vh] overflow-y-auto pr-2 pb-4">
           <CollectionsPanel />
         </TabsContent>
-        
-        <TabsContent value="missions" className="space-y-2 mt-4 max-h-[40vh] md:max-h-[45vh] overflow-y-auto pr-2 pb-4">
+
+        <TabsContent value="progress" className="mt-4 max-h-[40vh] md:max-h-[45vh] overflow-y-auto pr-2 pb-4">
           <MissionsPanel />
+          <div className="border-t border-cyan-500/20 mt-4 pt-2">
+            <AchievementsPanel />
+          </div>
         </TabsContent>
         
         <TabsContent value="prestige" className="space-y-4 mt-4 max-h-[40vh] md:max-h-[45vh] overflow-y-auto pr-2 pb-4">
@@ -424,7 +414,7 @@ export function UpgradePanel() {
               <li>Bonuses stack with each prestige</li>
               <li>Next bonus: <span className="text-yellow-400 font-semibold">+{(prestigeLevel + 1) * 10}% total revenue</span></li>
             </ul>
-            <div className="text-red-400 text-xs mt-3">ΓÜá Resets coins, upgrades, and destinations (prestige level kept)</div>
+            <div className="text-red-400 text-xs mt-3">Warning: Resets coins, upgrades, and destinations (prestige level kept)</div>
           </Card>
 
           <Button
