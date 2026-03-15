@@ -63,7 +63,7 @@ function PrestigeCard() {
           ].map(r => (
             <div key={r.label}>
               <div className="flex justify-between text-xs mb-0.5">
-                <span className={r.done ? "text-green-400" : "text-gray-400"}>{r.done ? "Γ£à" : "Γ¼£"} {r.label}</span>
+                <span className={r.done ? "text-green-400" : "text-gray-400"}>{r.done ? "[+]" : "[ ]"} {r.label}</span>
                 <span className={r.done ? "text-green-400" : "text-gray-500"}>{r.val}</span>
               </div>
               <div className="h-1 bg-gray-700 rounded-full overflow-hidden">
