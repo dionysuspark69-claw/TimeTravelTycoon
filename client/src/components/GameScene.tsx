@@ -3,8 +3,9 @@ import { OrbitControls, Text } from "@react-three/drei";
 import { TimeMachine } from "./TimeMachine";
 import { CharacterManager } from "./CharacterManager";
 import { Starfield } from "./Starfield";
+import { EraDisplay } from "./EraDisplay";
 import { Component, ErrorInfo, ReactNode } from "react";
-import { useIdleGame } from "@/lib/stores/useIdleGame";
+import { useIdleGame, TIME_PERIODS } from "@/lib/stores/useIdleGame";
 import { useIsMobile } from "@/hooks/use-is-mobile";
 
 interface ErrorBoundaryProps {
@@ -112,14 +113,42 @@ function Scene() {
   );
 }
 
+const ERA_BG_COLORS: Record<string, string> = {
+  dinosaur:    "#0d2b1a",
+  egypt:       "#2b1e0a",
+  rome:        "#2b0f0f",
+  medieval:    "#1a0d2b",
+  viking:      "#141a1f",
+  renaissance: "#2b1800",
+  industrial:  "#1a1a1a",
+  wildwest:    "#2b1200",
+  roaring20s:  "#2b2200",
+  spaceage:    "#0a1628",
+  future:      "#071f1f",
+  cyberpunk:   "#1f0a2b",
+  atlantis:    "#071528",
+  prehistoric: "#2b1400",
+  mooncolony:  "#121418",
+  aiutopia:    "#071a2b",
+  mars:        "#2b0e00",
+  timeorigin:  "#0a0d2b",
+  quantum:     "#130a2b",
+  paradise:    "#072b14",
+  timeloop:    "#072b0f",
+  multiversal: "#1a072b",
+  temporal:    "#2b0720",
+};
+
 export function GameScene() {
   const isMobile = useIsMobile();
+  const currentDestination = useIdleGame(s => s.currentDestination);
   
   const cameraPosition: [number, number, number] = isMobile 
     ? [10, 8, 10]
     : [8, 6, 8];
   
   const cameraFov = isMobile ? 60 : 50;
+  const bgColor = ERA_BG_COLORS[currentDestination] || "#1a1a2e";
   
   return (
     <WebGLErrorBoundary>
@@ -131,9 +160,10 @@ export function GameScene() {
             console.log("WebGL context created successfully");
           }}
         >
-          <color attach="background" args={["#1a1a2e"]} />
+          <color attach="background" args={[bgColor]} />
           <Scene />
         </Canvas>
+        <EraDisplay />
       </div>
     </WebGLErrorBoundary>
   );

@@ -2,7 +2,7 @@ import { useIdleGame, TIME_PERIODS } from "@/lib/stores/useIdleGame";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { useAudio } from "@/lib/stores/useAudio";
-import { Volume2, VolumeX, Trophy, MapPin, Clock } from "lucide-react";
+import { Volume2, VolumeX, Trophy, Clock } from "lucide-react";
 import { StatsPanel } from "./StatsPanel";
 import { SettingsDialog } from "./SettingsDialog";
 import { AuthDisplay } from "./AuthDisplay";
@@ -92,37 +92,7 @@ export function GameUI() {
               )}
             </Card>
             
-            {currentDest && (
-              <Card 
-                className="bg-black/80 backdrop-blur-sm border-cyan-500/30 p-2 md:p-3 min-w-0 md:min-w-[180px]"
-                style={{
-                  borderColor: currentDest.color,
-                  borderWidth: 2
-                }}
-              >
-                <div className="flex items-center gap-1 md:gap-2 mb-1">
-                  <MapPin className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" style={{ color: currentDest.color }} />
-                  <div className="text-white text-xs md:text-sm font-semibold truncate">{currentDest.name}</div>
-                </div>
-                <div className="text-xs space-y-0.5">
-                  {currentDest.speedModifier !== 1.0 && (
-                    <div className={currentDest.speedModifier > 1 ? "text-green-400" : "text-red-400"}>
-                      Speed: {currentDest.speedModifier > 1 ? '+' : ''}{((currentDest.speedModifier - 1) * 100).toFixed(0)}%
-                    </div>
-                  )}
-                  {currentDest.revenueModifier !== 1.0 && (
-                    <div className={currentDest.revenueModifier > 1 ? "text-green-400" : "text-red-400"}>
-                      Revenue: {currentDest.revenueModifier > 1 ? '+' : ''}{((currentDest.revenueModifier - 1) * 100).toFixed(0)}%
-                    </div>
-                  )}
-                  {currentDest.customerGenModifier !== 1.0 && (
-                    <div className={currentDest.customerGenModifier > 1 ? "text-green-400" : "text-red-400"}>
-                      Customers: {currentDest.customerGenModifier > 1 ? '+' : ''}{((currentDest.customerGenModifier - 1) * 100).toFixed(0)}%
-                    </div>
-                  )}
-                </div>
-              </Card>
-            )}
+
           </div>
           
           <div className="flex gap-2 justify-end">
