@@ -16,11 +16,28 @@ declare global {
   }
 }
 
-function showRewardedAd(): Promise<boolean> {
+// Lazily inject AdSense script the first time an ad is requested
+function ensureAdSenseLoaded(): Promise<void> {
   return new Promise((resolve) => {
+    if (document.querySelector('script[src*="adsbygoogle"]')) {
+      resolve();
+      return;
+    }
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${AD_CLIENT}`;
+    script.crossOrigin = "anonymous";
+    script.onload = () => resolve();
+    script.onerror = () => resolve(); // fail gracefully
+    document.head.appendChild(script);
+  });
+}
+
+function showRewardedAd(): Promise<boolean> {
+  return new Promise(async (resolve) => {
     try {
+      await ensureAdSenseLoaded();
       if (!window.adsbygoogle) {
-        // AdSense not loaded yet - fall back to simulated
         resolve(false);
         return;
       }
