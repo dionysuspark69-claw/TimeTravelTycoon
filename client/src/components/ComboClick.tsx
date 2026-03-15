@@ -78,11 +78,12 @@ export function ComboClick() {
       className="absolute inset-0 z-10 pointer-events-auto cursor-pointer select-none"
       onClick={handleClick}
     >
-      {/* Onboarding hint */}
+      {/* Onboarding hint -- below era display, only on desktop or when tapped */}
       {!hintDismissed && (
-        <div className="absolute top-12 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-black/85 border border-cyan-400/60 rounded-full px-4 py-1.5 shadow-lg pointer-events-auto">
-          <span className="text-base">👆</span>
-          <span className="text-cyan-300 text-xs font-semibold">Click to keep the Chrono Meter full and earn bonus coins!</span>
+        <div className="absolute top-14 md:top-16 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-black/85 border border-cyan-400/60 rounded-full px-3 py-1 shadow-lg pointer-events-auto whitespace-nowrap">
+          <span className="text-sm">👆</span>
+          <span className="text-cyan-300 text-xs font-semibold hidden md:inline">Click to keep the Chrono Meter full and earn bonus coins!</span>
+          <span className="text-cyan-300 text-xs font-semibold md:hidden">Tap to fill meter &amp; earn coins!</span>
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -110,8 +111,8 @@ export function ComboClick() {
         </div>
       ))}
 
-      {/* CHRONO METER BAR -- bottom of scene */}
-      <div className="absolute bottom-8 left-4 right-4 pointer-events-none z-20">
+      {/* CHRONO METER BAR -- bottom of scene, above news ticker on desktop */}
+      <div className="absolute bottom-2 md:bottom-8 left-3 right-3 pointer-events-none z-20">
         <div className="flex items-center gap-2 mb-1">
           <span className={`text-xs font-bold ${colors.label}`}>⚡ CHRONO METER</span>
           <span className={`text-xs font-bold ml-auto ${colors.label}`}>{bar}%</span>

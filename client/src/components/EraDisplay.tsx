@@ -81,42 +81,39 @@ export function EraDisplay() {
         absolute top-2 left-1/2 -translate-x-1/2 z-10
         pointer-events-none select-none
         transition-all duration-300 ease-in-out
+        w-max max-w-[90vw]
         ${visible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2"}
       `}
     >
+      {/* Mobile: slim single-line pill */}
+      <div className="md:hidden">
+        <div
+          className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/70 backdrop-blur-md border border-white/10"
+          style={{ borderColor: dest.color + "55" }}
+        >
+          <span className="text-lg leading-none">{icon}</span>
+          <span className="text-sm font-bold leading-tight" style={{ color: dest.color }}>{dest.name}</span>
+          <span className="text-xs text-gray-400">{dest.era}</span>
+        </div>
+      </div>
+
+      {/* Desktop: full card */}
       <div
         className={`
-          flex items-center gap-3 px-4 py-2.5 rounded-2xl
+          hidden md:flex items-center gap-3 px-4 py-2.5 rounded-2xl
           bg-gradient-to-r ${bg}
           backdrop-blur-md border border-white/10
           shadow-lg
         `}
         style={{ borderColor: dest.color + "55" }}
       >
-        {/* Colored left accent bar */}
-        <div
-          className="w-1 h-10 rounded-full shrink-0"
-          style={{ backgroundColor: dest.color }}
-        />
-
-        {/* Icon */}
+        <div className="w-1 h-10 rounded-full shrink-0" style={{ backgroundColor: dest.color }} />
         <span className="text-3xl leading-none">{icon}</span>
-
-        {/* Text block */}
         <div className="flex flex-col min-w-0">
-          <span
-            className="text-base font-bold leading-tight truncate"
-            style={{ color: dest.color }}
-          >
-            {dest.name}
-          </span>
+          <span className="text-base font-bold leading-tight truncate" style={{ color: dest.color }}>{dest.name}</span>
           <span className="text-xs text-gray-400 leading-tight">{dest.era}</span>
-          <span className="text-xs text-gray-500 leading-tight italic truncate max-w-[180px]">
-            {dest.description}
-          </span>
+          <span className="text-xs text-gray-500 leading-tight italic truncate max-w-[180px]">{dest.description}</span>
         </div>
-
-        {/* Modifiers badge row */}
         <div className="flex flex-col gap-0.5 ml-1 shrink-0">
           {dest.speedModifier !== 1.0 && (
             <span className={`text-xs font-semibold px-1.5 py-0.5 rounded-full ${dest.speedModifier > 1 ? "bg-green-500/20 text-green-300" : "bg-red-500/20 text-red-300"}`}>

@@ -90,6 +90,12 @@ export function GameUI() {
                   Prestige {prestigeLevel} (+{prestigePoints * 10}% revenue)
                 </div>
               )}
+              {/* Mobile-only inline stats */}
+              <div className="flex gap-2 mt-2 md:hidden">
+                <span className="text-cyan-400 text-xs">⏳{Math.floor(waitingCustomers)}</span>
+                <span className="text-green-400 text-xs">✈️{processingCustomers}</span>
+                <span className="text-purple-400 text-xs">✅{formatChronoValue(totalCustomersServed)}</span>
+              </div>
             </Card>
             
 
@@ -116,7 +122,8 @@ export function GameUI() {
         
         <div className="flex-1" />
         
-        <div className="flex flex-wrap gap-2 items-end pointer-events-auto">
+        {/* Stats pills: hidden on mobile (shown in coin card), visible on desktop */}
+        <div className="hidden md:flex flex-wrap gap-2 items-end pointer-events-auto">
           <div className="flex gap-1 items-center bg-black/60 backdrop-blur-sm border border-cyan-500/30 rounded-full px-2 md:px-3 py-1 md:py-1.5">
             <div className="text-cyan-400 text-xs md:text-sm font-semibold">Wait:</div>
             <div className="text-white text-sm md:text-base font-bold">{Math.floor(waitingCustomers)}</div>

@@ -35,7 +35,7 @@ export function NewsTicker() {
   }, []);
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 z-10 h-7 bg-black/70 flex items-center gap-2 px-3">
+    <div className="hidden md:flex absolute bottom-0 left-0 right-0 z-10 h-7 bg-black/70 items-center gap-2 px-3">
       <span className="text-cyan-400 text-xs font-bold shrink-0 border-r border-cyan-500/30 pr-2">
         📡 CHRONO NEWS
       </span>
