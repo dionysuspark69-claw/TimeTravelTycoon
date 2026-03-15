@@ -6,7 +6,7 @@ import { Starfield } from "./Starfield";
 import { EraDisplay } from "./EraDisplay";
 import { TemporalAnomaly } from "./TemporalAnomaly";
 import { ComboClick } from "./ComboClick";
-import { Component, ErrorInfo, ReactNode } from "react";
+import { Component, ErrorInfo, ReactNode, useState, useEffect, useCallback } from "react";
 import { useIdleGame, TIME_PERIODS } from "@/lib/stores/useIdleGame";
 import { useIsMobile } from "@/hooks/use-is-mobile";
 
@@ -59,8 +59,6 @@ function Scene() {
     tiers.push({ count: tierCount, scale });
     remainingMachines -= tierCount;
   }
-  
-  const hiddenMachines = remainingMachines;
   
   const timeMachines = [];
   for (let i = 0; i < tiers.length; i++) {
@@ -144,6 +142,28 @@ const ERA_BG_COLORS: Record<string, string> = {
 export function GameScene() {
   const isMobile = useIsMobile();
   const currentDestination = useIdleGame(s => s.currentDestination);
+  const [frameloop, setFrameloop] = useState<"always" | "demand">("always");
+
+  // Pause rendering when browser tab is hidden to prevent WebGL context loss
+  useEffect(() => {
+    const handleVisibility = () => {
+      setFrameloop(document.hidden ? "demand" : "always");
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, []);
+
+  const handleCreated = useCallback(({ gl }: { gl: WebGLRenderingContext }) => {
+    const canvas = gl.canvas as HTMLCanvasElement;
+    canvas.addEventListener("webglcontextlost", (e) => {
+      e.preventDefault();
+      console.log("WebGL context lost - will restore");
+    });
+    canvas.addEventListener("webglcontextrestored", () => {
+      setFrameloop("always");
+      console.log("WebGL context restored");
+    });
+  }, []);
   
   const cameraPosition: [number, number, number] = isMobile 
     ? [10, 8, 10]
@@ -159,9 +179,8 @@ export function GameScene() {
         <Canvas
           camera={{ position: cameraPosition, fov: cameraFov }}
           shadows
-          onCreated={(state) => {
-            console.log("WebGL context created successfully");
-          }}
+          frameloop={frameloop}
+          onCreated={handleCreated}
         >
           <color attach="background" args={[bgColor]} />
           <Scene />

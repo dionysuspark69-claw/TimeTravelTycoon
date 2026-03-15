@@ -1,4 +1,4 @@
-import { create } from "zustand";
+﻿import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 import { useArtifacts } from "./useArtifacts";
 import { useAudio } from "./useAudio";
@@ -737,7 +737,7 @@ export const TIME_PERIODS: TimePeriod[] = [
   {
     id: "temporal",
     name: "Temporal Singularity",
-    era: "∞",
+    era: "Γê₧",
     baseFare: 5000,
     unlockCost: computeUnlockCost(49),
     color: "#FF1493",
@@ -1302,10 +1302,28 @@ export const useIdleGame = create<IdleGameState>()(
       const entitiesToSpawn = Math.max(0, targetEntityCount - queueEntitiesCount);
       
       if (entitiesToSpawn > 0 && state.customerEntities.length < 25) {
-        for (let i = 0; i < Math.min(entitiesToSpawn, 25 - state.customerEntities.length); i++) {
+        const batchCount = Math.min(entitiesToSpawn, 25 - state.customerEntities.length);
+        const newEntities: CustomerEntity[] = [];
+        let nextId = state.nextCustomerId;
+        for (let i = 0; i < batchCount; i++) {
+          const id = `customer-${nextId}`;
+          const colorIndex = nextId % 5;
           const isVIP = perks.hasVIP && Math.random() < 0.01;
-          state.spawnCustomerEntity(isVIP);
+          newEntities.push({
+            id,
+            state: "spawning",
+            spawnTime: now,
+            stateChangedTime: now,
+            colorIndex,
+            hasReachedTarget: false,
+            isVIP
+          });
+          nextId++;
         }
+        set((s) => ({
+          customerEntities: [...s.customerEntities, ...newEntities],
+          nextCustomerId: nextId,
+        }));
       }
       
       state.updateCustomerStates();
@@ -1331,14 +1349,15 @@ export const useIdleGame = create<IdleGameState>()(
         const artifactsStore = useArtifacts.getState();
         const droppedArtifact = artifactsStore.checkForArtifactDrop(state.currentDestination);
         if (droppedArtifact) {
+          const isFirstDiscovery = !artifactsStore.hasArtifact(droppedArtifact.id);
           artifactsStore.discoverArtifact(droppedArtifact.id);
           
           const rarityColors = {
-            common: "🔹",
-            uncommon: "🟢",
-            rare: "🔵",
-            epic: "🟣",
-            legendary: "🟠"
+            common: "≡ƒö╣",
+            uncommon: "≡ƒƒó",
+            rare: "≡ƒö╡",
+            epic: "≡ƒƒú",
+            legendary: "≡ƒƒá"
           };
           
           const discoveryMessages: Record<string, string> = {
@@ -1381,10 +1400,12 @@ export const useIdleGame = create<IdleGameState>()(
           
           const discoveryMsg = discoveryMessages[droppedArtifact.id] || "Your passenger accidentally left it behind!";
           
-          toast.success(`Artifact Discovered!`, {
-            description: `${rarityColors[droppedArtifact.rarity]} ${droppedArtifact.name} - ${discoveryMsg}`,
-            duration: 5000
-          });
+          if (isFirstDiscovery) {
+            toast.success(`Artifact Discovered!`, {
+              description: `${rarityColors[droppedArtifact.rarity]} ${droppedArtifact.name} - ${discoveryMsg}`,
+              duration: 5000
+            });
+          }
         }
         
         const travelingEntities = state.customerEntities.filter(e => e.state !== "traveling");
