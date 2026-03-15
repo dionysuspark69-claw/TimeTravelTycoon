@@ -34,7 +34,7 @@ function PrestigeCard() {
         <span className={`text-sm font-bold ${ready ? "text-yellow-300" : "text-gray-300"}`}>Prestige</span>
         {prestigeLevel > 0 && (
           <span className="ml-auto text-xs text-purple-300 bg-purple-900/40 border border-purple-500/30 px-2 py-0.5 rounded-full">
-            Level {prestigeLevel} ┬╖ +{prestigePoints * 10}% revenue
+            Level {prestigeLevel} - +{prestigePoints * 10}% revenue
           </span>
         )}
       </div>

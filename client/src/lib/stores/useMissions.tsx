@@ -270,8 +270,9 @@ export const useMissions = create<MissionsState>()(
 
       initializeMissions: () => {
         const state = get();
-        if (state.missions.length === 0) {
-          // Generate 3 missions guaranteed to be different types
+        // Detect any missions with garbled icons (non-ASCII) and regenerate all
+        const hasGarbled = state.missions.some(m => /[^\x00-\x7F]/.test(m.icon));
+        if (state.missions.length === 0 || hasGarbled) {
           const missions: Mission[] = [];
           const usedTypes: MissionType[] = [];
           for (let i = 0; i < 3; i++) {
