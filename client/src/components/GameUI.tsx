@@ -72,6 +72,27 @@ export function GameUI() {
   const currentDest = TIME_PERIODS.find(d => d.id === currentDestination);
   
   return (
+    <>
+    {/* Settings button - fixed top-right, always above everything */}
+    <div className="fixed top-2 right-2 z-50 pointer-events-auto" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+      <div className="flex gap-2">
+        <SettingsDialog />
+        {!isMobile && (
+          <>
+            <StatsPanel />
+            <Button
+              onClick={toggleMute}
+              variant="outline"
+              size="icon"
+              className="bg-black/80 backdrop-blur-sm border-cyan-500/30 min-w-[44px] min-h-[44px]"
+            >
+              {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+            </Button>
+          </>
+        )}
+      </div>
+    </div>
+
     <div className="absolute inset-0 pointer-events-none" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
       <div className="p-2 md:p-4 flex flex-col gap-2 md:gap-4 h-full pointer-events-none relative">
         <div className="grid grid-cols-1 md:flex md:justify-between md:items-start gap-2 pointer-events-auto">
@@ -124,22 +145,8 @@ export function GameUI() {
             )}
           </div>
           
-          <div className="flex gap-2 justify-end">
-            <SettingsDialog />
-            {!isMobile && (
-              <>
-                <StatsPanel />
-                <Button
-                  onClick={toggleMute}
-                  variant="outline"
-                  size="icon"
-                  className="bg-black/80 backdrop-blur-sm border-cyan-500/30 min-w-[44px] min-h-[44px]"
-                >
-                  {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                </Button>
-              </>
-            )}
-          </div>
+          {/* Settings moved to fixed position above */}
+          <div className="w-[44px] md:w-auto" />
         </div>
         
         <div className="flex-1" />
@@ -169,5 +176,6 @@ export function GameUI() {
 
       </div>
     </div>
+    </>
   );
 }

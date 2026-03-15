@@ -3,15 +3,79 @@ import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
-import { ArrowUp, MapPin, Users, Trophy, Settings, Plus, Minus, Target, Sparkles, ChevronDown, ChevronUp, Tv, Star } from "lucide-react";
+import { ArrowUp, MapPin, Users, Trophy, Settings, Plus, Minus, Sparkles, ChevronDown, ChevronUp, Medal, Star, RefreshCcw } from "lucide-react";
 import { ManagersPanel } from "./ManagersPanel";
 import { AchievementsPanel } from "./AchievementsPanel";
 import { MissionsPanel } from "./MissionsPanel";
 import { CollectionsPanel } from "./CollectionsPanel";
 import { AdBoostPanel } from "./AdBoostPanel";
+import { LeaderboardPanel } from "./LeaderboardPanel";
 import { useAchievements } from "@/lib/stores/useAchievements";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { formatChronoValue } from "@/lib/utils";
+
+function PrestigeCard() {
+  const { totalEarned, timeMachineLevel, timeMachineCount, prestigeLevel, prestigePoints, prestige } = useIdleGame();
+
+  const EARN_REQ = 50_000_000;
+  const LEVEL_REQ = 25;
+  const COUNT_REQ = 5;
+
+  const earnPct   = Math.min(1, totalEarned / EARN_REQ);
+  const levelPct  = Math.min(1, timeMachineLevel / LEVEL_REQ);
+  const countPct  = Math.min(1, timeMachineCount / COUNT_REQ);
+  const ready     = totalEarned >= EARN_REQ && timeMachineLevel >= LEVEL_REQ && timeMachineCount >= COUNT_REQ;
+  const projectedPoints = Math.max(1, Math.floor(totalEarned / 10_000_000));
+
+  return (
+    <Card className={`p-3 border ${ready ? "border-yellow-500/60 bg-gradient-to-br from-yellow-900/40 to-amber-900/30" : "border-cyan-500/20 bg-black/30"}`}>
+      <div className="flex items-center gap-2 mb-2">
+        <Trophy className={`w-4 h-4 ${ready ? "text-yellow-400" : "text-gray-500"}`} />
+        <span className={`text-sm font-bold ${ready ? "text-yellow-300" : "text-gray-300"}`}>Prestige</span>
+        {prestigeLevel > 0 && (
+          <span className="ml-auto text-xs text-purple-300 bg-purple-900/40 border border-purple-500/30 px-2 py-0.5 rounded-full">
+            Level {prestigeLevel} ┬╖ +{prestigePoints * 10}% revenue
+          </span>
+        )}
+      </div>
+
+      {ready ? (
+        <div className="space-y-2">
+          <p className="text-xs text-yellow-200">You're ready to prestige! You'll earn <span className="font-bold text-yellow-400">+{projectedPoints * 10}% revenue</span> permanently.</p>
+          <div className="text-xs text-gray-400 bg-black/30 rounded p-2 space-y-0.5">
+            <div className="flex items-center gap-1"><RefreshCcw className="w-3 h-3 text-red-400" /> You lose: coins, upgrades, machines, destinations</div>
+            <div className="flex items-center gap-1"><Star className="w-3 h-3 text-yellow-400" /> You keep: prestige bonuses (stacks forever)</div>
+          </div>
+          <Button
+            onClick={prestige}
+            className="w-full bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700 font-bold text-sm min-h-[40px]"
+          >
+            <Trophy className="w-4 h-4 mr-2" /> Prestige Now (+{projectedPoints * 10}% revenue)
+          </Button>
+        </div>
+      ) : (
+        <div className="space-y-1.5">
+          <p className="text-xs text-gray-400 mb-2">Complete all 3 requirements to unlock prestige:</p>
+          {[
+            { label: `Earn ${formatChronoValue(EARN_REQ)} CC`, pct: earnPct, done: totalEarned >= EARN_REQ, val: formatChronoValue(totalEarned) },
+            { label: `Time Machine Lv.${LEVEL_REQ}`, pct: levelPct, done: timeMachineLevel >= LEVEL_REQ, val: `Lv.${timeMachineLevel}` },
+            { label: `Own ${COUNT_REQ} Machines`, pct: countPct, done: timeMachineCount >= COUNT_REQ, val: `${timeMachineCount}` },
+          ].map(r => (
+            <div key={r.label}>
+              <div className="flex justify-between text-xs mb-0.5">
+                <span className={r.done ? "text-green-400" : "text-gray-400"}>{r.done ? "Γ£à" : "Γ¼£"} {r.label}</span>
+                <span className={r.done ? "text-green-400" : "text-gray-500"}>{r.val}</span>
+              </div>
+              <div className="h-1 bg-gray-700 rounded-full overflow-hidden">
+                <div className={`h-full rounded-full transition-all ${r.done ? "bg-green-500" : "bg-cyan-500"}`} style={{ width: `${r.pct * 100}%` }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
+  );
+}
 
 export function UpgradePanel() {
   const [isExpanded, setIsExpanded] = useState(true);
@@ -19,7 +83,6 @@ export function UpgradePanel() {
   
   const {
     chronocoins,
-    totalEarned,
     timeMachineLevel,
     timeMachineCapacity,
     timeMachineSpeed,
@@ -27,8 +90,6 @@ export function UpgradePanel() {
     customerGenerationRate,
     unlockedDestinations,
     currentDestination,
-    prestigeLevel,
-    prestigePoints,
     
     upgradeTimeMachine,
     upgradeCapacity,
@@ -37,7 +98,6 @@ export function UpgradePanel() {
     buyTimeMachine,
     unlockDestination,
     setDestination,
-    prestige,
     
     getTimeMachineUpgradeCost,
     getCapacityUpgradeCost,
@@ -50,72 +110,36 @@ export function UpgradePanel() {
   
   const { getUnclaimedAchievements } = useAchievements();
   const unclaimedCount = getUnclaimedAchievements().length;
-
-  const PRESTIGE_EARNED_REQ = 50000000;
-  const PRESTIGE_LEVEL_REQ = 25;
-  const PRESTIGE_COUNT_REQ = 5;
-  const prestigeReady =
-    totalEarned >= PRESTIGE_EARNED_REQ &&
-    timeMachineLevel >= PRESTIGE_LEVEL_REQ &&
-    timeMachineCount >= PRESTIGE_COUNT_REQ;
   
-  const upgrades = useMemo(() => {
-    const timeMachineEffectiveMultiplier = multiplier === 'max'
-      ? computeMaxAffordable(100, 1.7, timeMachineLevel, chronocoins)
-      : multiplier;
-    const timeMachineCost = getTimeMachineUpgradeCost(timeMachineEffectiveMultiplier);
-
-    const capacityEffectiveMultiplier = multiplier === 'max'
-      ? computeMaxAffordable(50, 1.6, timeMachineCapacity, chronocoins)
-      : multiplier;
-    const capacityCost = getCapacityUpgradeCost(capacityEffectiveMultiplier);
-
-    const speedEffectiveMultiplier = multiplier === 'max'
-      ? computeMaxAffordable(75, 1.65, timeMachineSpeed, chronocoins)
-      : multiplier;
-    const speedCost = getSpeedUpgradeCost(speedEffectiveMultiplier);
-
-    const customerRateEffectiveMultiplier = multiplier === 'max'
-      ? computeMaxAffordable(200, 1.8, customerGenerationRate, chronocoins)
-      : multiplier;
-    const customerRateCost = getCustomerRateUpgradeCost(customerRateEffectiveMultiplier);
-
-    const buyTimeMachineEffectiveMultiplier = multiplier === 'max'
-      ? computeMaxAffordable(10000, 3, timeMachineCount, chronocoins)
-      : multiplier;
-    const buyTimeMachineCost = getTimeMachineBuyCost(buyTimeMachineEffectiveMultiplier);
-
-    return {
-      timeMachineEffectiveMultiplier,
-      timeMachineCost,
-      canAffordTimeMachine: chronocoins >= timeMachineCost && timeMachineEffectiveMultiplier > 0,
-      capacityEffectiveMultiplier,
-      capacityCost,
-      canAffordCapacity: chronocoins >= capacityCost && capacityEffectiveMultiplier > 0,
-      speedEffectiveMultiplier,
-      speedCost,
-      canAffordSpeed: chronocoins >= speedCost && speedEffectiveMultiplier > 0,
-      customerRateEffectiveMultiplier,
-      customerRateCost,
-      canAffordCustomerRate: chronocoins >= customerRateCost && customerRateEffectiveMultiplier > 0,
-      buyTimeMachineEffectiveMultiplier,
-      buyTimeMachineCost,
-      canAffordBuyTimeMachine: chronocoins >= buyTimeMachineCost && buyTimeMachineEffectiveMultiplier > 0,
-    };
-  }, [
-    multiplier, chronocoins,
-    timeMachineLevel, timeMachineCapacity, timeMachineSpeed, customerGenerationRate, timeMachineCount,
-    computeMaxAffordable, getTimeMachineUpgradeCost, getCapacityUpgradeCost,
-    getSpeedUpgradeCost, getCustomerRateUpgradeCost, getTimeMachineBuyCost,
-  ]);
-
-  const {
-    timeMachineEffectiveMultiplier, timeMachineCost, canAffordTimeMachine,
-    capacityEffectiveMultiplier, capacityCost, canAffordCapacity,
-    speedEffectiveMultiplier, speedCost, canAffordSpeed,
-    customerRateEffectiveMultiplier, customerRateCost, canAffordCustomerRate,
-    buyTimeMachineEffectiveMultiplier, buyTimeMachineCost, canAffordBuyTimeMachine,
-  } = upgrades;
+  const timeMachineEffectiveMultiplier = multiplier === 'max' 
+    ? computeMaxAffordable(100, 1.7, timeMachineLevel, chronocoins)
+    : multiplier;
+  const timeMachineCost = getTimeMachineUpgradeCost(timeMachineEffectiveMultiplier);
+  const canAffordTimeMachine = chronocoins >= timeMachineCost && timeMachineEffectiveMultiplier > 0;
+  
+  const capacityEffectiveMultiplier = multiplier === 'max'
+    ? computeMaxAffordable(50, 1.6, timeMachineCapacity, chronocoins)
+    : multiplier;
+  const capacityCost = getCapacityUpgradeCost(capacityEffectiveMultiplier);
+  const canAffordCapacity = chronocoins >= capacityCost && capacityEffectiveMultiplier > 0;
+  
+  const speedEffectiveMultiplier = multiplier === 'max'
+    ? computeMaxAffordable(75, 1.65, timeMachineSpeed, chronocoins)
+    : multiplier;
+  const speedCost = getSpeedUpgradeCost(speedEffectiveMultiplier);
+  const canAffordSpeed = chronocoins >= speedCost && speedEffectiveMultiplier > 0;
+  
+  const customerRateEffectiveMultiplier = multiplier === 'max'
+    ? computeMaxAffordable(200, 1.8, customerGenerationRate, chronocoins)
+    : multiplier;
+  const customerRateCost = getCustomerRateUpgradeCost(customerRateEffectiveMultiplier);
+  const canAffordCustomerRate = chronocoins >= customerRateCost && customerRateEffectiveMultiplier > 0;
+  
+  const buyTimeMachineEffectiveMultiplier = multiplier === 'max'
+    ? computeMaxAffordable(10000, 3, timeMachineCount, chronocoins)
+    : multiplier;
+  const buyTimeMachineCost = getTimeMachineBuyCost(buyTimeMachineEffectiveMultiplier);
+  const canAffordBuyTimeMachine = chronocoins >= buyTimeMachineCost && buyTimeMachineEffectiveMultiplier > 0;
   
   return (
     <div className="w-full bg-black/80 backdrop-blur-sm border-t border-cyan-500/30" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
@@ -144,36 +168,29 @@ export function UpgradePanel() {
       {isExpanded && (
         <div className="p-2 md:p-4">
           <Tabs defaultValue="upgrades" className="w-full">
-        <TabsList className="grid w-full grid-cols-6 bg-gray-900">
-          <TabsTrigger value="upgrades" className="flex items-center gap-1 text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
+        <TabsList className="grid w-full grid-cols-5 bg-gray-900">
+          <TabsTrigger value="upgrades" className="flex items-center gap-2 text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
             <Settings className="w-4 h-4" />
             <span className="hidden sm:inline">Upgrades</span>
           </TabsTrigger>
-          <TabsTrigger value="managers" className="flex items-center gap-1 text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
+          <TabsTrigger value="team" className="flex items-center gap-2 text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
             <Users className="w-4 h-4" />
-            <span className="hidden sm:inline">Managers</span>
+            <span className="hidden sm:inline">Team</span>
           </TabsTrigger>
-          <TabsTrigger value="destinations" className="flex items-center gap-1 text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
+          <TabsTrigger value="destinations" className="flex items-center gap-2 text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
             <MapPin className="w-4 h-4" />
             <span className="hidden sm:inline">Destinations</span>
           </TabsTrigger>
-          <TabsTrigger value="collections" className="flex items-center gap-1 text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
-            <Sparkles className="w-4 h-4" />
-            <span className="hidden sm:inline">Collections</span>
-          </TabsTrigger>
-          <TabsTrigger value="progress" className="flex items-center gap-1 relative text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
+          <TabsTrigger value="awards" className="flex items-center gap-2 relative text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
             <Trophy className="w-4 h-4" />
-            <span className="hidden sm:inline">Progress</span>
+            <span className="hidden sm:inline">Awards</span>
             {unclaimedCount > 0 && (
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border border-gray-900" />
             )}
           </TabsTrigger>
-          <TabsTrigger value="prestige" className="flex items-center gap-1 relative text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
-            <Star className={`w-4 h-4 ${prestigeReady ? "text-yellow-400" : ""}`} />
-            <span className="hidden sm:inline">Prestige</span>
-            {prestigeReady && (
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full border border-gray-900" />
-            )}
+          <TabsTrigger value="leaderboard" className="flex items-center gap-2 text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
+            <Medal className="w-4 h-4" />
+            <span className="hidden sm:inline">Ranks</span>
           </TabsTrigger>
         </TabsList>
         
@@ -326,111 +343,28 @@ export function UpgradePanel() {
               </Button>
             </div>
           </Card>
-        </TabsContent>
-        
-        <TabsContent value="managers" className="space-y-2 mt-4 max-h-[40vh] md:max-h-[45vh] overflow-y-auto pr-2 pb-4">
-          <ManagersPanel />
-          <div className="border-t border-cyan-500/20 mt-4 pt-4">
+
+          <div className="border-t border-cyan-500/20 my-2 pt-2">
             <AdBoostPanel />
           </div>
         </TabsContent>
         
-        <TabsContent value="collections" className="space-y-2 mt-4 max-h-[40vh] md:max-h-[45vh] overflow-y-auto pr-2 pb-4">
-          <CollectionsPanel />
-        </TabsContent>
-
-        <TabsContent value="progress" className="mt-4 max-h-[40vh] md:max-h-[45vh] overflow-y-auto pr-2 pb-4">
-          <MissionsPanel />
-          <div className="border-t border-cyan-500/20 mt-4 pt-2">
-            <AchievementsPanel />
+        <TabsContent value="team" className="space-y-2 mt-4 max-h-[40vh] md:max-h-[45vh] overflow-y-auto pr-2 pb-4">
+          <ManagersPanel />
+          <div className="border-t border-cyan-500/20 my-2 pt-2">
+            <MissionsPanel />
           </div>
         </TabsContent>
         
-        <TabsContent value="prestige" className="space-y-4 mt-4 max-h-[40vh] md:max-h-[45vh] overflow-y-auto pr-2 pb-4">
-          {prestigeLevel > 0 && (
-            <Card className="bg-gradient-to-r from-yellow-900/40 to-amber-900/40 border-yellow-500/50 p-3">
-              <div className="flex items-center gap-2 mb-1">
-                <Star className="w-5 h-5 text-yellow-400" />
-                <div className="text-yellow-400 font-bold text-lg">Prestige {prestigeLevel}</div>
-              </div>
-              <div className="text-gray-300 text-sm">
-                +{prestigePoints * 10}% revenue bonus active across all destinations.
-              </div>
-            </Card>
-          )}
-
-          <Card className="bg-gray-900/50 border-cyan-500/30 p-4">
-            <div className="text-white font-semibold text-base mb-3">Requirements</div>
-            <div className="space-y-3">
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-gray-300">Total Earned</span>
-                  <span className={totalEarned >= PRESTIGE_EARNED_REQ ? "text-green-400 font-bold" : "text-gray-400"}>
-                    {formatChronoValue(totalEarned)} / {formatChronoValue(PRESTIGE_EARNED_REQ)}
-                  </span>
-                </div>
-                <div className="w-full bg-gray-700 rounded-full h-2">
-                  <div
-                    className={`h-2 rounded-full transition-all ${totalEarned >= PRESTIGE_EARNED_REQ ? "bg-green-500" : "bg-cyan-500"}`}
-                    style={{ width: `${Math.min((totalEarned / PRESTIGE_EARNED_REQ) * 100, 100)}%` }}
-                  />
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-gray-300">Time Machine Level</span>
-                  <span className={timeMachineLevel >= PRESTIGE_LEVEL_REQ ? "text-green-400 font-bold" : "text-gray-400"}>
-                    {timeMachineLevel} / {PRESTIGE_LEVEL_REQ}
-                  </span>
-                </div>
-                <div className="w-full bg-gray-700 rounded-full h-2">
-                  <div
-                    className={`h-2 rounded-full transition-all ${timeMachineLevel >= PRESTIGE_LEVEL_REQ ? "bg-green-500" : "bg-cyan-500"}`}
-                    style={{ width: `${Math.min((timeMachineLevel / PRESTIGE_LEVEL_REQ) * 100, 100)}%` }}
-                  />
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-gray-300">Time Machines Owned</span>
-                  <span className={timeMachineCount >= PRESTIGE_COUNT_REQ ? "text-green-400 font-bold" : "text-gray-400"}>
-                    {timeMachineCount} / {PRESTIGE_COUNT_REQ}
-                  </span>
-                </div>
-                <div className="w-full bg-gray-700 rounded-full h-2">
-                  <div
-                    className={`h-2 rounded-full transition-all ${timeMachineCount >= PRESTIGE_COUNT_REQ ? "bg-green-500" : "bg-cyan-500"}`}
-                    style={{ width: `${Math.min((timeMachineCount / PRESTIGE_COUNT_REQ) * 100, 100)}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="bg-gray-900/50 border-purple-500/30 p-4">
-            <div className="text-white font-semibold text-base mb-1">What You Get</div>
-            <ul className="text-gray-400 text-sm space-y-1 list-disc list-inside">
-              <li>Permanent <span className="text-yellow-400 font-semibold">+10% revenue</span> per prestige level</li>
-              <li>Bonuses stack with each prestige</li>
-              <li>Next bonus: <span className="text-yellow-400 font-semibold">+{(prestigeLevel + 1) * 10}% total revenue</span></li>
-            </ul>
-            <div className="text-red-400 text-xs mt-3">Warning: Resets coins, upgrades, and destinations (prestige level kept)</div>
-          </Card>
-
-          <Button
-            onClick={prestige}
-            disabled={!prestigeReady}
-            className={`w-full h-14 text-base font-bold ${
-              prestigeReady
-                ? "bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-black"
-                : "bg-gray-700 text-gray-500 cursor-not-allowed"
-            }`}
-          >
-            <Star className="w-5 h-5 mr-2" />
-            {prestigeReady ? "Prestige Now!" : "Requirements not met yet"}
-          </Button>
+        <TabsContent value="awards" className="space-y-2 mt-4 max-h-[40vh] md:max-h-[45vh] overflow-y-auto pr-2 pb-4">
+          {/* Prestige Progress Card */}
+          <PrestigeCard />
+          <AchievementsPanel />
+          <div className="border-t border-cyan-500/20 my-2 pt-2">
+            <CollectionsPanel />
+          </div>
         </TabsContent>
-
+        
         <TabsContent value="destinations" className="space-y-2 mt-4 max-h-[40vh] md:max-h-[45vh] overflow-y-auto pr-2 pb-4">
           {TIME_PERIODS.map((destination) => {
             const isUnlocked = unlockedDestinations.includes(destination.id);
@@ -505,6 +439,10 @@ export function UpgradePanel() {
               </Card>
             );
           })}
+        </TabsContent>
+
+        <TabsContent value="leaderboard" className="space-y-2 mt-4 max-h-[40vh] md:max-h-[45vh] overflow-y-auto pr-2 pb-4">
+          <LeaderboardPanel />
         </TabsContent>
           </Tabs>
         </div>
