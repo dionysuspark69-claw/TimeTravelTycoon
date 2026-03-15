@@ -76,7 +76,7 @@ export function ComboClick() {
       {/* Click zone: starts below top UI (80px), covers rest of scene */}
       <div
         className="absolute left-0 right-0 bottom-0 cursor-pointer pointer-events-auto"
-        style={{ top: "100px" }}
+        style={{ top: "60px" }}
         onClick={handleClick}
       >
         {/* Onboarding hint */}
@@ -154,4 +154,5 @@ export function ComboClick() {
     </div>
   );
 }
+
 
