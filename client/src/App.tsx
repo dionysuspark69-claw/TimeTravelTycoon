@@ -8,7 +8,6 @@ import { SoundManager } from "./components/SoundManager";
 import { OfflineEarningsDialog } from "./components/OfflineEarningsDialog";
 import { AchievementChecker } from "./components/AchievementChecker";
 import { FloatingTextManager } from "./components/FloatingTextManager";
-import { ClickBoostTutorial } from "./components/ClickBoostTutorial";
 import { PrestigeTutorial } from "./components/PrestigeTutorial";
 import { ActiveEventsDisplay } from "./components/ActiveEventsDisplay";
 import { Toaster } from "./components/ui/sonner";
@@ -60,7 +59,6 @@ function App() {
       <UpgradePanel />
       
       <OfflineEarningsDialog />
-      <ClickBoostTutorial />
       <PrestigeTutorial />
       <AchievementChecker />
       <PurchaseCelebration />
