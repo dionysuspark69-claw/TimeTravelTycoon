@@ -204,16 +204,16 @@ export function UpgradePanel() {
               className="justify-start flex-wrap gap-1"
             >
               <ToggleGroupItem value="1" className="text-xs px-2 py-1 min-h-[32px] data-[state=on]:bg-cyan-600 data-[state=on]:text-white">
-                1├ù
+                1x
               </ToggleGroupItem>
               <ToggleGroupItem value="5" className="text-xs px-2 py-1 min-h-[32px] data-[state=on]:bg-cyan-600 data-[state=on]:text-white">
-                5├ù
+                5x
               </ToggleGroupItem>
               <ToggleGroupItem value="10" className="text-xs px-2 py-1 min-h-[32px] data-[state=on]:bg-cyan-600 data-[state=on]:text-white">
-                10├ù
+                10x
               </ToggleGroupItem>
               <ToggleGroupItem value="100" className="text-xs px-2 py-1 min-h-[32px] data-[state=on]:bg-cyan-600 data-[state=on]:text-white">
-                100├ù
+                100x
               </ToggleGroupItem>
               <ToggleGroupItem value="max" className="text-xs px-2 py-1 min-h-[32px] data-[state=on]:bg-purple-600 data-[state=on]:text-white">
                 Max
@@ -240,7 +240,7 @@ export function UpgradePanel() {
                 className="bg-cyan-600 hover:bg-cyan-700"
               >
                 <ArrowUp className="w-4 h-4 mr-1" />
-                Buy {timeMachineEffectiveMultiplier}├ù - {formatChronoValue(timeMachineCost)}
+                Buy {timeMachineEffectiveMultiplier}x - {formatChronoValue(timeMachineCost)}
               </Button>
             </div>
           </Card>
@@ -264,7 +264,7 @@ export function UpgradePanel() {
                 className="bg-cyan-600 hover:bg-cyan-700"
               >
                 <ArrowUp className="w-4 h-4 mr-1" />
-                Buy {capacityEffectiveMultiplier}├ù - {formatChronoValue(capacityCost)}
+                Buy {capacityEffectiveMultiplier}x - {formatChronoValue(capacityCost)}
               </Button>
             </div>
           </Card>
@@ -288,7 +288,7 @@ export function UpgradePanel() {
                 className="bg-cyan-600 hover:bg-cyan-700"
               >
                 <ArrowUp className="w-4 h-4 mr-1" />
-                Buy {speedEffectiveMultiplier}├ù - {formatChronoValue(speedCost)}
+                Buy {speedEffectiveMultiplier}x - {formatChronoValue(speedCost)}
               </Button>
             </div>
           </Card>
@@ -312,7 +312,7 @@ export function UpgradePanel() {
                 className="bg-cyan-600 hover:bg-cyan-700"
               >
                 <ArrowUp className="w-4 h-4 mr-1" />
-                Buy {customerRateEffectiveMultiplier}├ù - {formatChronoValue(customerRateCost)}
+                Buy {customerRateEffectiveMultiplier}x - {formatChronoValue(customerRateCost)}
               </Button>
             </div>
           </Card>
@@ -339,7 +339,7 @@ export function UpgradePanel() {
                 className="bg-purple-600 hover:bg-purple-700"
               >
                 <Plus className="w-4 h-4 mr-1" />
-                Buy {buyTimeMachineEffectiveMultiplier}├ù - {formatChronoValue(buyTimeMachineCost)}
+                Buy {buyTimeMachineEffectiveMultiplier}x - {formatChronoValue(buyTimeMachineCost)}
               </Button>
             </div>
           </Card>
