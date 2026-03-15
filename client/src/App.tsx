@@ -14,6 +14,9 @@ import { ActiveEventsDisplay } from "./components/ActiveEventsDisplay";
 import { Toaster } from "./components/ui/sonner";
 import { useAuth } from "./lib/stores/useAuth";
 import { useGameSave } from "./lib/hooks/useGameSave";
+import { NextGoalWidget } from "./components/NextGoalWidget";
+import { NewsTicker } from "./components/NewsTicker";
+import { PurchaseCelebration } from "./components/PurchaseCelebration";
 
 function App() {
   const [showGame, setShowGame] = useState(false);
@@ -43,14 +46,17 @@ function App() {
         <GameScene />
         <GameUI />
         <ActiveEventsDisplay />
+        <NewsTicker />
       </div>
       
+      <NextGoalWidget />
       <UpgradePanel />
       
       <OfflineEarningsDialog />
       <ClickBoostTutorial />
       <PrestigeTutorial />
       <AchievementChecker />
+      <PurchaseCelebration />
       <FloatingTextManager />
       <GameLoop />
       <SoundManager />
