@@ -4,6 +4,8 @@ import { TimeMachine } from "./TimeMachine";
 import { CharacterManager } from "./CharacterManager";
 import { Starfield } from "./Starfield";
 import { EraDisplay } from "./EraDisplay";
+import { TemporalAnomaly } from "./TemporalAnomaly";
+import { ComboClick } from "./ComboClick";
 import { Component, ErrorInfo, ReactNode } from "react";
 import { useIdleGame, TIME_PERIODS } from "@/lib/stores/useIdleGame";
 import { useIsMobile } from "@/hooks/use-is-mobile";
@@ -153,6 +155,7 @@ export function GameScene() {
   return (
     <WebGLErrorBoundary>
       <div className="w-full h-[50vh] md:h-[60vh] relative">
+        <ComboClick />
         <Canvas
           camera={{ position: cameraPosition, fov: cameraFov }}
           shadows
@@ -164,6 +167,7 @@ export function GameScene() {
           <Scene />
         </Canvas>
         <EraDisplay />
+        <TemporalAnomaly />
       </div>
     </WebGLErrorBoundary>
   );

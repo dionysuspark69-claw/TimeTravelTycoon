@@ -57,3 +57,9 @@ canvas {
   height: 100% !important;
   touch-action: none;
 }
+
+@keyframes floatUp {
+  0%   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  60%  { opacity: 1; transform: translate(-50%, -120%) scale(1.1); }
+  100% { opacity: 0; transform: translate(-50%, -180%) scale(0.8); }
+}
