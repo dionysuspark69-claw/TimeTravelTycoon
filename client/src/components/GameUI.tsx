@@ -2,7 +2,7 @@ import { useIdleGame, TIME_PERIODS } from "@/lib/stores/useIdleGame";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { useAudio } from "@/lib/stores/useAudio";
-import { Volume2, VolumeX, Trophy, MapPin, Clock } from "lucide-react";
+import { Volume2, VolumeX, Trophy, MapPin } from "lucide-react";
 import { StatsPanel } from "./StatsPanel";
 import { SettingsDialog } from "./SettingsDialog";
 import { useIsMobile } from "@/hooks/use-is-mobile";
@@ -110,6 +110,27 @@ export function GameUI() {
                   Prestige {prestigeLevel} (+{prestigePoints * 10}% revenue)
                 </div>
               )}
+              {/* Wait / Trip / Done inline under coins */}
+              <div className="flex gap-2 mt-2 pt-2 border-t border-cyan-500/20">
+                <div className="flex flex-col items-center">
+                  <span className="text-cyan-400 text-xs">Wait</span>
+                  <span className="text-white text-sm font-bold">{Math.floor(waitingCustomers)}</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <span className="text-green-400 text-xs">Trip</span>
+                  <span className="text-white text-sm font-bold">{processingCustomers}</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <span className="text-purple-400 text-xs">Done</span>
+                  <span className="text-white text-sm font-bold">{formatChronoValue(totalCustomersServed)}</span>
+                </div>
+                {getActiveBoostTimer() && (
+                  <div className="flex flex-col items-center ml-auto">
+                    <span className="text-yellow-400 text-xs">Boost</span>
+                    <span className="text-yellow-200 text-sm font-bold">{formatTime(getActiveBoostTimer()!)}</span>
+                  </div>
+                )}
+              </div>
             </Card>
             
             {currentDest && (
@@ -150,28 +171,6 @@ export function GameUI() {
         </div>
         
         <div className="flex-1" />
-        
-        <div className="flex flex-wrap gap-2 items-end pointer-events-auto">
-          <div className="flex gap-1 items-center bg-black/60 backdrop-blur-sm border border-cyan-500/30 rounded-full px-2 md:px-3 py-1 md:py-1.5">
-            <div className="text-cyan-400 text-xs md:text-sm font-semibold">Wait:</div>
-            <div className="text-white text-sm md:text-base font-bold">{Math.floor(waitingCustomers)}</div>
-          </div>
-          <div className="flex gap-1 items-center bg-black/60 backdrop-blur-sm border border-green-500/30 rounded-full px-2 md:px-3 py-1 md:py-1.5">
-            <div className="text-green-400 text-xs md:text-sm font-semibold">Trip:</div>
-            <div className="text-white text-sm md:text-base font-bold">{processingCustomers}</div>
-          </div>
-          <div className="flex gap-1 items-center bg-black/60 backdrop-blur-sm border border-purple-500/30 rounded-full px-2 md:px-3 py-1 md:py-1.5">
-            <div className="text-purple-400 text-xs md:text-sm font-semibold">Done:</div>
-            <div className="text-white text-sm md:text-base font-bold">{formatChronoValue(totalCustomersServed)}</div>
-          </div>
-          {getActiveBoostTimer() && (
-            <div className="flex gap-1 items-center bg-gradient-to-r from-yellow-600/80 to-orange-600/80 backdrop-blur-sm border border-yellow-400/50 rounded-full px-2 md:px-3 py-1 md:py-1.5 animate-pulse">
-              <Clock className="w-3 h-3 md:w-4 md:h-4 text-yellow-200" />
-              <div className="text-yellow-200 text-xs md:text-sm font-semibold">Ad Boost:</div>
-              <div className="text-white text-sm md:text-base font-bold">{formatTime(getActiveBoostTimer()!)}</div>
-            </div>
-          )}
-        </div>
         
 
       </div>
