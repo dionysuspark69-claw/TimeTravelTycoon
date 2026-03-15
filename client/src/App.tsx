@@ -32,6 +32,13 @@ function App() {
     setShowGame(true);
   }, []);
 
+  // Hard fallback: never stay on loading screen longer than 6s
+  // Covers cases where auth fetch hangs (mobile, cold Render start, slow network)
+  useEffect(() => {
+    const fallback = setTimeout(() => setShowGame(true), 6000);
+    return () => clearTimeout(fallback);
+  }, []);
+
   if (!showGame || authLoading) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900">

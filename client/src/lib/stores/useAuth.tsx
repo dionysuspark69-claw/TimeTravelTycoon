@@ -26,7 +26,11 @@ export const useAuth = create<AuthState>((set) => ({
   fetchUser: async () => {
     try {
       set({ loading: true });
-      const response = await fetch("/api/auth/user");
+      // 5s timeout - prevents infinite loading screen on slow mobile / cold Render starts
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      const response = await fetch("/api/auth/user", { signal: controller.signal });
+      clearTimeout(timeout);
       
       if (response.ok) {
         const user = await response.json();
@@ -35,7 +39,7 @@ export const useAuth = create<AuthState>((set) => ({
         set({ user: null, isAuthenticated: false, loading: false });
       }
     } catch (error) {
-      console.error("Error fetching user:", error);
+      // AbortError (timeout) or network failure - either way, unblock the game
       set({ user: null, isAuthenticated: false, loading: false });
     }
   },
