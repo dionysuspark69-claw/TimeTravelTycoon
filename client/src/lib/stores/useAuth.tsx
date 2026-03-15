@@ -14,6 +14,7 @@ interface AuthState {
   fetchUser: () => Promise<void>;
   loginWithUsername: (username: string, password: string) => Promise<{ success: boolean; error?: string }>;
   loginWithReplit: () => Promise<void>;
+  loginWithGoogle: () => void;
   logout: () => Promise<void>;
 }
 
@@ -72,6 +73,10 @@ export const useAuth = create<AuthState>((set) => ({
     } catch (error) {
       console.error("Error triggering Replit Auth:", error);
     }
+  },
+
+  loginWithGoogle: () => {
+    window.location.href = "/auth/google";
   },
 
   logout: async () => {
