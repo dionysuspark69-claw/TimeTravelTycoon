@@ -1,6 +1,6 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
-import { eq, desc, or, sql } from "drizzle-orm";
+import { eq, desc, or, sql, asc } from "drizzle-orm";
 import passport from "./passport-config";
 import { getUserInfo } from "@replit/repl-auth";
 import bcrypt from "bcrypt";
@@ -336,7 +336,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid category" });
       }
 
-      const col = categoryColumn[category];
+      // totalEarned is stored as text -- cast to numeric for correct sort
+      const orderExpr = category === "totalEarned"
+        ? desc(sql`CAST(${leaderboardEntries.totalEarned} AS NUMERIC)`)
+        : desc(categoryColumn[category]);
+
       const rows = await db
         .select({
           userId: leaderboardEntries.userId,
@@ -350,7 +354,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           updatedAt: leaderboardEntries.updatedAt,
         })
         .from(leaderboardEntries)
-        .orderBy(desc(col))
+        .orderBy(orderExpr)
         .limit(50);
 
       // Add rank
@@ -364,7 +368,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const allRows = await db
             .select({ userId: leaderboardEntries.userId })
             .from(leaderboardEntries)
-            .orderBy(desc(col));
+            .orderBy(orderExpr);
           const myIndex = allRows.findIndex(r => r.userId === req.user!.id);
           if (myIndex >= 0) {
             const myFull = await db
@@ -390,11 +394,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const ranks: Record<string, number | null> = {};
       for (const category of VALID_CATEGORIES) {
-        const col = categoryColumn[category];
+        const rankOrder = category === "totalEarned"
+          ? desc(sql`CAST(${leaderboardEntries.totalEarned} AS NUMERIC)`)
+          : desc(categoryColumn[category]);
         const allRows = await db
           .select({ userId: leaderboardEntries.userId })
           .from(leaderboardEntries)
-          .orderBy(desc(col));
+          .orderBy(rankOrder);
         const idx = allRows.findIndex(r => r.userId === req.user!.id);
         ranks[category] = idx >= 0 ? idx + 1 : null;
       }
