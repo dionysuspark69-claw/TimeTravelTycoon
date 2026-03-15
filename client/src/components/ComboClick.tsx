@@ -77,10 +77,10 @@ export function ComboClick() {
     // Outer wrapper: pointer-events-none so it never blocks UI
     <div className="absolute inset-0 z-10 pointer-events-none select-none">
 
-      {/* Click zone: starts below top UI (80px), covers rest of scene */}
+      {/* Click zone: starts well below top UI bar to avoid blocking Settings/buttons */}
       <div
         className="absolute left-0 right-0 bottom-0 cursor-default pointer-events-auto"
-        style={{ top: "60px" }}
+        style={{ top: "120px" }}
         onClick={handleClick}
       >
         {/* Onboarding hint */}
@@ -116,15 +116,7 @@ export function ComboClick() {
           </div>
         ))}
 
-        {/* Empty state recharge prompt */}
-        {isEmpty && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="flex flex-col items-center gap-1 animate-pulse">
-              <span className="text-4xl">👆</span>
-              <span className="text-red-300 text-lg font-black">CLICK TO RECHARGE!</span>
-            </div>
-          </div>
-        )}
+
       </div>{/* end click zone */}
 
       {/* Chrono Meter bar -- outside click zone, always visible, pointer-events-none */}
@@ -132,9 +124,7 @@ export function ComboClick() {
         <div className="flex items-center gap-2 mb-1">
           <span className={`text-xs font-bold ${colors.label}`}>⚡ CHRONO METER</span>
           <span className={`text-xs font-bold ml-auto ${colors.label}`}>{bar}%</span>
-          {isEmpty && (
-            <span className="text-red-400 text-xs font-black animate-pulse ml-1">CLICK!</span>
-          )}
+
         </div>
         <div className={`w-full h-4 bg-gray-900 rounded-full border ${colors.border} overflow-hidden shadow-lg ${colors.glow}`}>
           <div
@@ -151,7 +141,7 @@ export function ComboClick() {
         </div>
         <div className="flex justify-between mt-0.5">
           <span className="text-gray-600 text-xs">passive boost: {bar > 60 ? "+50%" : bar > 30 ? "+20%" : "none"}</span>
-          <span className="text-gray-600 text-xs">tap scene ↑</span>
+          <span className="text-gray-600 text-xs">tap to recharge</span>
         </div>
       </div>
 

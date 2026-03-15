@@ -36,8 +36,7 @@ export function Starfield() {
     return { positions, colors };
   }, []);
   
-  // Only rotate the whole group - no per-star position updates every frame.
-  // This eliminates the GPU buffer upload that was causing context pressure on tab switch.
+  // Rotate only - no per-frame buffer uploads
   useFrame(() => {
     if (pointsRef.current) {
       pointsRef.current.rotation.y += 0.0002;
