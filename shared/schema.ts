@@ -20,6 +20,33 @@ export const gameSaves = pgTable("game_saves", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const leaderboardEntries = pgTable("leaderboard_entries", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id).unique(),
+  username: text("username").notNull(),
+  totalEarned: text("total_earned").notNull().default("0"),
+  totalTripsCompleted: integer("total_trips_completed").notNull().default(0),
+  totalCustomersServed: integer("total_customers_served").notNull().default(0),
+  prestigeLevel: integer("prestige_level").notNull().default(0),
+  timeMachineCount: integer("time_machine_count").notNull().default(1),
+  unlockedDestinationsCount: integer("unlocked_destinations_count").notNull().default(1),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertLeaderboardEntrySchema = createInsertSchema(leaderboardEntries).pick({
+  userId: true,
+  username: true,
+  totalEarned: true,
+  totalTripsCompleted: true,
+  totalCustomersServed: true,
+  prestigeLevel: true,
+  timeMachineCount: true,
+  unlockedDestinationsCount: true,
+});
+
+export type LeaderboardEntry = typeof leaderboardEntries.$inferSelect;
+export type InsertLeaderboardEntry = z.infer<typeof insertLeaderboardEntrySchema>;
+
 export const insertUserSchema = createInsertSchema(users).pick({
   googleId: true,
   replitUserId: true,

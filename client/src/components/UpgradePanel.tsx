@@ -3,12 +3,13 @@ import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
-import { ArrowUp, MapPin, Users, Trophy, Settings, Plus, Minus, Target, Sparkles, ChevronDown, ChevronUp, Tv } from "lucide-react";
+import { ArrowUp, MapPin, Users, Trophy, Settings, Plus, Minus, Target, Sparkles, ChevronDown, ChevronUp, Tv, Medal } from "lucide-react";
 import { ManagersPanel } from "./ManagersPanel";
 import { AchievementsPanel } from "./AchievementsPanel";
 import { MissionsPanel } from "./MissionsPanel";
 import { CollectionsPanel } from "./CollectionsPanel";
 import { AdBoostPanel } from "./AdBoostPanel";
+import { LeaderboardPanel } from "./LeaderboardPanel";
 import { useAchievements } from "@/lib/stores/useAchievements";
 import { useState } from "react";
 import { formatChronoValue } from "@/lib/utils";
@@ -104,7 +105,7 @@ export function UpgradePanel() {
       {isExpanded && (
         <div className="p-2 md:p-4">
           <Tabs defaultValue="upgrades" className="w-full">
-        <TabsList className="grid w-full grid-cols-7 bg-gray-900">
+        <TabsList className="grid w-full grid-cols-8 bg-gray-900">
           <TabsTrigger value="upgrades" className="flex items-center gap-2 text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
             <Settings className="w-4 h-4" />
             <span className="hidden sm:inline">Upgrades</span>
@@ -135,6 +136,10 @@ export function UpgradePanel() {
             {unclaimedCount > 0 && (
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border border-gray-900" />
             )}
+          </TabsTrigger>
+          <TabsTrigger value="leaderboard" className="flex items-center gap-2 text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
+            <Medal className="w-4 h-4" />
+            <span className="hidden sm:inline">Ranks</span>
           </TabsTrigger>
         </TabsList>
         
@@ -383,6 +388,10 @@ export function UpgradePanel() {
               </Card>
             );
           })}
+        </TabsContent>
+
+        <TabsContent value="leaderboard" className="space-y-2 mt-4 max-h-[40vh] md:max-h-[45vh] overflow-y-auto pr-2 pb-4">
+          <LeaderboardPanel />
         </TabsContent>
           </Tabs>
         </div>

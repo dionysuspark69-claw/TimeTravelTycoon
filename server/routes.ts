@@ -5,7 +5,7 @@ import passport from "./passport-config";
 import { getUserInfo } from "@replit/repl-auth";
 import bcrypt from "bcrypt";
 import { db } from "./db";
-import { gameSaves, users, type User } from "@shared/schema";
+import { gameSaves, users, leaderboardEntries, type User } from "@shared/schema";
 
 declare global {
   namespace Express {
@@ -271,11 +271,133 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Update leaderboard entry (upsert)
+      try {
+        const gs = gameState as any;
+        const leaderboardData = {
+          userId: req.user.id,
+          username: req.user.username,
+          totalEarned: String(gs.totalEarned || 0),
+          totalTripsCompleted: Number(gs.totalTripsCompleted || 0),
+          totalCustomersServed: Number(gs.totalCustomersServed || 0),
+          prestigeLevel: Number(gs.prestigeLevel || 0),
+          timeMachineCount: Number(gs.timeMachineCount || 1),
+          unlockedDestinationsCount: Number((gs.unlockedDestinations || []).length || 1),
+          updatedAt: new Date(),
+        };
+
+        const existingEntry = await db
+          .select()
+          .from(leaderboardEntries)
+          .where(eq(leaderboardEntries.userId, req.user.id))
+          .limit(1);
+
+        if (existingEntry.length > 0) {
+          await db
+            .update(leaderboardEntries)
+            .set(leaderboardData)
+            .where(eq(leaderboardEntries.userId, req.user.id));
+        } else {
+          await db.insert(leaderboardEntries).values(leaderboardData);
+        }
+      } catch (lbErr) {
+        console.error("Leaderboard update error (non-fatal):", lbErr);
+      }
+
       res.set("Cache-Control", "no-store");
       res.json({ success: true });
     } catch (error) {
       console.error("Save error:", error);
       res.status(500).json({ message: "Failed to save progress" });
+    }
+  });
+
+  // Leaderboard routes
+  const VALID_CATEGORIES = ["totalEarned", "totalTripsCompleted", "totalCustomersServed", "prestigeLevel", "timeMachineCount", "unlockedDestinationsCount"] as const;
+  type LeaderboardCategory = typeof VALID_CATEGORIES[number];
+
+  const categoryColumn: Record<LeaderboardCategory, any> = {
+    totalEarned: leaderboardEntries.totalEarned,
+    totalTripsCompleted: leaderboardEntries.totalTripsCompleted,
+    totalCustomersServed: leaderboardEntries.totalCustomersServed,
+    prestigeLevel: leaderboardEntries.prestigeLevel,
+    timeMachineCount: leaderboardEntries.timeMachineCount,
+    unlockedDestinationsCount: leaderboardEntries.unlockedDestinationsCount,
+  };
+
+  app.get("/api/leaderboard/:category", async (req, res) => {
+    try {
+      const category = req.params.category as LeaderboardCategory;
+      if (!VALID_CATEGORIES.includes(category)) {
+        return res.status(400).json({ message: "Invalid category" });
+      }
+
+      const col = categoryColumn[category];
+      const rows = await db
+        .select({
+          userId: leaderboardEntries.userId,
+          username: leaderboardEntries.username,
+          totalEarned: leaderboardEntries.totalEarned,
+          totalTripsCompleted: leaderboardEntries.totalTripsCompleted,
+          totalCustomersServed: leaderboardEntries.totalCustomersServed,
+          prestigeLevel: leaderboardEntries.prestigeLevel,
+          timeMachineCount: leaderboardEntries.timeMachineCount,
+          unlockedDestinationsCount: leaderboardEntries.unlockedDestinationsCount,
+          updatedAt: leaderboardEntries.updatedAt,
+        })
+        .from(leaderboardEntries)
+        .orderBy(desc(col))
+        .limit(50);
+
+      // Add rank
+      const ranked = rows.map((row, i) => ({ ...row, rank: i + 1 }));
+
+      // If authenticated, find current user's rank if outside top 50
+      let myEntry = null;
+      if (req.user) {
+        const myRank = ranked.find(r => r.userId === req.user!.id);
+        if (!myRank) {
+          const allRows = await db
+            .select({ userId: leaderboardEntries.userId })
+            .from(leaderboardEntries)
+            .orderBy(desc(col));
+          const myIndex = allRows.findIndex(r => r.userId === req.user!.id);
+          if (myIndex >= 0) {
+            const myFull = await db
+              .select()
+              .from(leaderboardEntries)
+              .where(eq(leaderboardEntries.userId, req.user.id))
+              .limit(1);
+            if (myFull.length > 0) {
+              myEntry = { ...myFull[0], rank: myIndex + 1 };
+            }
+          }
+        }
+      }
+
+      res.json({ entries: ranked, myEntry });
+    } catch (error) {
+      console.error("Leaderboard fetch error:", error);
+      res.status(500).json({ message: "Failed to fetch leaderboard" });
+    }
+  });
+
+  app.get("/api/leaderboard-ranks/me", requireAuth, async (req, res) => {
+    try {
+      const ranks: Record<string, number | null> = {};
+      for (const category of VALID_CATEGORIES) {
+        const col = categoryColumn[category];
+        const allRows = await db
+          .select({ userId: leaderboardEntries.userId })
+          .from(leaderboardEntries)
+          .orderBy(desc(col));
+        const idx = allRows.findIndex(r => r.userId === req.user!.id);
+        ranks[category] = idx >= 0 ? idx + 1 : null;
+      }
+      res.json({ ranks });
+    } catch (error) {
+      console.error("My ranks error:", error);
+      res.status(500).json({ message: "Failed to fetch your ranks" });
     }
   });
 
