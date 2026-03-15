@@ -1353,11 +1353,11 @@ export const useIdleGame = create<IdleGameState>()(
           artifactsStore.discoverArtifact(droppedArtifact.id);
           
           const rarityColors = {
-            common: "≡ƒö╣",
-            uncommon: "≡ƒƒó",
-            rare: "≡ƒö╡",
-            epic: "≡ƒƒú",
-            legendary: "≡ƒƒá"
+            common: "[Common]",
+            uncommon: "[Uncommon]",
+            rare: "[Rare]",
+            epic: "[Epic]",
+            legendary: "[Legendary]"
           };
           
           const discoveryMessages: Record<string, string> = {
