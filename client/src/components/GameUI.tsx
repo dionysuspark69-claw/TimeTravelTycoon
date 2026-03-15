@@ -1,8 +1,7 @@
 import { useIdleGame, TIME_PERIODS } from "@/lib/stores/useIdleGame";
 import { Button } from "./ui/button";
-import { Card } from "./ui/card";
 import { useAudio } from "@/lib/stores/useAudio";
-import { Volume2, VolumeX, Trophy, MapPin } from "lucide-react";
+import { Volume2, VolumeX, Trophy } from "lucide-react";
 import { StatsPanel } from "./StatsPanel";
 import { SettingsDialog } from "./SettingsDialog";
 import { useIsMobile } from "@/hooks/use-is-mobile";
@@ -17,164 +16,87 @@ export function GameUI() {
     waitingCustomers,
     processingCustomers,
     totalCustomersServed,
-    timeMachineLevel,
-    timeMachineCapacity,
-    timeMachineSpeed,
-    timeMachineCount,
-    customerGenerationRate,
     currentDestination,
-    unlockedDestinations,
     prestigeLevel,
     prestigePoints,
     coinsPerSecond,
-    
-    prestige,
   } = useIdleGame();
-  
+
   const { isMuted, toggleMute } = useAudio();
   const isMobile = useIsMobile();
   const { activeBoosts } = useAdBoosts();
   const [, setTick] = useState(0);
-  
+
   useEffect(() => {
-    const interval = setInterval(() => {
-      setTick(t => t + 1);
-    }, 1000);
-    
+    const interval = setInterval(() => setTick(t => t + 1), 1000);
     return () => clearInterval(interval);
   }, []);
-  
-  const formatCoinsPerSecond = (num: number) => {
+
+  const formatCps = (num: number) => {
     if (num < 1) return num.toFixed(2);
     if (num < 10) return num.toFixed(1);
     return formatChronoValue(num, 1);
   };
-  
+
   const formatTime = (ms: number) => {
-    const seconds = Math.ceil(ms / 1000);
-    if (seconds < 60) return `${seconds}s`;
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}m ${remainingSeconds}s`;
+    const s = Math.ceil(ms / 1000);
+    if (s < 60) return `${s}s`;
+    return `${Math.floor(s / 60)}m ${s % 60}s`;
   };
-  
-  const getActiveBoostTimer = () => {
+
+  const boostTimer = (() => {
     if (activeBoosts.length === 0) return null;
     const now = Date.now();
-    const longestBoost = activeBoosts.reduce((longest, boost) => {
-      const remaining = boost.endsAt - now;
-      const longestRemaining = longest.endsAt - now;
-      return remaining > longestRemaining ? boost : longest;
-    });
-    return longestBoost.endsAt - now;
-  };
-  
+    const best = activeBoosts.reduce((a, b) => (b.endsAt - now > a.endsAt - now ? b : a));
+    const rem = best.endsAt - now;
+    return rem > 0 ? rem : null;
+  })();
+
   const currentDest = TIME_PERIODS.find(d => d.id === currentDestination);
-  
+
   return (
     <>
-    {/* Settings button - fixed top-right, always above everything */}
-    <div className="fixed top-2 right-2 z-50 pointer-events-auto" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-      <div className="flex gap-2">
-        <SettingsDialog />
+      {/* Fixed settings - always on top right */}
+      <div className="fixed top-2 right-2 z-50 pointer-events-auto flex gap-1" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+        {!isMobile && <StatsPanel />}
         {!isMobile && (
-          <>
-            <StatsPanel />
-            <Button
-              onClick={toggleMute}
-              variant="outline"
-              size="icon"
-              className="bg-black/80 backdrop-blur-sm border-cyan-500/30 min-w-[44px] min-h-[44px]"
-            >
-              {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-            </Button>
-          </>
+          <Button onClick={toggleMute} variant="outline" size="icon" className="bg-black/80 backdrop-blur-sm border-cyan-500/30 h-9 w-9">
+            {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+          </Button>
         )}
+        <SettingsDialog />
       </div>
-    </div>
 
-    <div className="absolute inset-0 pointer-events-none" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-      <div className="p-2 md:p-4 flex flex-col gap-2 md:gap-4 h-full pointer-events-none relative">
-        <div className="grid grid-cols-1 md:flex md:justify-between md:items-start gap-2 pointer-events-auto">
-          <div className="grid grid-cols-2 gap-2 md:contents">
-            <Card className="bg-black/80 backdrop-blur-sm border-cyan-500/30 p-3 md:p-4 min-w-0 md:min-w-[200px]">
-              <div className="text-cyan-400 text-xs md:text-sm mb-1 md:mb-2">ChronoCoins</div>
-              <div className="text-white text-2xl md:text-3xl font-bold">{formatChronoValue(chronocoins)}</div>
-              <div className="text-gray-400 text-xs mt-1">Total: {formatChronoValue(totalEarned)}</div>
-              {coinsPerSecond > 0 && (
-                <div className="text-green-400 text-xs mt-1">+{formatCoinsPerSecond(coinsPerSecond)}/sec</div>
-              )}
-              {prestigeLevel > 0 && (
-                <div className="text-yellow-400 text-xs mt-1 flex items-center gap-1">
-                  <Trophy className="w-3 h-3" />
-                  Prestige {prestigeLevel} (+{prestigePoints * 10}% revenue)
-                </div>
-              )}
-              {/* Wait / Trip / Done inline under coins */}
-              <div className="flex gap-2 mt-2 pt-2 border-t border-cyan-500/20">
-                <div className="flex flex-col items-center">
-                  <span className="text-cyan-400 text-xs">Wait</span>
-                  <span className="text-white text-sm font-bold">{Math.floor(waitingCustomers)}</span>
-                </div>
-                <div className="flex flex-col items-center">
-                  <span className="text-green-400 text-xs">Trip</span>
-                  <span className="text-white text-sm font-bold">{processingCustomers}</span>
-                </div>
-                <div className="flex flex-col items-center">
-                  <span className="text-purple-400 text-xs">Done</span>
-                  <span className="text-white text-sm font-bold">{formatChronoValue(totalCustomersServed)}</span>
-                </div>
-                {getActiveBoostTimer() && (
-                  <div className="flex flex-col items-center ml-auto">
-                    <span className="text-yellow-400 text-xs">Boost</span>
-                    <span className="text-yellow-200 text-sm font-bold">{formatTime(getActiveBoostTimer()!)}</span>
-                  </div>
-                )}
-              </div>
-            </Card>
-            
+      {/* Flat top bar */}
+      <div className="absolute top-0 left-0 right-0 z-10 pointer-events-none" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+        <div className="bg-black/75 backdrop-blur-sm border-b border-cyan-500/20 px-3 py-2 pointer-events-auto pr-28">
+          {/* Row 1: coins + cps */}
+          <div className="flex items-baseline gap-2">
+            <span className="text-white text-xl font-bold leading-none">{formatChronoValue(chronocoins)}</span>
+            <span className="text-cyan-400 text-xs">CC</span>
+            {coinsPerSecond > 0 && (
+              <span className="text-green-400 text-xs">+{formatCps(coinsPerSecond)}/s</span>
+            )}
+            {prestigeLevel > 0 && (
+              <span className="text-yellow-400 text-xs flex items-center gap-0.5 ml-1">
+                <Trophy className="w-3 h-3" />P{prestigeLevel}
+              </span>
+            )}
             {currentDest && (
-              <Card 
-                className="bg-black/80 backdrop-blur-sm border-cyan-500/30 p-2 md:p-3 min-w-0 md:min-w-[180px]"
-                style={{
-                  borderColor: currentDest.color,
-                  borderWidth: 2
-                }}
-              >
-                <div className="flex items-center gap-1 md:gap-2 mb-1">
-                  <MapPin className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" style={{ color: currentDest.color }} />
-                  <div className="text-white text-xs md:text-sm font-semibold truncate">{currentDest.name}</div>
-                </div>
-                <div className="text-xs space-y-0.5">
-                  {currentDest.speedModifier !== 1.0 && (
-                    <div className={currentDest.speedModifier > 1 ? "text-green-400" : "text-red-400"}>
-                      Speed: {currentDest.speedModifier > 1 ? '+' : ''}{((currentDest.speedModifier - 1) * 100).toFixed(0)}%
-                    </div>
-                  )}
-                  {currentDest.revenueModifier !== 1.0 && (
-                    <div className={currentDest.revenueModifier > 1 ? "text-green-400" : "text-red-400"}>
-                      Revenue: {currentDest.revenueModifier > 1 ? '+' : ''}{((currentDest.revenueModifier - 1) * 100).toFixed(0)}%
-                    </div>
-                  )}
-                  {currentDest.customerGenModifier !== 1.0 && (
-                    <div className={currentDest.customerGenModifier > 1 ? "text-green-400" : "text-red-400"}>
-                      Customers: {currentDest.customerGenModifier > 1 ? '+' : ''}{((currentDest.customerGenModifier - 1) * 100).toFixed(0)}%
-                    </div>
-                  )}
-                </div>
-              </Card>
+              <span className="text-xs ml-auto" style={{ color: currentDest.color }}>{currentDest.name}</span>
             )}
           </div>
-          
-          {/* Settings moved to fixed position above */}
-          <div className="w-[44px] md:w-auto" />
+          {/* Row 2: stats */}
+          <div className="flex items-center gap-3 mt-1">
+            <span className="text-cyan-400 text-xs">Wait <span className="text-white font-semibold">{Math.floor(waitingCustomers)}</span></span>
+            <span className="text-green-400 text-xs">Trip <span className="text-white font-semibold">{processingCustomers}</span></span>
+            <span className="text-purple-400 text-xs">Done <span className="text-white font-semibold">{formatChronoValue(totalCustomersServed)}</span></span>
+            {boostTimer && (
+              <span className="text-yellow-300 text-xs ml-auto">Boost {formatTime(boostTimer)}</span>
+            )}
+          </div>
         </div>
-        
-        <div className="flex-1" />
-        
-
       </div>
-    </div>
     </>
   );
 }

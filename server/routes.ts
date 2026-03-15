@@ -297,9 +297,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .limit(1);
 
         if (existingEntry.length > 0) {
+          const prev = existingEntry[0];
+          // Keep best values across prestiges - don't let a reset overwrite highs
+          const mergedData = {
+            ...leaderboardData,
+            totalEarned: String(Math.max(parseFloat(String(prev.totalEarned || 0)), parseFloat(String(gs.totalEarned || 0)))),
+            totalTripsCompleted: Math.max(Number(prev.totalTripsCompleted || 0), Number(gs.totalTripsCompleted || 0)),
+            totalCustomersServed: Math.max(Number(prev.totalCustomersServed || 0), Number(gs.totalCustomersServed || 0)),
+            timeMachineCount: Math.max(Number(prev.timeMachineCount || 1), Number(gs.timeMachineCount || 1)),
+            unlockedDestinationsCount: Math.max(Number(prev.unlockedDestinationsCount || 1), Number((gs.unlockedDestinations || []).length || 1)),
+            // prestigeLevel always keeps current (it only goes up)
+            prestigeLevel: Number(gs.prestigeLevel || 0),
+          };
           await db
             .update(leaderboardEntries)
-            .set(leaderboardData)
+            .set(mergedData)
             .where(eq(leaderboardEntries.userId, req.user.id));
         } else {
           await db.insert(leaderboardEntries).values(leaderboardData);
