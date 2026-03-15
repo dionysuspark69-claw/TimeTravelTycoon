@@ -30,6 +30,7 @@ export const useSaveState = create<SaveState>((set, get) => ({
         chronocoins: state.chronocoins,
         totalEarned: state.totalEarned,
         totalTripsCompleted: state.totalTripsCompleted,
+        totalManagerUpgrades: state.totalManagerUpgrades,
         totalCustomersServed: state.totalCustomersServed,
         timeMachineLevel: state.timeMachineLevel,
         timeMachineCapacity: state.timeMachineCapacity,
@@ -45,6 +46,7 @@ export const useSaveState = create<SaveState>((set, get) => ({
         prestigeLevel: state.prestigeLevel,
         prestigePoints: state.prestigePoints,
         tutorialShown: state.tutorialShown,
+        lastPlayTime: state.lastPlayTime,
       };
 
       console.log("Attempting to save game...", { 
@@ -117,6 +119,7 @@ export const useSaveState = create<SaveState>((set, get) => ({
           chronocoins: data.gameState.chronocoins,
           totalEarned: data.gameState.totalEarned,
           totalTripsCompleted: data.gameState.totalTripsCompleted,
+          totalManagerUpgrades: data.gameState.totalManagerUpgrades || 0,
           totalCustomersServed: data.gameState.totalCustomersServed,
           timeMachineLevel: data.gameState.timeMachineLevel,
           timeMachineCapacity: data.gameState.timeMachineCapacity,
@@ -133,6 +136,7 @@ export const useSaveState = create<SaveState>((set, get) => ({
           prestigeLevel: data.gameState.prestigeLevel,
           prestigePoints: data.gameState.prestigePoints,
           tutorialShown: data.gameState.tutorialShown,
+          lastPlayTime: data.gameState.lastPlayTime || Date.now(),
         });
 
         useIdleGame.getState().updateCustomerStates();

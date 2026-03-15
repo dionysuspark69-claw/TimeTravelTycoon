@@ -1,4 +1,4 @@
-import { useIdleGame, TIME_PERIODS } from "@/lib/stores/useIdleGame";
+import { useIdleGame } from "@/lib/stores/useIdleGame";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { useAudio } from "@/lib/stores/useAudio";
@@ -22,7 +22,6 @@ export function GameUI() {
     timeMachineSpeed,
     timeMachineCount,
     customerGenerationRate,
-    currentDestination,
     unlockedDestinations,
     prestigeLevel,
     prestigePoints,
@@ -69,9 +68,7 @@ export function GameUI() {
     return longestBoost.endsAt - now;
   };
   
-  const currentDest = TIME_PERIODS.find(d => d.id === currentDestination);
-  
-  return (
+    return (
     <div className="absolute inset-0 pointer-events-none" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
       <div className="p-2 md:p-4 flex flex-col gap-2 md:gap-4 h-full pointer-events-none relative">
         <div className="grid grid-cols-1 md:flex md:justify-between md:items-start gap-2 pointer-events-auto">
