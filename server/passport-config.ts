@@ -21,7 +21,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
         try {
           const googleId = profile.id;
           const email = profile.emails?.[0]?.value || null;
-          const username = profile.displayName || "User";
+          const username = (profile.displayName || "User").replace(/[<>&"'`]/g, '').slice(0, 50) || "User";
 
           const existingUsers = await db
             .select()

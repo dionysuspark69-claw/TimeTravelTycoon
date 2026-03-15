@@ -74,7 +74,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const trimmedUsername = username.trim();
-      if (trimmedUsername.length < 2 || trimmedUsername.length > 50) {
+      const sanitizedUsername = trimmedUsername.replace(/[<>&"'`]/g, '');
+      if (sanitizedUsername.length < 2) {
+        return res.status(400).json({ message: "Username contains invalid characters" });
+      }
+      if (sanitizedUsername.length > 50) {
         return res.status(400).json({ message: "Username must be between 2 and 50 characters" });
       }
 
@@ -85,7 +89,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const existingUsers = await db
         .select()
         .from(users)
-        .where(eq(users.username, trimmedUsername))
+        .where(eq(users.username, sanitizedUsername))
         .limit(1);
 
       let user: User;
@@ -108,7 +112,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const newUsers = await db
           .insert(users)
           .values({
-            username: trimmedUsername,
+            username: sanitizedUsername,
             password: hashedPassword,
             email: null,
             googleId: null,

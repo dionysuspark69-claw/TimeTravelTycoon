@@ -904,11 +904,12 @@ export const useIdleGame = create<IdleGameState>()(
     
     calculateBulkCost: (baseCost: number, multiplier: number, currentLevel: number, quantity: number) => {
       if (quantity === 1) {
-        return Math.floor(baseCost * Math.pow(multiplier, currentLevel - 1));
+        const result = Math.floor(baseCost * Math.pow(multiplier, currentLevel - 1));
+        return Math.min(result, Number.MAX_SAFE_INTEGER);
       }
       const firstCost = baseCost * Math.pow(multiplier, currentLevel - 1);
       const sum = firstCost * (Math.pow(multiplier, quantity) - 1) / (multiplier - 1);
-      return Math.round(sum);
+      return Math.min(Math.round(sum), Number.MAX_SAFE_INTEGER);
     },
     
     computeMaxAffordable: (baseCost: number, multiplier: number, currentLevel: number, availableFunds: number) => {
@@ -920,7 +921,9 @@ export const useIdleGame = create<IdleGameState>()(
       let upper = 2;
       
       const state = get();
-      while (state.calculateBulkCost(baseCost, multiplier, currentLevel, upper) <= availableFunds) {
+      while (true) {
+        const cost = state.calculateBulkCost(baseCost, multiplier, currentLevel, upper);
+        if (!isFinite(cost) || cost > availableFunds) break;
         lower = upper;
         upper *= 2;
         if (upper > 1000) break;
@@ -929,6 +932,7 @@ export const useIdleGame = create<IdleGameState>()(
       while (lower < upper - 1) {
         const mid = Math.floor((lower + upper) / 2);
         const cost = state.calculateBulkCost(baseCost, multiplier, currentLevel, mid);
+        if (!isFinite(cost)) { upper = mid; continue; }
         if (cost <= availableFunds) {
           lower = mid;
         } else {
@@ -1097,11 +1101,10 @@ export const useIdleGame = create<IdleGameState>()(
       
       const maxMinutes = Math.min(minutesAway, 240);
       
-      const fare = state.getCurrentFare();
-      const baseRevenuePerMinute = (fare * state.timeMachineCapacity * state.timeMachineCount * state.customerGenerationRate * 0.5 * 60) / (3000 / 1000);
+      const savedCps = state.coinsPerSecond;
+      if (savedCps <= 0) return 0;
       const revenueMultiplier = 1 + (state.prestigePoints * 0.1);
-      
-      return Math.floor(baseRevenuePerMinute * maxMinutes * revenueMultiplier * 0.4);
+      return Math.floor(savedCps * 60 * maxMinutes * revenueMultiplier * 0.4);
     },
     
     claimOfflineEarnings: () => {

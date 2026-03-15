@@ -30,6 +30,7 @@ export function ComboClick() {
   const floaterIdRef = useRef(0);
   const barRef = useRef(100);
   const drainRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const lastClickRef = useRef(0);
 
   const { addChronocoins } = useIdleGame();
   const { setBarPct } = useChronoMeter();
@@ -45,6 +46,9 @@ export function ComboClick() {
   }, [setBarPct]);
 
   const handleClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const now = Date.now();
+    if (now - lastClickRef.current < 500) return;
+    lastClickRef.current = now;
     const prevPct = barRef.current;
     barRef.current = REFILL_AMOUNT;
     setBar(REFILL_AMOUNT);

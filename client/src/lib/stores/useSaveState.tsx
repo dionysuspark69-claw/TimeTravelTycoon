@@ -47,6 +47,7 @@ export const useSaveState = create<SaveState>((set, get) => ({
         prestigePoints: state.prestigePoints,
         tutorialShown: state.tutorialShown,
         lastPlayTime: state.lastPlayTime,
+        coinsPerSecond: state.coinsPerSecond,
       };
 
       console.log("Attempting to save game...", { 
@@ -137,6 +138,7 @@ export const useSaveState = create<SaveState>((set, get) => ({
           prestigePoints: data.gameState.prestigePoints,
           tutorialShown: data.gameState.tutorialShown,
           lastPlayTime: data.gameState.lastPlayTime || Date.now(),
+          coinsPerSecond: data.gameState.coinsPerSecond || 0,
         });
 
         useIdleGame.getState().updateCustomerStates();
