@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { subscribeWithSelector } from "zustand/middleware";
+import { subscribeWithSelector, persist } from "zustand/middleware";
 
 export interface ManagerPerk {
   level: number;
@@ -411,6 +411,7 @@ interface ManagerState {
 }
 
 export const useManagers = create<ManagerState>()(
+  persist(
   subscribeWithSelector((set, get) => ({
     managers: {},
     
@@ -557,5 +558,9 @@ export const useManagers = create<ManagerState>()(
       
       return bonus;
     }
-  }))
+  })),
+  { name: "chronotransit-managers" }
+  )
 );
+
+

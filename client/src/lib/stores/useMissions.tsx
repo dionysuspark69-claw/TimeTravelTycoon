@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { subscribeWithSelector } from "zustand/middleware";
+import { subscribeWithSelector, persist } from "zustand/middleware";
 import { formatChronoValue } from "@/lib/utils";
 
 export type MissionType = "earn_coins" | "complete_trips" | "hire_manager" | "use_boosts" | "unlock_destination" | "earn_in_time" | "upgrade_machine" | "reach_level";
@@ -118,6 +118,7 @@ function selectWeightedTemplate() {
 }
 
 export const useMissions = create<MissionsState>()(
+  persist(
   subscribeWithSelector((set, get) => ({
     missions: [],
     completedMissionIds: [],
@@ -294,5 +295,9 @@ export const useMissions = create<MissionsState>()(
         set({ missions: initialMissions });
       }
     }
-  }))
+  })),
+  { name: "chronotransit-missions" }
+  )
 );
+
+

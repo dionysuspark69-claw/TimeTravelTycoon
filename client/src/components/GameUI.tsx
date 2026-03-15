@@ -100,7 +100,7 @@ export function GameUI() {
 
           </div>
           
-          <div className="flex gap-2 justify-end">
+          <div className="flex gap-2 justify-end relative z-50">
             <SettingsDialog />
             {!isMobile && (
               <>

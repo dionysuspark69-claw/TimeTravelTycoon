@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { subscribeWithSelector } from "zustand/middleware";
+import { subscribeWithSelector, persist } from "zustand/middleware";
 
 export interface Achievement {
   id: string;
@@ -434,6 +434,7 @@ interface AchievementState {
 }
 
 export const useAchievements = create<AchievementState>()(
+  persist(
   subscribeWithSelector((set, get) => ({
     unlockedAchievements: [],
     claimedAchievements: [],
@@ -497,5 +498,7 @@ export const useAchievements = create<AchievementState>()(
         state.unlockedAchievements.includes(a.id) && !state.claimedAchievements.includes(a.id)
       );
     }
-  }))
+  })),
+  { name: "chronotransit-achievements" }
+  )
 );
