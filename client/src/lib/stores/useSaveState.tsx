@@ -1,5 +1,11 @@
 import { create } from "zustand";
 import { useIdleGame } from "./useIdleGame";
+import { useManagers } from "./useManagers";
+import { useAchievements } from "./useAchievements";
+import { useArtifacts } from "./useArtifacts";
+import { useMissions } from "./useMissions";
+import { usePrestigePerks } from "./usePrestigePerks";
+import { useManagerPerks } from "./useManagerPerks";
 import { toast } from "sonner";
 
 interface SaveState {
@@ -11,6 +17,7 @@ interface SaveState {
   setHasLoadedOnce: (hasLoaded: boolean) => void;
   saveGame: () => Promise<void>;
   loadGame: () => Promise<void>;
+  loadProfile: () => Promise<void>; // background load after game is visible
 }
 
 export const useSaveState = create<SaveState>((set, get) => ({
@@ -25,8 +32,15 @@ export const useSaveState = create<SaveState>((set, get) => ({
     try {
       set({ isSaving: true });
       const state = useIdleGame.getState();
+      const managers = useManagers.getState();
+      const achievements = useAchievements.getState();
+      const artifacts = useArtifacts.getState();
+      const missions = useMissions.getState();
+      const prestigePerks = usePrestigePerks.getState();
+      const managerPerks = useManagerPerks.getState();
 
       const gameState = {
+        // Core
         chronocoins: state.chronocoins,
         totalEarned: state.totalEarned,
         totalTripsCompleted: state.totalTripsCompleted,
@@ -37,7 +51,6 @@ export const useSaveState = create<SaveState>((set, get) => ({
         timeMachineSpeed: state.timeMachineSpeed,
         timeMachineCount: state.timeMachineCount,
         customerGenerationRate: state.customerGenerationRate,
-        // Advanced upgrades
         queueSize: state.queueSize,
         boardingSpeed: state.boardingSpeed,
         vipChance: state.vipChance,
@@ -57,6 +70,21 @@ export const useSaveState = create<SaveState>((set, get) => ({
         tutorialShown: state.tutorialShown,
         lastPlayTime: state.lastPlayTime,
         coinsPerSecond: state.coinsPerSecond,
+        // Profile (synced separately on load but saved together)
+        managers: managers.managers,
+        compoundInterestBonus: managers.compoundInterestBonus,
+        unlockedAchievements: achievements.unlockedAchievements,
+        claimedAchievements: achievements.claimedAchievements,
+        artifactDiscoveries: artifacts.discoveries,
+        artifactTotalDrops: artifacts.totalDrops,
+        missions: missions.missions,
+        completedMissionIds: missions.completedMissionIds,
+        nextMissionId: missions.nextMissionId,
+        missionStreak: missions.missionStreak,
+        lastMissionCompletedAt: missions.lastMissionCompletedAt,
+        rerollsAvailable: missions.rerollsAvailable,
+        prestigePerkChoices: prestigePerks.chosenPerks,
+        managerPerkChoices: managerPerks.choices,
       };
 
       const response = await fetch("/api/save", {
@@ -80,6 +108,7 @@ export const useSaveState = create<SaveState>((set, get) => ({
     }
   },
 
+  // Phase 1: load core state only - fast, blocks game start
   loadGame: async () => {
     try {
       const controller = new AbortController();
@@ -91,10 +120,7 @@ export const useSaveState = create<SaveState>((set, get) => ({
       clearTimeout(loadTimeout);
 
       if (!response.ok) {
-        if (response.status === 404) {
-          console.log("No saved game found");
-          return;
-        }
+        if (response.status === 404) return;
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || "Failed to load game");
       }
@@ -108,7 +134,6 @@ export const useSaveState = create<SaveState>((set, get) => ({
           hasReachedTarget: false,
           stateChangedTime: now,
         }));
-
         const actualProcessingCount = restoredEntities.filter(
           (e: any) => e.state === "boarding" || e.state === "traveling"
         ).length;
@@ -141,18 +166,77 @@ export const useSaveState = create<SaveState>((set, get) => ({
           currentDestination: gs.currentDestination,
           prestigeLevel: gs.prestigeLevel,
           prestigePoints: gs.prestigePoints,
-          // Never downgrade tutorialShown=true from localStorage
           tutorialShown: gs.tutorialShown || useIdleGame.getState().tutorialShown,
           lastPlayTime: gs.lastPlayTime || now,
           coinsPerSecond: gs.coinsPerSecond || 0,
         });
-
         useIdleGame.getState().updateCustomerStates();
-        toast.success("Game progress loaded from cloud!");
+
+        // Kick off background profile load - don't await
+        setTimeout(() => useSaveState.getState().loadProfile(), 500);
       }
     } catch (error) {
       console.error("Error loading game:", error);
-      // Don't toast on timeout/abort - it's just slow, not broken
+    }
+  },
+
+  // Phase 2: load profile data in background after game is visible
+  loadProfile: async () => {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 8000);
+      const response = await fetch("/api/load", {
+        credentials: "include",
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+
+      if (!response.ok) return;
+
+      const data = await response.json();
+      if (!data.gameState) return;
+      const gs = data.gameState;
+
+      // Wait for a clean animation frame so we don't interrupt the game loop
+      await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+
+      if (gs.managers && Object.keys(gs.managers).length > 0) {
+        useManagers.setState({
+          managers: gs.managers,
+          compoundInterestBonus: gs.compoundInterestBonus || 0,
+        });
+      }
+      if (gs.unlockedAchievements?.length > 0 || gs.claimedAchievements?.length > 0) {
+        useAchievements.setState({
+          unlockedAchievements: gs.unlockedAchievements || [],
+          claimedAchievements: gs.claimedAchievements || [],
+        });
+      }
+      if (gs.artifactDiscoveries?.length > 0) {
+        useArtifacts.setState({
+          discoveries: gs.artifactDiscoveries,
+          totalDrops: gs.artifactTotalDrops || 0,
+        });
+      }
+      if (gs.missions?.length > 0) {
+        useMissions.setState({
+          missions: gs.missions,
+          completedMissionIds: gs.completedMissionIds || [],
+          nextMissionId: gs.nextMissionId || 0,
+          missionStreak: gs.missionStreak || 0,
+          lastMissionCompletedAt: gs.lastMissionCompletedAt || 0,
+          rerollsAvailable: gs.rerollsAvailable ?? 1,
+        });
+      }
+      if (gs.prestigePerkChoices && Object.keys(gs.prestigePerkChoices).length > 0) {
+        usePrestigePerks.setState({ chosenPerks: gs.prestigePerkChoices });
+      }
+      if (gs.managerPerkChoices && Object.keys(gs.managerPerkChoices).length > 0) {
+        useManagerPerks.setState({ choices: gs.managerPerkChoices });
+      }
+    } catch (error) {
+      // Silent fail - localStorage has the data anyway
+      console.log("Background profile load failed, using localStorage:", error);
     }
   },
 }));
