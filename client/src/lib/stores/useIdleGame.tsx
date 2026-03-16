@@ -833,6 +833,7 @@ interface IdleGameState {
   
   coinsPerSecond: number;
   lastClickBoostTime?: number;
+  _pendingOfflineEarnings: number;
   
   addChronocoins: (amount: number) => void;
   spendChronocoins: (amount: number) => boolean;
@@ -943,6 +944,7 @@ export const useIdleGame = create<IdleGameState>()(
     
     coinsPerSecond: 0,
     lastClickBoostTime: undefined,
+    _pendingOfflineEarnings: 0,
     
     addChronocoins: (amount) => {
       set((state) => ({
@@ -1275,6 +1277,9 @@ export const useIdleGame = create<IdleGameState>()(
     
     calculateOfflineEarnings: () => {
       const state = get();
+      // If already calculated this session, return cached value
+      if (state._pendingOfflineEarnings > 0) return state._pendingOfflineEarnings;
+      
       const now = Date.now();
       const timeAway = now - state.lastPlayTime;
       const minutesAway = timeAway / 1000 / 60;
@@ -1286,15 +1291,21 @@ export const useIdleGame = create<IdleGameState>()(
       const savedCps = state.coinsPerSecond;
       if (savedCps <= 0) return 0;
       const revenueMultiplier = 1 + (state.prestigePoints * 0.1);
-      return Math.floor(savedCps * 60 * maxMinutes * revenueMultiplier * usePrestigePerks.getState().getPerkValue("offline_efficiency"));
+      const earnings = Math.floor(savedCps * 60 * maxMinutes * revenueMultiplier * usePrestigePerks.getState().getPerkValue("offline_efficiency"));
+      
+      // Cache so claimOfflineEarnings uses the exact same value
+      if (earnings > 0) set({ _pendingOfflineEarnings: earnings });
+      return earnings;
     },
     
     claimOfflineEarnings: () => {
-      const earnings = get().calculateOfflineEarnings();
+      // Use the pre-calculated value stored in state, not a fresh recalculation
+      // (recalculating would use current lastPlayTime which may have shifted)
+      const earnings = get()._pendingOfflineEarnings || 0;
       if (earnings > 0) {
         get().addChronocoins(earnings);
-        set({ lastPlayTime: Date.now() });
       }
+      set({ lastPlayTime: Date.now(), _pendingOfflineEarnings: 0 });
     },
     
     spawnCustomerEntity: (isVIP = false) => {
@@ -1622,10 +1633,11 @@ export const useIdleGame = create<IdleGameState>()(
           totalCustomersServed: state.totalCustomersServed + servedThisTrip,
           totalTripsCompleted: state.totalTripsCompleted + 1,
           customerEntities: travelingEntities,
-          waitingCustomers: Math.max(0, waitingCustomers), // also flush waiting count
+          waitingCustomers: Math.max(0, waitingCustomers),
           lastUpdateTime: now
         });
-        // Trip just ended - skip dispatch this frame to avoid same-frame race condition
+        // Trip just ended - skip dispatch this frame to avoid same-frame race
+        // Still need to write waitingCustomers (already done above), so just return here
         return;
       }
       

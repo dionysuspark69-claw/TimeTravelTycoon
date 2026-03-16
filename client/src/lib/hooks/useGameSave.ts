@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useAuth } from "../stores/useAuth";
 import { useSaveState } from "../stores/useSaveState";
+import { useIdleGame } from "../stores/useIdleGame";
 
 export function useGameSave() {
   const { isAuthenticated } = useAuth();
@@ -9,6 +10,8 @@ export function useGameSave() {
   useEffect(() => {
     if (isAuthenticated && !hasLoadedOnce) {
       const doLoad = async () => {
+        // Calculate offline earnings from localStorage state BEFORE cloud load overwrites lastPlayTime
+        useIdleGame.getState().calculateOfflineEarnings();
         await useSaveState.getState().loadGame();
         setHasLoadedOnce(true);
       };
