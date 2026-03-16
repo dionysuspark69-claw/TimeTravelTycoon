@@ -1,6 +1,7 @@
 import { useIdleGame } from "./stores/useIdleGame";
 import { useManagers } from "./stores/useManagers";
 import { getPrestigeRequirements } from "./utils";
+import { useMemo } from "react";
 
 export type BottleneckType = "speed" | "capacity" | "customerRate" | "none";
 export type RecommendationKey =
@@ -45,27 +46,29 @@ function capPayback(cost: number, gainPerSec: number): number {
 }
 
 export function useEconomyEngine(): EconomyEngineResult {
-  const {
-    coinsPerSecond,
-    timeMachineLevel,
-    timeMachineCapacity,
-    timeMachineSpeed,
-    timeMachineCount,
-    waitingCustomers,
-    processingCustomers,
-    totalEarned,
-    prestigeLevel,
-    getTimeMachineUpgradeCost,
-    getCapacityUpgradeCost,
-    getSpeedUpgradeCost,
-    getCustomerRateUpgradeCost,
-    getTimeMachineBuyCost,
-    getCurrentFare,
-  } = useIdleGame();
+  // Subscribe only to the specific fields needed - prevents recalc on every customer move
+  const coinsPerSecond = useIdleGame(s => s.coinsPerSecond);
+  const timeMachineLevel = useIdleGame(s => s.timeMachineLevel);
+  const timeMachineCapacity = useIdleGame(s => s.timeMachineCapacity);
+  const timeMachineSpeed = useIdleGame(s => s.timeMachineSpeed);
+  const timeMachineCount = useIdleGame(s => s.timeMachineCount);
+  const totalEarned = useIdleGame(s => s.totalEarned);
+  const prestigeLevel = useIdleGame(s => s.prestigeLevel);
+  const currentDestination = useIdleGame(s => s.currentDestination);
+  // Round customer counts to integers to prevent float oscillation
+  const waitingCustomers = Math.floor(useIdleGame(s => s.waitingCustomers));
+  const processingCustomers = Math.floor(useIdleGame(s => s.processingCustomers));
+  const getTimeMachineUpgradeCost = useIdleGame(s => s.getTimeMachineUpgradeCost);
+  const getCapacityUpgradeCost = useIdleGame(s => s.getCapacityUpgradeCost);
+  const getSpeedUpgradeCost = useIdleGame(s => s.getSpeedUpgradeCost);
+  const getCustomerRateUpgradeCost = useIdleGame(s => s.getCustomerRateUpgradeCost);
+  const getTimeMachineBuyCost = useIdleGame(s => s.getTimeMachineBuyCost);
+  const getCurrentFare = useIdleGame(s => s.getCurrentFare);
 
   // Subscribe so hook updates with manager changes
   useManagers();
 
+  return useMemo(() => {
   const currentFare = getCurrentFare();
   const speedMultiplier = Math.max(1, timeMachineSpeed);
   const tripDurationMs = Math.max(500, 3000 / speedMultiplier);
@@ -73,19 +76,24 @@ export function useEconomyEngine(): EconomyEngineResult {
   const revenuePerTrip = currentFare * timeMachineCapacity;
 
   // ---- Bottleneck detection ----
+  // Use floored integer values to prevent float oscillation every tick
+  const waitingInt = Math.floor(waitingCustomers);
+  const processingInt = Math.floor(processingCustomers);
+
   let bottleneck: BottleneckType = "none";
   let bottleneckLabel = "";
   let bottleneckShortLabel = "Balanced";
 
-  if (waitingCustomers > processingCustomers * 2) {
+  // Hysteresis: thresholds are deliberately wide to prevent flip-flopping
+  if (waitingInt > processingInt * 2 + 2) {
     bottleneck = "speed";
     bottleneckLabel = "Trips finishing too slowly - upgrade Speed";
     bottleneckShortLabel = "Speed";
-  } else if (processingCustomers < timeMachineCapacity * 0.5) {
+  } else if (processingInt < Math.floor(timeMachineCapacity * 0.4)) {
     bottleneck = "customerRate";
     bottleneckLabel = "Machines not filling - upgrade Customer Rate";
     bottleneckShortLabel = "Customer Rate";
-  } else if (processingCustomers >= timeMachineCapacity * 0.9) {
+  } else if (processingInt >= Math.ceil(timeMachineCapacity * 0.95)) {
     bottleneck = "capacity";
     bottleneckLabel = "Machines always full - upgrade Capacity";
     bottleneckShortLabel = "Capacity";
@@ -230,4 +238,10 @@ export function useEconomyEngine(): EconomyEngineResult {
     recommendationReason,
     upgrades,
   };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    coinsPerSecond, timeMachineLevel, timeMachineCapacity, timeMachineSpeed,
+    timeMachineCount, waitingCustomers, processingCustomers, totalEarned,
+    prestigeLevel, currentDestination,
+  ]);
 }

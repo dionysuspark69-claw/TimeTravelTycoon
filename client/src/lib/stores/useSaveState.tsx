@@ -136,7 +136,8 @@ export const useSaveState = create<SaveState>((set, get) => ({
           currentDestination: data.gameState.currentDestination,
           prestigeLevel: data.gameState.prestigeLevel,
           prestigePoints: data.gameState.prestigePoints,
-          tutorialShown: data.gameState.tutorialShown,
+          // Never overwrite tutorialShown=true from localStorage with a missing/false cloud value
+          tutorialShown: data.gameState.tutorialShown || useIdleGame.getState().tutorialShown,
           lastPlayTime: data.gameState.lastPlayTime || Date.now(),
           coinsPerSecond: data.gameState.coinsPerSecond || 0,
         });
