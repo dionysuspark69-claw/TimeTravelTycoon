@@ -115,7 +115,11 @@ export const useSaveState = create<SaveState>((set, get) => ({
 
   loadGame: async () => {
     try {
-      const response = await fetch("/api/load", { credentials: "include" });
+      // 5s timeout on load fetch - prevents hanging on slow Render cold starts
+      const controller = new AbortController();
+      const loadTimeout = setTimeout(() => controller.abort(), 5000);
+      const response = await fetch("/api/load", { credentials: "include", signal: controller.signal });
+      clearTimeout(loadTimeout);
 
       if (!response.ok) {
         if (response.status === 404) {
