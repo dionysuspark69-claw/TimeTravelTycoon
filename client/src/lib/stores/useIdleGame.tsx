@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { subscribeWithSelector } from "zustand/middleware";
+import { subscribeWithSelector, persist } from "zustand/middleware";
 import { useArtifacts } from "./useArtifacts";
 import { useAudio } from "./useAudio";
 import { useChronoMeter } from "./useChronoMeter";
@@ -847,6 +847,7 @@ interface IdleGameState {
 }
 
 export const useIdleGame = create<IdleGameState>()(
+  persist(
   subscribeWithSelector((set, get) => ({
     chronocoins: 0,
     totalEarned: 0,
@@ -1443,7 +1444,35 @@ export const useIdleGame = create<IdleGameState>()(
         lastUpdateTime: now
       });
     }
-  }))
+  })),
+  {
+    name: "chronotransit-idle-game",
+    // Only persist the fields that matter for offline recovery
+    // customerEntities and runtime state are intentionally excluded to avoid stale data
+    partialize: (state) => ({
+      chronocoins: state.chronocoins,
+      totalEarned: state.totalEarned,
+      prestigeLevel: state.prestigeLevel,
+      prestigePoints: state.prestigePoints,
+      timeMachineLevel: state.timeMachineLevel,
+      timeMachineCapacity: state.timeMachineCapacity,
+      timeMachineSpeed: state.timeMachineSpeed,
+      timeMachineCount: state.timeMachineCount,
+      customerGenerationRate: state.customerGenerationRate,
+      waitingCustomers: state.waitingCustomers,
+      totalCustomersServed: state.totalCustomersServed,
+      totalTripsCompleted: state.totalTripsCompleted,
+      totalManagerUpgrades: state.totalManagerUpgrades,
+      nextCustomerId: state.nextCustomerId,
+      unlockedDestinations: state.unlockedDestinations,
+      currentDestination: state.currentDestination,
+      tutorialShown: state.tutorialShown,
+      prestigeTutorialShown: state.prestigeTutorialShown,
+      lastPlayTime: state.lastPlayTime,
+      coinsPerSecond: state.coinsPerSecond,
+    }),
+  }
+  )
 );
 
 if (typeof window !== 'undefined') {

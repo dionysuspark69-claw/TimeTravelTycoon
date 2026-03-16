@@ -53,7 +53,9 @@ function PrestigeCard() {
         </div>
       ) : (
         <div className="space-y-1.5">
-          <p className="text-xs text-gray-400 mb-2">Complete all 3 requirements to unlock prestige:</p>
+          <p className="text-xs text-gray-400 mb-2">
+            Complete all 3 requirements to unlock <span className="text-cyan-400 font-semibold">Prestige {prestigeLevel + 1}</span>:
+          </p>
           {[
             { label: `Earn ${formatChronoValue(EARN_REQ)} CC`, pct: earnPct, done: totalEarned >= EARN_REQ, val: formatChronoValue(totalEarned) },
             { label: `Time Machine Lv.${LEVEL_REQ}`, pct: levelPct, done: timeMachineLevel >= LEVEL_REQ, val: `Lv.${timeMachineLevel}` },

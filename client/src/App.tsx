@@ -47,9 +47,10 @@ function App() {
     }
   }, [authLoading, isAuthenticated, hasLoadedOnce]);
 
-  // Hard fallback: never stay on loading screen longer than 8s
+  // Hard fallback: never stay on loading screen longer than 10s
+  // Auth timeout is 7s + load attempt, so 10s gives full chain room to complete
   useEffect(() => {
-    const fallback = setTimeout(() => setShowGame(true), 8000);
+    const fallback = setTimeout(() => setShowGame(true), 10000);
     return () => clearTimeout(fallback);
   }, []);
 
