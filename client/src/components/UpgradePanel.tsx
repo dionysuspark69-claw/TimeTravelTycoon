@@ -14,6 +14,7 @@ import { useAchievements } from "@/lib/stores/useAchievements";
 import { useArtifacts, ARTIFACT_COLLECTIONS } from "@/lib/stores/useArtifacts";
 import { useState } from "react";
 import { formatChronoValue, getPrestigeRequirements } from "@/lib/utils";
+import { useEconomyEngine, type RecommendationKey } from "@/lib/useEconomyEngine";
 
 function PrestigeCard() {
   const { totalEarned, timeMachineLevel, timeMachineCount, prestigeLevel, prestigePoints, prestige } = useIdleGame();
@@ -184,9 +185,63 @@ function DestinationsList() {
   );
 }
 
+// Format payback into compact string
+function fmtPayback(secs: number): string {
+  if (secs >= 9999) return "N/A";
+  if (secs < 60) return `${secs}s`;
+  return `${Math.round(secs / 60)}m`;
+}
+
+function paybackColor(secs: number): string {
+  if (secs < 30) return "text-green-400";
+  if (secs < 120) return "text-yellow-400";
+  return "text-gray-500";
+}
+
+interface UpgradeCardDecorProps {
+  isRecommended: boolean;
+  canAfford: boolean;
+  maxAffordable: number;
+  gainPerSec: number;
+  paybackSeconds: number;
+  cost: number;
+  chronocoins: number;
+}
+
+function UpgradeDecor({ isRecommended, canAfford, maxAffordable, gainPerSec, paybackSeconds, cost, chronocoins }: UpgradeCardDecorProps) {
+  const shortfall = cost - chronocoins;
+  const showNeedMore = !canAfford;
+  const color = paybackColor(paybackSeconds);
+
+  return (
+    <div className="flex items-center gap-2 mt-1 flex-wrap">
+      {isRecommended && (
+        <span className="bg-cyan-500/20 text-cyan-400 text-xs px-1 rounded font-semibold">
+          {canAfford
+            ? "⚡ Best"
+            : maxAffordable > 0
+            ? `⚡ Best (x${maxAffordable})`
+            : "⚡ Next Target"}
+        </span>
+      )}
+      {showNeedMore ? (
+        <span className="text-gray-500 text-xs">
+          Need {formatChronoValue(Math.max(0, shortfall))} more
+        </span>
+      ) : (
+        <span className={`text-xs ${color}`}>
+          +{gainPerSec.toFixed(1)} CC/s &nbsp;·&nbsp; Payback: {fmtPayback(paybackSeconds)}
+        </span>
+      )}
+    </div>
+  );
+}
+
 export function UpgradePanel() {
   const [isExpanded, setIsExpanded] = useState(true);
   const [multiplier, setMultiplier] = useState<number | 'max'>(1);
+
+  const economy = useEconomyEngine();
   
   const {
     chronocoins,
@@ -302,6 +357,19 @@ export function UpgradePanel() {
         </TabsList>
         
         <TabsContent value="upgrades" className="space-y-2 mt-4 max-h-[40vh] md:max-h-[45vh] overflow-y-auto pr-2 pb-4">
+          {/* Compact Decision Header */}
+          <Card className="bg-gray-900/60 border-cyan-500/20 px-3 py-2 mb-1">
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <span className="text-white font-bold text-xs">Recommended:</span>
+              <span className="text-white text-xs">{economy.recommendation}</span>
+              <span className="bg-cyan-500/20 text-cyan-400 text-xs px-1 rounded ml-1">⚡</span>
+            </div>
+            <div className="text-gray-400 text-xs mb-0.5">Reason: {economy.recommendationReason}</div>
+            <div className={`text-xs ${economy.bottleneck !== "none" ? "text-amber-400" : "text-gray-500"}`}>
+              Bottleneck: {economy.bottleneckShortLabel}
+            </div>
+          </Card>
+
           <div className="mb-3">
             <div className="text-cyan-400 text-xs font-semibold mb-2">Purchase Quantity</div>
             <ToggleGroup 
@@ -333,6 +401,15 @@ export function UpgradePanel() {
               <div className="flex-1">
                 <div className="text-white font-semibold">Time Machine Level</div>
                 <div className="text-gray-400 text-sm">Level {timeMachineLevel} - Increase fare per trip</div>
+                <UpgradeDecor
+                  isRecommended={economy.recommendationKey === "timeMachine"}
+                  canAfford={canAffordTimeMachine}
+                  maxAffordable={timeMachineEffectiveMultiplier}
+                  gainPerSec={economy.upgrades.timeMachine.projectedGainPerSec}
+                  paybackSeconds={economy.upgrades.timeMachine.paybackSeconds}
+                  cost={timeMachineCost}
+                  chronocoins={chronocoins}
+                />
                 {multiplier !== 1 && !canAffordTimeMachine && timeMachineEffectiveMultiplier === 0 && (
                   <div className="text-yellow-400 text-xs mt-1">Max: 0 (need more coins)</div>
                 )}
@@ -344,7 +421,7 @@ export function UpgradePanel() {
                 onClick={() => upgradeTimeMachine(timeMachineEffectiveMultiplier)}
                 disabled={!canAffordTimeMachine}
                 size="sm"
-                className="bg-cyan-600 hover:bg-cyan-700"
+                className="bg-cyan-600 hover:bg-cyan-700 ml-2 shrink-0"
               >
                 <ArrowUp className="w-4 h-4 mr-1" />
                 Buy {timeMachineEffectiveMultiplier}x - {formatChronoValue(timeMachineCost)}
@@ -357,6 +434,15 @@ export function UpgradePanel() {
               <div className="flex-1">
                 <div className="text-white font-semibold">Capacity</div>
                 <div className="text-gray-400 text-sm">Level {timeMachineCapacity} - Customers per trip</div>
+                <UpgradeDecor
+                  isRecommended={economy.recommendationKey === "capacity"}
+                  canAfford={canAffordCapacity}
+                  maxAffordable={capacityEffectiveMultiplier}
+                  gainPerSec={economy.upgrades.capacity.projectedGainPerSec}
+                  paybackSeconds={economy.upgrades.capacity.paybackSeconds}
+                  cost={capacityCost}
+                  chronocoins={chronocoins}
+                />
                 {multiplier !== 1 && !canAffordCapacity && capacityEffectiveMultiplier === 0 && (
                   <div className="text-yellow-400 text-xs mt-1">Max: 0 (need more coins)</div>
                 )}
@@ -368,7 +454,7 @@ export function UpgradePanel() {
                 onClick={() => upgradeCapacity(capacityEffectiveMultiplier)}
                 disabled={!canAffordCapacity}
                 size="sm"
-                className="bg-cyan-600 hover:bg-cyan-700"
+                className="bg-cyan-600 hover:bg-cyan-700 ml-2 shrink-0"
               >
                 <ArrowUp className="w-4 h-4 mr-1" />
                 Buy {capacityEffectiveMultiplier}x - {formatChronoValue(capacityCost)}
@@ -381,6 +467,15 @@ export function UpgradePanel() {
               <div className="flex-1">
                 <div className="text-white font-semibold">Speed</div>
                 <div className="text-gray-400 text-sm">Level {timeMachineSpeed} - Faster trips</div>
+                <UpgradeDecor
+                  isRecommended={economy.recommendationKey === "speed"}
+                  canAfford={canAffordSpeed}
+                  maxAffordable={speedEffectiveMultiplier}
+                  gainPerSec={economy.upgrades.speed.projectedGainPerSec}
+                  paybackSeconds={economy.upgrades.speed.paybackSeconds}
+                  cost={speedCost}
+                  chronocoins={chronocoins}
+                />
                 {multiplier !== 1 && !canAffordSpeed && speedEffectiveMultiplier === 0 && (
                   <div className="text-yellow-400 text-xs mt-1">Max: 0 (need more coins)</div>
                 )}
@@ -392,7 +487,7 @@ export function UpgradePanel() {
                 onClick={() => upgradeSpeed(speedEffectiveMultiplier)}
                 disabled={!canAffordSpeed}
                 size="sm"
-                className="bg-cyan-600 hover:bg-cyan-700"
+                className="bg-cyan-600 hover:bg-cyan-700 ml-2 shrink-0"
               >
                 <ArrowUp className="w-4 h-4 mr-1" />
                 Buy {speedEffectiveMultiplier}x - {formatChronoValue(speedCost)}
@@ -405,6 +500,15 @@ export function UpgradePanel() {
               <div className="flex-1">
                 <div className="text-white font-semibold">Customer Generation</div>
                 <div className="text-gray-400 text-sm">Level {customerGenerationRate} - More customers</div>
+                <UpgradeDecor
+                  isRecommended={economy.recommendationKey === "customerRate"}
+                  canAfford={canAffordCustomerRate}
+                  maxAffordable={customerRateEffectiveMultiplier}
+                  gainPerSec={economy.upgrades.customerRate.projectedGainPerSec}
+                  paybackSeconds={economy.upgrades.customerRate.paybackSeconds}
+                  cost={customerRateCost}
+                  chronocoins={chronocoins}
+                />
                 {multiplier !== 1 && !canAffordCustomerRate && customerRateEffectiveMultiplier === 0 && (
                   <div className="text-yellow-400 text-xs mt-1">Max: 0 (need more coins)</div>
                 )}
@@ -416,7 +520,7 @@ export function UpgradePanel() {
                 onClick={() => upgradeCustomerRate(customerRateEffectiveMultiplier)}
                 disabled={!canAffordCustomerRate}
                 size="sm"
-                className="bg-cyan-600 hover:bg-cyan-700"
+                className="bg-cyan-600 hover:bg-cyan-700 ml-2 shrink-0"
               >
                 <ArrowUp className="w-4 h-4 mr-1" />
                 Buy {customerRateEffectiveMultiplier}x - {formatChronoValue(customerRateCost)}
@@ -432,6 +536,15 @@ export function UpgradePanel() {
                   Time Machines
                 </div>
                 <div className="text-gray-400 text-sm">Own {timeMachineCount} - {timeMachineCount * timeMachineCapacity} total capacity</div>
+                <UpgradeDecor
+                  isRecommended={economy.recommendationKey === "buyMachine"}
+                  canAfford={canAffordBuyTimeMachine}
+                  maxAffordable={buyTimeMachineEffectiveMultiplier}
+                  gainPerSec={economy.upgrades.buyMachine.projectedGainPerSec}
+                  paybackSeconds={economy.upgrades.buyMachine.paybackSeconds}
+                  cost={buyTimeMachineCost}
+                  chronocoins={chronocoins}
+                />
                 {multiplier !== 1 && !canAffordBuyTimeMachine && buyTimeMachineEffectiveMultiplier === 0 && (
                   <div className="text-yellow-400 text-xs mt-1">Max: 0 (need more coins)</div>
                 )}
@@ -443,7 +556,7 @@ export function UpgradePanel() {
                 onClick={() => buyTimeMachine(buyTimeMachineEffectiveMultiplier)}
                 disabled={!canAffordBuyTimeMachine}
                 size="sm"
-                className="bg-purple-600 hover:bg-purple-700"
+                className="bg-purple-600 hover:bg-purple-700 ml-2 shrink-0"
               >
                 <Plus className="w-4 h-4 mr-1" />
                 Buy {buyTimeMachineEffectiveMultiplier}x - {formatChronoValue(buyTimeMachineCost)}

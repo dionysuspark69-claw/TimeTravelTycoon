@@ -17,6 +17,7 @@ import { useGameSave } from "./lib/hooks/useGameSave";
 import { NextGoalWidget } from "./components/NextGoalWidget";
 import { NewsTicker } from "./components/NewsTicker";
 import { PurchaseCelebration } from "./components/PurchaseCelebration";
+import { OnboardingTutorial } from "./components/OnboardingTutorial";
 
 function App() {
   const [showGame, setShowGame] = useState(false);
@@ -84,6 +85,7 @@ function App() {
       <AchievementChecker />
       <PurchaseCelebration />
       <FloatingTextManager />
+      <OnboardingTutorial />
       <GameLoop />
       <SoundManager />
       <Toaster />
