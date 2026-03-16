@@ -10,10 +10,16 @@ export function useGameSave() {
   useEffect(() => {
     if (isAuthenticated && !hasLoadedOnce) {
       const doLoad = async () => {
-        // Calculate offline earnings from localStorage state BEFORE cloud load overwrites lastPlayTime
-        useIdleGame.getState().calculateOfflineEarnings();
-        await useSaveState.getState().loadGame();
-        setHasLoadedOnce(true);
+        try {
+          // Calculate offline earnings from localStorage state BEFORE cloud load overwrites lastPlayTime
+          useIdleGame.getState().calculateOfflineEarnings();
+          await useSaveState.getState().loadGame();
+        } catch (e) {
+          console.error("Load failed, continuing to game:", e);
+        } finally {
+          // Always unblock the game, even if load throws
+          setHasLoadedOnce(true);
+        }
       };
       doLoad();
     }
