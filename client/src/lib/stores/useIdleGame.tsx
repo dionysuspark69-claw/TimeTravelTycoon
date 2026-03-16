@@ -1612,23 +1612,28 @@ export const useIdleGame = create<IdleGameState>()(
         }
         
         const travelingEntities = state.customerEntities.filter(e => e.state !== "traveling");
+        const servedThisTrip = travelingCustomers.length; // use fresh count, not stale state.processingCustomers
         
         useAudio.getState().playTimeTravel();
         
         set({
           processingCustomers: 0,
           tripEndTime: null,
-          totalCustomersServed: state.totalCustomersServed + state.processingCustomers,
+          totalCustomersServed: state.totalCustomersServed + servedThisTrip,
           totalTripsCompleted: state.totalTripsCompleted + 1,
-          customerEntities: travelingEntities
+          customerEntities: travelingEntities,
+          waitingCustomers: Math.max(0, waitingCustomers), // also flush waiting count
+          lastUpdateTime: now
         });
+        // Trip just ended - skip dispatch this frame to avoid same-frame race condition
+        return;
       }
       
       // Auto-dispatch: reduce wait requirement, always dispatch at least 1 whole customer
       const dispatchThreshold = Math.max(1, Math.ceil(1 - (state.autoDispatch - 1) * 0.15));
       if (state.processingCustomers === 0 && Math.floor(waitingCustomers) >= dispatchThreshold) {
         const canProcess = Math.max(1, Math.min(Math.floor(waitingCustomers), capacity));
-        waitingCustomers -= canProcess;
+        waitingCustomers = Math.max(0, waitingCustomers - canProcess); // guard against negative
         
         const boardingDelay = Math.max(50, 500 - (state.boardingSpeed - 1) * 40);
         state.boardCustomers(canProcess);
