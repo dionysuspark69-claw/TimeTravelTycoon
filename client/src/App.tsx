@@ -12,6 +12,7 @@ import { PrestigeTutorial } from "./components/PrestigeTutorial";
 import { ActiveEventsDisplay } from "./components/ActiveEventsDisplay";
 import { Toaster } from "./components/ui/sonner";
 import { useAuth } from "./lib/stores/useAuth";
+import { useSaveState } from "./lib/stores/useSaveState";
 import { useGameSave } from "./lib/hooks/useGameSave";
 import { NextGoalWidget } from "./components/NextGoalWidget";
 import { NewsTicker } from "./components/NewsTicker";
@@ -19,29 +20,48 @@ import { PurchaseCelebration } from "./components/PurchaseCelebration";
 
 function App() {
   const [showGame, setShowGame] = useState(false);
-  const { loading: authLoading, fetchUser } = useAuth();
-  
+  const { loading: authLoading, isAuthenticated, fetchUser } = useAuth();
+  const { hasLoadedOnce } = useSaveState();
+
   useGameSave();
 
   useEffect(() => {
     fetchUser();
   }, [fetchUser]);
 
+  // Show game once:
+  // 1. Auth has resolved (not loading), AND
+  // 2. Either: not authenticated (no save to wait for), or the cloud save has been attempted
   useEffect(() => {
-    setShowGame(true);
-  }, []);
+    if (authLoading) return;
 
-  // Hard fallback: never stay on loading screen longer than 6s
-  // Covers cases where auth fetch hangs (mobile, cold Render start, slow network)
+    if (!isAuthenticated) {
+      // Guest: no save to load, show immediately
+      setShowGame(true);
+      return;
+    }
+
+    // Authenticated: wait for load attempt (hasLoadedOnce flips after loadGame() completes)
+    if (hasLoadedOnce) {
+      setShowGame(true);
+    }
+  }, [authLoading, isAuthenticated, hasLoadedOnce]);
+
+  // Hard fallback: never stay on loading screen longer than 8s
   useEffect(() => {
-    const fallback = setTimeout(() => setShowGame(true), 6000);
+    const fallback = setTimeout(() => setShowGame(true), 8000);
     return () => clearTimeout(fallback);
   }, []);
 
-  if (!showGame || authLoading) {
+  if (!showGame) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900">
-        <div className="text-white text-2xl font-bold">Loading ChronoTransit...</div>
+        <div className="flex flex-col items-center gap-4">
+          <div className="text-white text-2xl font-bold">Loading ChronoTransit...</div>
+          {isAuthenticated && !hasLoadedOnce && (
+            <div className="text-cyan-400 text-sm">Restoring your save...</div>
+          )}
+        </div>
       </div>
     );
   }
@@ -54,10 +74,10 @@ function App() {
         <ActiveEventsDisplay />
         <NewsTicker />
       </div>
-      
+
       <NextGoalWidget />
       <UpgradePanel />
-      
+
       <OfflineEarningsDialog />
       <PrestigeTutorial />
       <AchievementChecker />
