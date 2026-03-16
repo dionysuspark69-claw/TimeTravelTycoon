@@ -1,5 +1,11 @@
 import { create } from "zustand";
 import { useIdleGame } from "./useIdleGame";
+import { useManagers } from "./useManagers";
+import { useAchievements } from "./useAchievements";
+import { useArtifacts } from "./useArtifacts";
+import { useMissions } from "./useMissions";
+import { usePrestigePerks } from "./usePrestigePerks";
+import { useManagerPerks } from "./useManagerPerks";
 import { toast } from "sonner";
 
 interface SaveState {
@@ -20,13 +26,20 @@ export const useSaveState = create<SaveState>((set, get) => ({
   setIsSaving: (isSaving) => set({ isSaving }),
   setLastSaved: (date) => set({ lastSaved: date }),
   setHasLoadedOnce: (hasLoaded) => set({ hasLoadedOnce: hasLoaded }),
-  
+
   saveGame: async () => {
     try {
       set({ isSaving: true });
       const state = useIdleGame.getState();
+      const managers = useManagers.getState();
+      const achievements = useAchievements.getState();
+      const artifacts = useArtifacts.getState();
+      const missions = useMissions.getState();
+      const prestigePerks = usePrestigePerks.getState();
+      const managerPerks = useManagerPerks.getState();
 
       const gameState = {
+        // Core idle game
         chronocoins: state.chronocoins,
         totalEarned: state.totalEarned,
         totalTripsCompleted: state.totalTripsCompleted,
@@ -48,37 +61,50 @@ export const useSaveState = create<SaveState>((set, get) => ({
         tutorialShown: state.tutorialShown,
         lastPlayTime: state.lastPlayTime,
         coinsPerSecond: state.coinsPerSecond,
+        // Advanced upgrades
+        queueSize: state.queueSize,
+        boardingSpeed: state.boardingSpeed,
+        vipChance: state.vipChance,
+        turnaroundTime: state.turnaroundTime,
+        artifactScanner: state.artifactScanner,
+        offlineInfra: state.offlineInfra,
+        autoDispatch: state.autoDispatch,
+        eraExpertise: state.eraExpertise,
+        // Managers
+        managers: managers.managers,
+        compoundInterestBonus: managers.compoundInterestBonus,
+        // Achievements
+        unlockedAchievements: achievements.unlockedAchievements,
+        claimedAchievements: achievements.claimedAchievements,
+        // Artifacts
+        artifactDiscoveries: artifacts.discoveries,
+        artifactTotalDrops: artifacts.totalDrops,
+        // Missions
+        missions: missions.missions,
+        completedMissionIds: missions.completedMissionIds,
+        nextMissionId: missions.nextMissionId,
+        missionStreak: missions.missionStreak,
+        lastMissionCompletedAt: missions.lastMissionCompletedAt,
+        rerollsAvailable: missions.rerollsAvailable,
+        // Prestige perks
+        prestigePerkChoices: prestigePerks.chosenPerks,
+        // Manager perks
+        managerPerkChoices: managerPerks.choices,
       };
-
-      console.log("Attempting to save game...", { 
-        url: "/api/save",
-        entityCount: state.customerEntities.length 
-      });
 
       const response = await fetch("/api/save", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ gameState }),
       });
 
-      console.log("Save response:", response.status, response.statusText);
-
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error("Save failed:", { 
-          status: response.status, 
-          statusText: response.statusText,
-          errorData,
-          url: response.url
-        });
         throw new Error(errorData.message || "Failed to save game");
       }
 
       set({ lastSaved: new Date() });
-      console.log("Game saved successfully");
     } catch (error) {
       console.error("Error saving game:", error);
       toast.error(`Failed to save: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -89,9 +115,7 @@ export const useSaveState = create<SaveState>((set, get) => ({
 
   loadGame: async () => {
     try {
-      const response = await fetch("/api/load", {
-        credentials: "include",
-      });
+      const response = await fetch("/api/load", { credentials: "include" });
 
       if (!response.ok) {
         if (response.status === 404) {
@@ -99,61 +123,106 @@ export const useSaveState = create<SaveState>((set, get) => ({
           return;
         }
         const errorData = await response.json().catch(() => ({}));
-        console.error("Load failed:", response.status, errorData);
         throw new Error(errorData.message || "Failed to load game");
       }
 
       const data = await response.json();
-      if (data.gameState) {
-        const now = Date.now();
-        const restoredEntities = (data.gameState.customerEntities || []).map((entity: any) => ({
-          ...entity,
-          hasReachedTarget: false,
-          stateChangedTime: now
-        }));
+      if (!data.gameState) return;
 
-        const actualProcessingCount = restoredEntities.filter(
-          (e: any) => e.state === "boarding" || e.state === "traveling"
-        ).length;
+      const gs = data.gameState;
+      const now = Date.now();
 
-        useIdleGame.setState({
-          chronocoins: data.gameState.chronocoins,
-          totalEarned: data.gameState.totalEarned,
-          totalTripsCompleted: data.gameState.totalTripsCompleted,
-          totalManagerUpgrades: data.gameState.totalManagerUpgrades || 0,
-          totalCustomersServed: data.gameState.totalCustomersServed,
-          timeMachineLevel: data.gameState.timeMachineLevel,
-          timeMachineCapacity: data.gameState.timeMachineCapacity,
-          timeMachineSpeed: data.gameState.timeMachineSpeed,
-          timeMachineCount: data.gameState.timeMachineCount,
-          queueSize: data.gameState.queueSize || 1,
-          boardingSpeed: data.gameState.boardingSpeed || 1,
-          vipChance: data.gameState.vipChance || 1,
-          turnaroundTime: data.gameState.turnaroundTime || 1,
-          artifactScanner: data.gameState.artifactScanner || 1,
-          offlineInfra: data.gameState.offlineInfra || 1,
-          autoDispatch: data.gameState.autoDispatch || 1,
-          eraExpertise: data.gameState.eraExpertise || 1,
-          customerGenerationRate: data.gameState.customerGenerationRate,
-          waitingCustomers: data.gameState.waitingCustomers,
-          processingCustomers: actualProcessingCount,
-          tripEndTime: actualProcessingCount > 0 ? now : null,
-          customerEntities: restoredEntities,
-          nextCustomerId: data.gameState.nextCustomerId || 0,
-          unlockedDestinations: data.gameState.unlockedDestinations,
-          currentDestination: data.gameState.currentDestination,
-          prestigeLevel: data.gameState.prestigeLevel,
-          prestigePoints: data.gameState.prestigePoints,
-          // Never overwrite tutorialShown=true from localStorage with a missing/false cloud value
-          tutorialShown: data.gameState.tutorialShown || useIdleGame.getState().tutorialShown,
-          lastPlayTime: data.gameState.lastPlayTime || Date.now(),
-          coinsPerSecond: data.gameState.coinsPerSecond || 0,
+      // ---- Core idle game ----
+      const restoredEntities = (gs.customerEntities || []).map((entity: any) => ({
+        ...entity,
+        hasReachedTarget: false,
+        stateChangedTime: now,
+      }));
+      const actualProcessingCount = restoredEntities.filter(
+        (e: any) => e.state === "boarding" || e.state === "traveling"
+      ).length;
+
+      useIdleGame.setState({
+        chronocoins: gs.chronocoins,
+        totalEarned: gs.totalEarned,
+        totalTripsCompleted: gs.totalTripsCompleted,
+        totalManagerUpgrades: gs.totalManagerUpgrades || 0,
+        totalCustomersServed: gs.totalCustomersServed,
+        timeMachineLevel: gs.timeMachineLevel,
+        timeMachineCapacity: gs.timeMachineCapacity,
+        timeMachineSpeed: gs.timeMachineSpeed,
+        timeMachineCount: gs.timeMachineCount,
+        customerGenerationRate: gs.customerGenerationRate,
+        queueSize: gs.queueSize || 1,
+        boardingSpeed: gs.boardingSpeed || 1,
+        vipChance: gs.vipChance || 1,
+        turnaroundTime: gs.turnaroundTime || 1,
+        artifactScanner: gs.artifactScanner || 1,
+        offlineInfra: gs.offlineInfra || 1,
+        autoDispatch: gs.autoDispatch || 1,
+        eraExpertise: gs.eraExpertise || 1,
+        waitingCustomers: gs.waitingCustomers,
+        processingCustomers: actualProcessingCount,
+        tripEndTime: actualProcessingCount > 0 ? now : null,
+        customerEntities: restoredEntities,
+        nextCustomerId: gs.nextCustomerId || 0,
+        unlockedDestinations: gs.unlockedDestinations,
+        currentDestination: gs.currentDestination,
+        prestigeLevel: gs.prestigeLevel,
+        prestigePoints: gs.prestigePoints,
+        tutorialShown: gs.tutorialShown || useIdleGame.getState().tutorialShown,
+        lastPlayTime: gs.lastPlayTime || now,
+        coinsPerSecond: gs.coinsPerSecond || 0,
+      });
+      useIdleGame.getState().updateCustomerStates();
+
+      // ---- Managers ----
+      if (gs.managers && Object.keys(gs.managers).length > 0) {
+        useManagers.setState({
+          managers: gs.managers,
+          compoundInterestBonus: gs.compoundInterestBonus || 0,
         });
-
-        useIdleGame.getState().updateCustomerStates();
-
-        toast.success("Game progress loaded from cloud!");
       }
+
+      // ---- Achievements ----
+      if (gs.unlockedAchievements?.length > 0 || gs.claimedAchievements?.length > 0) {
+        useAchievements.setState({
+          unlockedAchievements: gs.unlockedAchievements || [],
+          claimedAchievements: gs.claimedAchievements || [],
+        });
+      }
+
+      // ---- Artifacts ----
+      if (gs.artifactDiscoveries?.length > 0) {
+        useArtifacts.setState({
+          discoveries: gs.artifactDiscoveries,
+          totalDrops: gs.artifactTotalDrops || 0,
+        });
+      }
+
+      // ---- Missions ----
+      if (gs.missions?.length > 0) {
+        useMissions.setState({
+          missions: gs.missions,
+          completedMissionIds: gs.completedMissionIds || [],
+          nextMissionId: gs.nextMissionId || 0,
+          missionStreak: gs.missionStreak || 0,
+          lastMissionCompletedAt: gs.lastMissionCompletedAt || 0,
+          rerollsAvailable: gs.rerollsAvailable ?? 1,
+        });
+      }
+
+      // ---- Prestige perks ----
+      if (gs.prestigePerkChoices && Object.keys(gs.prestigePerkChoices).length > 0) {
+        usePrestigePerks.setState({ chosenPerks: gs.prestigePerkChoices });
+      }
+
+      // ---- Manager perk branches ----
+      if (gs.managerPerkChoices && Object.keys(gs.managerPerkChoices).length > 0) {
+        useManagerPerks.setState({ choices: gs.managerPerkChoices });
+      }
+
+      toast.success("Game progress loaded from cloud!");
     } catch (error) {
       console.error("Error loading game:", error);
       toast.error("Failed to load saved game");
