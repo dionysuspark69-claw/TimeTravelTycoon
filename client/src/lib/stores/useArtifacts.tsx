@@ -2804,14 +2804,16 @@ export const useArtifacts = create<ArtifactsState>()(
         
         const idleGame = (window as any).__idleGameStore;
         const scannerLevel = idleGame ? (idleGame.getState().artifactScanner || 1) : 1;
-        const scannerMultiplier = 1 + (scannerLevel - 1) * 0.3;
+        // Scanner is additive with perk to avoid runaway stacking
+        const scannerBonus = (scannerLevel - 1) * 0.15;
         
         const artifactRichMultiplier = ARTIFACT_RICH_DESTINATIONS.has(destinationId) ? 2.0 : 1.0;
+        // Perk is separate multiplicative layer; scanner adds to base before perk multiplies
         const perkMultiplier = usePrestigePerks.getState().getPerkValue("artifact_luck");
-        const totalMultiplier = artifactRichMultiplier * perkMultiplier;
         
         for (const artifact of collection.artifacts) {
-          if (Math.random() < artifact.dropRate * totalMultiplier * scannerMultiplier) {
+          const effectiveRate = artifact.dropRate * (1 + scannerBonus) * artifactRichMultiplier * perkMultiplier;
+          if (Math.random() < effectiveRate) {
             return artifact;
           }
         }

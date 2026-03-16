@@ -1496,7 +1496,9 @@ export const useIdleGame = create<IdleGameState>()(
         for (let i = 0; i < batchCount; i++) {
           const id = `customer-${nextId}`;
           const colorIndex = nextId % 5;
-          const isVIP = (perks.hasVIP || state.vipChance > 1) && Math.random() < (0.01 + (state.vipChance - 1) * 0.02);
+          // VIP rate: 1% base + 1% per level above 1, capped at 20% (level 20)
+          const vipRate = Math.min(0.20, 0.01 + (state.vipChance - 1) * 0.01);
+          const isVIP = (perks.hasVIP || state.vipChance > 1) && Math.random() < vipRate;
           newEntities.push({
             id,
             state: "spawning",
@@ -1609,8 +1611,9 @@ export const useIdleGame = create<IdleGameState>()(
         });
       }
       
-      const dispatchThreshold = Math.max(0.25, 1 - (state.autoDispatch - 1) * 0.15);
-      if (state.processingCustomers === 0 && waitingCustomers >= dispatchThreshold) {
+      // Auto-dispatch: reduce wait requirement, always dispatch at least 1 whole customer
+      const dispatchThreshold = Math.max(1, Math.ceil(1 - (state.autoDispatch - 1) * 0.15));
+      if (state.processingCustomers === 0 && Math.floor(waitingCustomers) >= dispatchThreshold) {
         const canProcess = Math.max(1, Math.min(Math.floor(waitingCustomers), capacity));
         waitingCustomers -= canProcess;
         

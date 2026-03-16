@@ -659,7 +659,7 @@ export function UpgradePanel() {
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="text-white font-semibold">VIP Chance</div>
-                    <div className="text-gray-400 text-sm">Level {vipChance} - VIP rate: {((0.01 + (vipChance - 1) * 0.02) * 100).toFixed(1)}%</div>
+                    <div className="text-gray-400 text-sm">Level {vipChance} - VIP rate: {(Math.min(0.20, 0.01 + (vipChance - 1) * 0.01) * 100).toFixed(0)}%</div>
                     <div className="text-xs text-yellow-400">Revenue spike</div>
                   </div>
                   <Button
@@ -674,25 +674,7 @@ export function UpgradePanel() {
                 </div>
               </Card>
 
-              {/* Turnaround Time */}
-              <Card className="bg-gray-900/50 border-cyan-500/30 p-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="text-white font-semibold">Turnaround Time</div>
-                    <div className="text-gray-400 text-sm">Level {turnaroundTime} - Foundation for turnaround optimization</div>
-                    <div className="text-xs text-blue-400">Throughput</div>
-                  </div>
-                  <Button
-                    onClick={() => upgradeTurnaround(1)}
-                    disabled={chronocoins < getTurnaroundCost(1)}
-                    size="sm"
-                    className="bg-cyan-600 hover:bg-cyan-700 ml-2 shrink-0"
-                  >
-                    <ArrowUp className="w-4 h-4 mr-1" />
-                    {formatChronoValue(getTurnaroundCost(1))}
-                  </Button>
-                </div>
-              </Card>
+              {/* Turnaround Time - hidden until mechanic is fully wired */}
 
               {/* Artifact Scanner */}
               <Card className="bg-gray-900/50 border-cyan-500/30 p-3">
@@ -739,7 +721,7 @@ export function UpgradePanel() {
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="text-white font-semibold">Auto-Dispatch</div>
-                    <div className="text-gray-400 text-sm">Level {autoDispatch} - Dispatch at: {Math.max(0.25, 1 - (autoDispatch - 1) * 0.15).toFixed(2)} customers</div>
+                    <div className="text-gray-400 text-sm">Level {autoDispatch} - Dispatches sooner, reduces machine idle time</div>
                     <div className="text-xs text-cyan-400">Efficiency</div>
                   </div>
                   <Button
