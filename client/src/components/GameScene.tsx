@@ -7,6 +7,7 @@ import { EraDisplay } from "./EraDisplay";
 import { TemporalAnomaly } from "./TemporalAnomaly";
 import { ComboClick } from "./ComboClick";
 import { Scene2D } from "./Scene2D";
+import { ArtifactOverlay } from "./ArtifactOverlay";
 import { Component, ErrorInfo, ReactNode } from "react";
 import { useIdleGame, TIME_PERIODS } from "@/lib/stores/useIdleGame";
 import { useIsMobile } from "@/hooks/use-is-mobile";
@@ -175,6 +176,7 @@ export function GameScene() {
         </Canvas>
         <EraDisplay />
         <TemporalAnomaly />
+        <ArtifactOverlay />
       </div>
     </WebGLErrorBoundary>
   );

@@ -3,6 +3,7 @@ import { useIdleGame } from "@/lib/stores/useIdleGame";
 import { EraDisplay } from "./EraDisplay";
 import { TemporalAnomaly } from "./TemporalAnomaly";
 import { ComboClick } from "./ComboClick";
+import { ArtifactOverlay } from "./ArtifactOverlay";
 
 // Era-specific theme configs
 const ERA_THEMES: Record<string, {
@@ -290,6 +291,7 @@ export function Scene2D() {
         <EraDisplay />
         <TemporalAnomaly />
         <ComboClick />
+        <ArtifactOverlay />
       </div>
     </>
   );

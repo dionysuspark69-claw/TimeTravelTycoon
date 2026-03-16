@@ -1,4 +1,6 @@
 import { useIdleGame } from "@/lib/stores/useIdleGame";
+import { useMissions } from "@/lib/stores/useMissions";
+import { formatChronoValue } from "@/lib/utils";
 
 export function NextGoalWidget() {
   const {
@@ -9,11 +11,22 @@ export function NextGoalWidget() {
     prestigeLevel,
   } = useIdleGame();
 
+  const { missions } = useMissions();
+
+  // Prefer the first incomplete active mission
+  const activeMission = missions.find((m) => m.progress < m.target);
+
   let goal = "";
   let current = 0;
   let target = 1;
+  let isMission = false;
 
-  if (timeMachineCount < 2) {
+  if (activeMission) {
+    isMission = true;
+    goal = activeMission.description;
+    current = activeMission.progress;
+    target = activeMission.target;
+  } else if (timeMachineCount < 2) {
     goal = "Buy 2nd Time Machine";
     current = timeMachineCount;
     target = 2;
@@ -34,7 +47,7 @@ export function NextGoalWidget() {
     current = timeMachineCount;
     target = 5;
   } else if (prestigeLevel === 0 && totalEarned >= 10_000_000) {
-    goal = "⭐ Ready to Prestige!";
+    goal = "Ready to Prestige!";
     current = 1;
     target = 1;
   } else if (timeMachineLevel < 50) {
@@ -49,17 +62,36 @@ export function NextGoalWidget() {
 
   const progress = Math.min(1, current / target);
 
+  // Format current/target for missions
+  const progressLabel = isMission && activeMission
+    ? `${activeMission.type === "earn_coins" || activeMission.type === "earn_in_time"
+        ? formatChronoValue(current)
+        : Math.floor(current)} / ${activeMission.type === "earn_coins" || activeMission.type === "earn_in_time"
+        ? formatChronoValue(target)
+        : target}`
+    : null;
+
   return (
-    <div className="h-8 bg-black/70 backdrop-blur flex items-center justify-between px-3">
-      <div className="flex items-center gap-2 flex-1 min-w-0">
-        <span className="text-cyan-500 text-xs font-bold shrink-0">NEXT GOAL:</span>
+    <div className="h-8 bg-black/70 backdrop-blur flex items-center justify-between px-3 gap-2">
+      <div className="flex items-center gap-2 min-w-0 flex-1">
+        <span className={`text-xs font-bold shrink-0 ${isMission ? "text-yellow-400" : "text-cyan-500"}`}>
+          {isMission ? "MISSION:" : "NEXT GOAL:"}
+        </span>
+        {isMission && activeMission && (
+          <span className="text-gray-500 text-xs shrink-0">{activeMission.icon}</span>
+        )}
         <span className="text-white text-xs truncate">{goal}</span>
       </div>
-      <div className="w-24 h-1.5 bg-gray-700 rounded shrink-0 ml-2">
-        <div
-          className="h-full bg-cyan-400 rounded transition-all duration-500"
-          style={{ width: `${progress * 100}%` }}
-        />
+      <div className="flex items-center gap-2 shrink-0">
+        {progressLabel && (
+          <span className="text-yellow-300 text-xs font-mono">{progressLabel}</span>
+        )}
+        <div className="w-20 h-1.5 bg-gray-700 rounded">
+          <div
+            className={`h-full rounded transition-all duration-500 ${isMission ? "bg-yellow-400" : "bg-cyan-400"}`}
+            style={{ width: `${progress * 100}%` }}
+          />
+        </div>
       </div>
     </div>
   );

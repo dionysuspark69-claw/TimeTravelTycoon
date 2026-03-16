@@ -11,6 +11,7 @@ import { CollectionsPanel } from "./CollectionsPanel";
 import { AdBoostPanel } from "./AdBoostPanel";
 import { LeaderboardPanel } from "./LeaderboardPanel";
 import { useAchievements } from "@/lib/stores/useAchievements";
+import { useArtifacts, ARTIFACT_COLLECTIONS } from "@/lib/stores/useArtifacts";
 import { useState } from "react";
 import { formatChronoValue, getPrestigeRequirements } from "@/lib/utils";
 
@@ -74,6 +75,112 @@ function PrestigeCard() {
         </div>
       )}
     </Card>
+  );
+}
+
+function DestinationsList() {
+  const {
+    chronocoins,
+    unlockedDestinations,
+    currentDestination,
+    unlockDestination,
+    setDestination,
+  } = useIdleGame();
+  const { getCollectionProgress, isCollectionComplete } = useArtifacts();
+
+  return (
+    <>
+      {TIME_PERIODS.map((destination) => {
+        const isUnlocked = unlockedDestinations.includes(destination.id);
+        const isCurrent = currentDestination === destination.id;
+        const collection = ARTIFACT_COLLECTIONS.find((c) => c.destinationId === destination.id);
+        const artifactCount = collection
+          ? Math.round(getCollectionProgress(destination.id) * collection.artifacts.length)
+          : 0;
+        const artifactTotal = collection?.artifacts.length ?? 0;
+        const collectionDone = collection ? isCollectionComplete(destination.id) : false;
+
+        return (
+          <Card
+            key={destination.id}
+            className="bg-gray-900/50 border-cyan-500/30 p-3"
+            style={{
+              borderColor: isCurrent ? destination.color : undefined,
+              borderWidth: isCurrent ? 2 : 1,
+            }}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <div className="text-white font-semibold flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: destination.color }} />
+                  {destination.name}
+                  {/* Artifact badge */}
+                  {isUnlocked && artifactTotal > 0 && (
+                    <span
+                      className={`ml-auto text-xs px-1.5 py-0.5 rounded-full font-bold ${
+                        collectionDone
+                          ? "bg-yellow-500/30 text-yellow-300 border border-yellow-500/40"
+                          : artifactCount > 0
+                          ? "bg-purple-500/30 text-purple-300 border border-purple-500/40"
+                          : "bg-gray-700/50 text-gray-500 border border-gray-600/30"
+                      }`}
+                    >
+                      {collectionDone ? "⭐" : "🔮"} {artifactCount}/{artifactTotal}
+                    </span>
+                  )}
+                </div>
+                <div className="text-gray-400 text-sm">{destination.era}</div>
+                <div className="text-gray-500 text-xs">{destination.description}</div>
+                <div className="text-cyan-400 text-sm mt-1">Base Fare: {destination.baseFare}</div>
+                {destination.pros.length > 0 && (
+                  <div className="mt-2 space-y-1">
+                    {destination.pros.map((pro, idx) => (
+                      <div key={idx} className="flex items-center gap-1 text-green-400 text-xs">
+                        <Plus className="w-3 h-3" />
+                        <span>{pro}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {destination.cons.length > 0 && (
+                  <div className="mt-2 space-y-1">
+                    {destination.cons.map((con, idx) => (
+                      <div key={idx} className="flex items-center gap-1 text-red-400 text-xs">
+                        <Minus className="w-3 h-3" />
+                        <span>{con}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="ml-3 shrink-0">
+                {!isUnlocked ? (
+                  <Button
+                    onClick={() => unlockDestination(destination.id)}
+                    disabled={chronocoins < destination.unlockCost}
+                    size="sm"
+                    className="bg-purple-600 hover:bg-purple-700"
+                  >
+                    Unlock {formatChronoValue(destination.unlockCost)}
+                  </Button>
+                ) : !isCurrent ? (
+                  <Button
+                    onClick={() => setDestination(destination.id)}
+                    size="sm"
+                    className="bg-cyan-600 hover:bg-cyan-700"
+                  >
+                    <MapPin className="w-4 h-4 mr-1" />
+                    Select
+                  </Button>
+                ) : (
+                  <div className="text-green-400 text-sm font-semibold">Active</div>
+                )}
+              </div>
+            </div>
+          </Card>
+        );
+      })}
+    </>
   );
 }
 
@@ -366,79 +473,7 @@ export function UpgradePanel() {
         </TabsContent>
         
         <TabsContent value="destinations" className="space-y-2 mt-4 max-h-[40vh] md:max-h-[45vh] overflow-y-auto pr-2 pb-4">
-          {TIME_PERIODS.map((destination) => {
-            const isUnlocked = unlockedDestinations.includes(destination.id);
-            const isCurrent = currentDestination === destination.id;
-            
-            return (
-              <Card
-                key={destination.id}
-                className="bg-gray-900/50 border-cyan-500/30 p-3"
-                style={{
-                  borderColor: isCurrent ? destination.color : undefined,
-                  borderWidth: isCurrent ? 2 : 1
-                }}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="text-white font-semibold flex items-center gap-2">
-                      <div
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: destination.color }}
-                      />
-                      {destination.name}
-                    </div>
-                    <div className="text-gray-400 text-sm">{destination.era}</div>
-                    <div className="text-gray-500 text-xs">{destination.description}</div>
-                    <div className="text-cyan-400 text-sm mt-1">Base Fare: {destination.baseFare}</div>
-                    
-                    {destination.pros.length > 0 && (
-                      <div className="mt-2 space-y-1">
-                        {destination.pros.map((pro, idx) => (
-                          <div key={idx} className="flex items-center gap-1 text-green-400 text-xs">
-                            <Plus className="w-3 h-3" />
-                            <span>{pro}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    
-                    {destination.cons.length > 0 && (
-                      <div className="mt-2 space-y-1">
-                        {destination.cons.map((con, idx) => (
-                          <div key={idx} className="flex items-center gap-1 text-red-400 text-xs">
-                            <Minus className="w-3 h-3" />
-                            <span>{con}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  {!isUnlocked ? (
-                    <Button
-                      onClick={() => unlockDestination(destination.id)}
-                      disabled={chronocoins < destination.unlockCost}
-                      size="sm"
-                      className="bg-purple-600 hover:bg-purple-700"
-                    >
-                      Unlock {formatChronoValue(destination.unlockCost)}
-                    </Button>
-                  ) : !isCurrent ? (
-                    <Button
-                      onClick={() => setDestination(destination.id)}
-                      size="sm"
-                      className="bg-cyan-600 hover:bg-cyan-700"
-                    >
-                      <MapPin className="w-4 h-4 mr-1" />
-                      Select
-                    </Button>
-                  ) : (
-                    <div className="text-green-400 text-sm font-semibold">Active</div>
-                  )}
-                </div>
-              </Card>
-            );
-          })}
+          <DestinationsList />
         </TabsContent>
 
         <TabsContent value="leaderboard" className="space-y-2 mt-4 max-h-[40vh] md:max-h-[45vh] overflow-y-auto pr-2 pb-4">
