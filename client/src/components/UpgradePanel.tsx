@@ -247,6 +247,7 @@ function UpgradeDecor({ isRecommended, canAfford, maxAffordable, gainPerSec, pay
 export function UpgradePanel() {
   const [isExpanded, setIsExpanded] = useState(true);
   const [multiplier, setMultiplier] = useState<number | 'max'>(1);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const economy = useEconomyEngine();
   
@@ -260,6 +261,15 @@ export function UpgradePanel() {
     unlockedDestinations,
     currentDestination,
     
+    queueSize,
+    boardingSpeed,
+    vipChance,
+    turnaroundTime,
+    artifactScanner,
+    offlineInfra,
+    autoDispatch,
+    eraExpertise,
+    
     upgradeTimeMachine,
     upgradeCapacity,
     upgradeSpeed,
@@ -268,11 +278,29 @@ export function UpgradePanel() {
     unlockDestination,
     setDestination,
     
+    upgradeQueueSize,
+    upgradeBoardingSpeed,
+    upgradeVipChance,
+    upgradeTurnaround,
+    upgradeArtifactScanner,
+    upgradeOfflineInfra,
+    upgradeAutoDispatch,
+    upgradeEraExpertise,
+    
     getTimeMachineUpgradeCost,
     getCapacityUpgradeCost,
     getSpeedUpgradeCost,
     getCustomerRateUpgradeCost,
     getTimeMachineBuyCost,
+    
+    getQueueSizeCost,
+    getBoardingSpeedCost,
+    getVipChanceCost,
+    getTurnaroundCost,
+    getArtifactScannerCost,
+    getOfflineInfraCost,
+    getAutoDispatchCost,
+    getEraExpertiseCost,
     
     computeMaxAffordable,
   } = useIdleGame();
@@ -574,6 +602,179 @@ export function UpgradePanel() {
           <div className="border-t border-cyan-500/20 my-2 pt-2">
             <AdBoostPanel />
           </div>
+
+          {/* Advanced Operations collapsible section */}
+          <button
+            onClick={() => setShowAdvanced(v => !v)}
+            className="w-full flex items-center justify-between py-2 text-sm text-gray-400 hover:text-white border-t border-gray-700/50 mt-2"
+          >
+            <span className="font-semibold">Advanced Operations</span>
+            <span>{showAdvanced ? "▲" : "▼"}</span>
+          </button>
+
+          {showAdvanced && (
+            <div className="space-y-2 mt-1">
+              {/* Queue Size */}
+              <Card className="bg-gray-900/50 border-cyan-500/30 p-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="text-white font-semibold">Queue Size</div>
+                    <div className="text-gray-400 text-sm">Level {queueSize} - Max queue: {25 + queueSize * 10} customers</div>
+                    <div className="text-xs text-blue-400">Throughput</div>
+                  </div>
+                  <Button
+                    onClick={() => upgradeQueueSize(1)}
+                    disabled={chronocoins < getQueueSizeCost(1)}
+                    size="sm"
+                    className="bg-cyan-600 hover:bg-cyan-700 ml-2 shrink-0"
+                  >
+                    <ArrowUp className="w-4 h-4 mr-1" />
+                    {formatChronoValue(getQueueSizeCost(1))}
+                  </Button>
+                </div>
+              </Card>
+
+              {/* Boarding Speed */}
+              <Card className="bg-gray-900/50 border-cyan-500/30 p-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="text-white font-semibold">Boarding Speed</div>
+                    <div className="text-gray-400 text-sm">Level {boardingSpeed} - Board delay: {Math.max(50, 500 - (boardingSpeed - 1) * 40)}ms</div>
+                    <div className="text-xs text-blue-400">Throughput</div>
+                  </div>
+                  <Button
+                    onClick={() => upgradeBoardingSpeed(1)}
+                    disabled={chronocoins < getBoardingSpeedCost(1)}
+                    size="sm"
+                    className="bg-cyan-600 hover:bg-cyan-700 ml-2 shrink-0"
+                  >
+                    <ArrowUp className="w-4 h-4 mr-1" />
+                    {formatChronoValue(getBoardingSpeedCost(1))}
+                  </Button>
+                </div>
+              </Card>
+
+              {/* VIP Chance */}
+              <Card className="bg-gray-900/50 border-cyan-500/30 p-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="text-white font-semibold">VIP Chance</div>
+                    <div className="text-gray-400 text-sm">Level {vipChance} - VIP rate: {((0.01 + (vipChance - 1) * 0.02) * 100).toFixed(1)}%</div>
+                    <div className="text-xs text-yellow-400">Revenue spike</div>
+                  </div>
+                  <Button
+                    onClick={() => upgradeVipChance(1)}
+                    disabled={chronocoins < getVipChanceCost(1)}
+                    size="sm"
+                    className="bg-cyan-600 hover:bg-cyan-700 ml-2 shrink-0"
+                  >
+                    <ArrowUp className="w-4 h-4 mr-1" />
+                    {formatChronoValue(getVipChanceCost(1))}
+                  </Button>
+                </div>
+              </Card>
+
+              {/* Turnaround Time */}
+              <Card className="bg-gray-900/50 border-cyan-500/30 p-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="text-white font-semibold">Turnaround Time</div>
+                    <div className="text-gray-400 text-sm">Level {turnaroundTime} - Foundation for turnaround optimization</div>
+                    <div className="text-xs text-blue-400">Throughput</div>
+                  </div>
+                  <Button
+                    onClick={() => upgradeTurnaround(1)}
+                    disabled={chronocoins < getTurnaroundCost(1)}
+                    size="sm"
+                    className="bg-cyan-600 hover:bg-cyan-700 ml-2 shrink-0"
+                  >
+                    <ArrowUp className="w-4 h-4 mr-1" />
+                    {formatChronoValue(getTurnaroundCost(1))}
+                  </Button>
+                </div>
+              </Card>
+
+              {/* Artifact Scanner */}
+              <Card className="bg-gray-900/50 border-cyan-500/30 p-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="text-white font-semibold">Artifact Scanner</div>
+                    <div className="text-gray-400 text-sm">Level {artifactScanner} - Drop multiplier: {(1 + (artifactScanner - 1) * 0.3).toFixed(1)}x</div>
+                    <div className="text-xs text-purple-400">Collection</div>
+                  </div>
+                  <Button
+                    onClick={() => upgradeArtifactScanner(1)}
+                    disabled={chronocoins < getArtifactScannerCost(1)}
+                    size="sm"
+                    className="bg-cyan-600 hover:bg-cyan-700 ml-2 shrink-0"
+                  >
+                    <ArrowUp className="w-4 h-4 mr-1" />
+                    {formatChronoValue(getArtifactScannerCost(1))}
+                  </Button>
+                </div>
+              </Card>
+
+              {/* Offline Infrastructure */}
+              <Card className="bg-gray-900/50 border-cyan-500/30 p-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="text-white font-semibold">Offline Infrastructure</div>
+                    <div className="text-gray-400 text-sm">Level {offlineInfra} - Offline cap: {240 + (offlineInfra - 1) * 60}min</div>
+                    <div className="text-xs text-gray-400">Offline cap</div>
+                  </div>
+                  <Button
+                    onClick={() => upgradeOfflineInfra(1)}
+                    disabled={chronocoins < getOfflineInfraCost(1)}
+                    size="sm"
+                    className="bg-cyan-600 hover:bg-cyan-700 ml-2 shrink-0"
+                  >
+                    <ArrowUp className="w-4 h-4 mr-1" />
+                    {formatChronoValue(getOfflineInfraCost(1))}
+                  </Button>
+                </div>
+              </Card>
+
+              {/* Auto-Dispatch */}
+              <Card className="bg-gray-900/50 border-cyan-500/30 p-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="text-white font-semibold">Auto-Dispatch</div>
+                    <div className="text-gray-400 text-sm">Level {autoDispatch} - Dispatch at: {Math.max(0.25, 1 - (autoDispatch - 1) * 0.15).toFixed(2)} customers</div>
+                    <div className="text-xs text-cyan-400">Efficiency</div>
+                  </div>
+                  <Button
+                    onClick={() => upgradeAutoDispatch(1)}
+                    disabled={chronocoins < getAutoDispatchCost(1)}
+                    size="sm"
+                    className="bg-cyan-600 hover:bg-cyan-700 ml-2 shrink-0"
+                  >
+                    <ArrowUp className="w-4 h-4 mr-1" />
+                    {formatChronoValue(getAutoDispatchCost(1))}
+                  </Button>
+                </div>
+              </Card>
+
+              {/* Era Expertise */}
+              <Card className="bg-gray-900/50 border-cyan-500/30 p-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="text-white font-semibold">Era Expertise</div>
+                    <div className="text-gray-400 text-sm">Level {eraExpertise} - Era bonus: +{((eraExpertise - 1) * 5).toFixed(0)}%</div>
+                    <div className="text-xs text-orange-400">Era bonus</div>
+                  </div>
+                  <Button
+                    onClick={() => upgradeEraExpertise(1)}
+                    disabled={chronocoins < getEraExpertiseCost(1)}
+                    size="sm"
+                    className="bg-cyan-600 hover:bg-cyan-700 ml-2 shrink-0"
+                  >
+                    <ArrowUp className="w-4 h-4 mr-1" />
+                    {formatChronoValue(getEraExpertiseCost(1))}
+                  </Button>
+                </div>
+              </Card>
+            </div>
+          )}
         </TabsContent>
         
         <TabsContent value="team" className="space-y-2 mt-4 max-h-[40vh] md:max-h-[45vh] overflow-y-auto pr-2 pb-4">

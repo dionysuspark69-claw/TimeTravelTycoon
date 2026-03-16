@@ -2802,12 +2802,16 @@ export const useArtifacts = create<ArtifactsState>()(
         const collection = ARTIFACT_COLLECTIONS.find(c => c.destinationId === destinationId);
         if (!collection) return null;
         
+        const idleGame = (window as any).__idleGameStore;
+        const scannerLevel = idleGame ? (idleGame.getState().artifactScanner || 1) : 1;
+        const scannerMultiplier = 1 + (scannerLevel - 1) * 0.3;
+        
         const artifactRichMultiplier = ARTIFACT_RICH_DESTINATIONS.has(destinationId) ? 2.0 : 1.0;
         const perkMultiplier = usePrestigePerks.getState().getPerkValue("artifact_luck");
         const totalMultiplier = artifactRichMultiplier * perkMultiplier;
         
         for (const artifact of collection.artifacts) {
-          if (Math.random() < artifact.dropRate * totalMultiplier) {
+          if (Math.random() < artifact.dropRate * totalMultiplier * scannerMultiplier) {
             return artifact;
           }
         }

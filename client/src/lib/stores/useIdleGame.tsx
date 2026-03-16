@@ -797,6 +797,15 @@ interface IdleGameState {
   timeMachineSpeed: number;
   timeMachineCount: number;
   
+  queueSize: number;           // max queue cap upgrade
+  boardingSpeed: number;       // boarding delay reduction
+  vipChance: number;           // extra VIP spawn chance
+  turnaroundTime: number;      // post-trip delay reduction
+  artifactScanner: number;     // artifact drop rate boost
+  offlineInfra: number;        // offline earnings cap extension
+  autoDispatch: number;        // dispatch trigger threshold reduction
+  eraExpertise: number;        // era trait bonus multiplier
+  
   customerGenerationRate: number;
   waitingCustomers: number;
   processingCustomers: number;
@@ -860,6 +869,24 @@ interface IdleGameState {
   getCustomerRateUpgradeCost: (quantity?: number) => number;
   getTimeMachineBuyCost: (quantity?: number) => number;
   
+  getQueueSizeCost: (qty?: number) => number;
+  getBoardingSpeedCost: (qty?: number) => number;
+  getVipChanceCost: (qty?: number) => number;
+  getTurnaroundCost: (qty?: number) => number;
+  getArtifactScannerCost: (qty?: number) => number;
+  getOfflineInfraCost: (qty?: number) => number;
+  getAutoDispatchCost: (qty?: number) => number;
+  getEraExpertiseCost: (qty?: number) => number;
+  
+  upgradeQueueSize: (qty?: number) => boolean;
+  upgradeBoardingSpeed: (qty?: number) => boolean;
+  upgradeVipChance: (qty?: number) => boolean;
+  upgradeTurnaround: (qty?: number) => boolean;
+  upgradeArtifactScanner: (qty?: number) => boolean;
+  upgradeOfflineInfra: (qty?: number) => boolean;
+  upgradeAutoDispatch: (qty?: number) => boolean;
+  upgradeEraExpertise: (qty?: number) => boolean;
+  
   getRevenueMultiplier: (managerBonus?: number) => number;
   getSpeedMultiplier: (managerBonus?: number) => number;
   
@@ -879,6 +906,15 @@ export const useIdleGame = create<IdleGameState>()(
     timeMachineCapacity: 1,
     timeMachineSpeed: 1,
     timeMachineCount: 1,
+    
+    queueSize: 1,
+    boardingSpeed: 1,
+    vipChance: 1,
+    turnaroundTime: 1,
+    artifactScanner: 1,
+    offlineInfra: 1,
+    autoDispatch: 1,
+    eraExpertise: 1,
     
     customerGenerationRate: 1,
     waitingCustomers: 0,
@@ -988,6 +1024,126 @@ export const useIdleGame = create<IdleGameState>()(
     getTimeMachineBuyCost: (quantity: number = 1) => {
       const state = get();
       return state.calculateBulkCost(10000, 3, state.timeMachineCount, quantity);
+    },
+    
+    getQueueSizeCost: (qty: number = 1) => {
+      const state = get();
+      return state.calculateBulkCost(150, 1.5, state.queueSize, qty);
+    },
+    
+    getBoardingSpeedCost: (qty: number = 1) => {
+      const state = get();
+      return state.calculateBulkCost(80, 1.55, state.boardingSpeed, qty);
+    },
+    
+    getVipChanceCost: (qty: number = 1) => {
+      const state = get();
+      return state.calculateBulkCost(500, 1.9, state.vipChance, qty);
+    },
+    
+    getTurnaroundCost: (qty: number = 1) => {
+      const state = get();
+      return state.calculateBulkCost(120, 1.6, state.turnaroundTime, qty);
+    },
+    
+    getArtifactScannerCost: (qty: number = 1) => {
+      const state = get();
+      return state.calculateBulkCost(300, 1.7, state.artifactScanner, qty);
+    },
+    
+    getOfflineInfraCost: (qty: number = 1) => {
+      const state = get();
+      return state.calculateBulkCost(400, 1.8, state.offlineInfra, qty);
+    },
+    
+    getAutoDispatchCost: (qty: number = 1) => {
+      const state = get();
+      return state.calculateBulkCost(1000, 2.0, state.autoDispatch, qty);
+    },
+    
+    getEraExpertiseCost: (qty: number = 1) => {
+      const state = get();
+      return state.calculateBulkCost(800, 1.85, state.eraExpertise, qty);
+    },
+    
+    upgradeQueueSize: (qty: number = 1) => {
+      const state = get();
+      const cost = state.getQueueSizeCost(qty);
+      if (state.spendChronocoins(cost)) {
+        set({ queueSize: state.queueSize + qty });
+        return true;
+      }
+      return false;
+    },
+    
+    upgradeBoardingSpeed: (qty: number = 1) => {
+      const state = get();
+      const cost = state.getBoardingSpeedCost(qty);
+      if (state.spendChronocoins(cost)) {
+        set({ boardingSpeed: state.boardingSpeed + qty });
+        return true;
+      }
+      return false;
+    },
+    
+    upgradeVipChance: (qty: number = 1) => {
+      const state = get();
+      const cost = state.getVipChanceCost(qty);
+      if (state.spendChronocoins(cost)) {
+        set({ vipChance: state.vipChance + qty });
+        return true;
+      }
+      return false;
+    },
+    
+    upgradeTurnaround: (qty: number = 1) => {
+      const state = get();
+      const cost = state.getTurnaroundCost(qty);
+      if (state.spendChronocoins(cost)) {
+        set({ turnaroundTime: state.turnaroundTime + qty });
+        return true;
+      }
+      return false;
+    },
+    
+    upgradeArtifactScanner: (qty: number = 1) => {
+      const state = get();
+      const cost = state.getArtifactScannerCost(qty);
+      if (state.spendChronocoins(cost)) {
+        set({ artifactScanner: state.artifactScanner + qty });
+        return true;
+      }
+      return false;
+    },
+    
+    upgradeOfflineInfra: (qty: number = 1) => {
+      const state = get();
+      const cost = state.getOfflineInfraCost(qty);
+      if (state.spendChronocoins(cost)) {
+        set({ offlineInfra: state.offlineInfra + qty });
+        return true;
+      }
+      return false;
+    },
+    
+    upgradeAutoDispatch: (qty: number = 1) => {
+      const state = get();
+      const cost = state.getAutoDispatchCost(qty);
+      if (state.spendChronocoins(cost)) {
+        set({ autoDispatch: state.autoDispatch + qty });
+        return true;
+      }
+      return false;
+    },
+    
+    upgradeEraExpertise: (qty: number = 1) => {
+      const state = get();
+      const cost = state.getEraExpertiseCost(qty);
+      if (state.spendChronocoins(cost)) {
+        set({ eraExpertise: state.eraExpertise + qty });
+        return true;
+      }
+      return false;
     },
     
     upgradeTimeMachine: (quantity: number = 1) => {
@@ -1125,7 +1281,7 @@ export const useIdleGame = create<IdleGameState>()(
       
       if (minutesAway < 1) return 0;
       
-      const maxMinutes = Math.min(minutesAway, 240);
+      const maxMinutes = Math.min(minutesAway, 240 + (state.offlineInfra - 1) * 60);
       
       const savedCps = state.coinsPerSecond;
       if (savedCps <= 0) return 0;
@@ -1272,6 +1428,11 @@ export const useIdleGame = create<IdleGameState>()(
       const chronoBonus = useChronoMeter.getState().getBonus();
       let multiplier = (1 + (state.prestigePoints * 0.1) + managerBonus + artifactBonus + chronoBonus) * destinationMod;
       
+      const dest = TIME_PERIODS.find(d => d.id === state.currentDestination);
+      if (dest?.specialTrait && state.eraExpertise > 1) {
+        multiplier *= (1 + (state.eraExpertise - 1) * 0.05);
+      }
+      
       return multiplier;
     },
     
@@ -1324,17 +1485,18 @@ export const useIdleGame = create<IdleGameState>()(
         e => e.state === "approaching" || e.state === "waiting"
       ).length;
       
-      const targetEntityCount = Math.min(Math.floor(waitingCustomers), 25);
+      const maxQueue = 25 + state.queueSize * 10;
+      const targetEntityCount = Math.min(Math.floor(waitingCustomers), maxQueue);
       const entitiesToSpawn = Math.max(0, targetEntityCount - queueEntitiesCount);
       
-      if (entitiesToSpawn > 0 && state.customerEntities.length < 25) {
-        const batchCount = Math.min(entitiesToSpawn, 25 - state.customerEntities.length);
+      if (entitiesToSpawn > 0 && state.customerEntities.length < maxQueue) {
+        const batchCount = Math.min(entitiesToSpawn, maxQueue - state.customerEntities.length);
         const newEntities: CustomerEntity[] = [];
         let nextId = state.nextCustomerId;
         for (let i = 0; i < batchCount; i++) {
           const id = `customer-${nextId}`;
           const colorIndex = nextId % 5;
-          const isVIP = perks.hasVIP && Math.random() < 0.01;
+          const isVIP = (perks.hasVIP || state.vipChance > 1) && Math.random() < (0.01 + (state.vipChance - 1) * 0.02);
           newEntities.push({
             id,
             state: "spawning",
@@ -1447,10 +1609,12 @@ export const useIdleGame = create<IdleGameState>()(
         });
       }
       
-      if (state.processingCustomers === 0 && waitingCustomers >= 1) {
-        const canProcess = Math.min(Math.floor(waitingCustomers), capacity);
+      const dispatchThreshold = Math.max(0.25, 1 - (state.autoDispatch - 1) * 0.15);
+      if (state.processingCustomers === 0 && waitingCustomers >= dispatchThreshold) {
+        const canProcess = Math.max(1, Math.min(Math.floor(waitingCustomers), capacity));
         waitingCustomers -= canProcess;
         
+        const boardingDelay = Math.max(50, 500 - (state.boardingSpeed - 1) * 40);
         state.boardCustomers(canProcess);
         
         const slipstreamChance = perks.hasSlipstream && Math.random() < 0.5;
@@ -1458,7 +1622,7 @@ export const useIdleGame = create<IdleGameState>()(
         
         set({
           processingCustomers: canProcess,
-          tripEndTime: now + actualTravelTime
+          tripEndTime: now + actualTravelTime + boardingDelay
         });
       }
       
@@ -1481,6 +1645,14 @@ export const useIdleGame = create<IdleGameState>()(
       timeMachineCapacity: state.timeMachineCapacity,
       timeMachineSpeed: state.timeMachineSpeed,
       timeMachineCount: state.timeMachineCount,
+      queueSize: state.queueSize,
+      boardingSpeed: state.boardingSpeed,
+      vipChance: state.vipChance,
+      turnaroundTime: state.turnaroundTime,
+      artifactScanner: state.artifactScanner,
+      offlineInfra: state.offlineInfra,
+      autoDispatch: state.autoDispatch,
+      eraExpertise: state.eraExpertise,
       customerGenerationRate: state.customerGenerationRate,
       waitingCustomers: state.waitingCustomers,
       totalCustomersServed: state.totalCustomersServed,
