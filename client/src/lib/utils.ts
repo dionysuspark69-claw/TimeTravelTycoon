@@ -19,6 +19,20 @@ const SUFFIXES = [
   "BM", "BN", "BO", "BP", "BQ", "BR", "BS", "BT", "BU", "BV", "BW", "BX", "BY", "BZ"
 ];
 
+/**
+ * Returns the prestige requirements for a given prestige level.
+ * Each prestige is progressively harder:
+ *   - Earn req scales by 2.5x per level
+ *   - Machine level req +10 per level (capped at 200)
+ *   - Machine count req +3 per level (capped at 50)
+ */
+export function getPrestigeRequirements(prestigeLevel: number) {
+  const earnReq = Math.floor(50_000_000 * Math.pow(2.5, prestigeLevel));
+  const levelReq = Math.min(200, 25 + prestigeLevel * 10);
+  const countReq = Math.min(50, 5 + prestigeLevel * 3);
+  return { earnReq, levelReq, countReq };
+}
+
 export function formatChronoValue(num: number, decimals: number = 2): string {
   if (num < 1000) {
     return Math.floor(num).toString();

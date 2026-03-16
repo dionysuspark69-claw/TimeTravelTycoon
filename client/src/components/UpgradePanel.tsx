@@ -12,14 +12,12 @@ import { AdBoostPanel } from "./AdBoostPanel";
 import { LeaderboardPanel } from "./LeaderboardPanel";
 import { useAchievements } from "@/lib/stores/useAchievements";
 import { useState } from "react";
-import { formatChronoValue } from "@/lib/utils";
+import { formatChronoValue, getPrestigeRequirements } from "@/lib/utils";
 
 function PrestigeCard() {
   const { totalEarned, timeMachineLevel, timeMachineCount, prestigeLevel, prestigePoints, prestige } = useIdleGame();
 
-  const EARN_REQ = 50_000_000;
-  const LEVEL_REQ = 25;
-  const COUNT_REQ = 5;
+  const { earnReq: EARN_REQ, levelReq: LEVEL_REQ, countReq: COUNT_REQ } = getPrestigeRequirements(prestigeLevel);
 
   const earnPct   = Math.min(1, totalEarned / EARN_REQ);
   const levelPct  = Math.min(1, timeMachineLevel / LEVEL_REQ);

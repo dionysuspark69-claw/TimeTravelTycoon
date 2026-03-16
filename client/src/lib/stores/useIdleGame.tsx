@@ -4,6 +4,7 @@ import { useArtifacts } from "./useArtifacts";
 import { useAudio } from "./useAudio";
 import { useChronoMeter } from "./useChronoMeter";
 import { toast } from "sonner";
+import { getPrestigeRequirements } from "../utils";
 
 export interface TimePeriod {
   id: string;
@@ -1065,9 +1066,10 @@ export const useIdleGame = create<IdleGameState>()(
     
     prestige: () => {
       const state = get();
-      if (state.totalEarned < 50000000) return;
-      if (state.timeMachineLevel < 25) return;
-      if (state.timeMachineCount < 5) return;
+      const { earnReq, levelReq, countReq } = getPrestigeRequirements(state.prestigeLevel);
+      if (state.totalEarned < earnReq) return;
+      if (state.timeMachineLevel < levelReq) return;
+      if (state.timeMachineCount < countReq) return;
       
       const points = Math.max(1, Math.floor(state.totalEarned / 10000000));
       
