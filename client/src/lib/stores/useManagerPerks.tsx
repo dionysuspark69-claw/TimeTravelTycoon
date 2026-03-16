@@ -94,6 +94,6 @@ export const useManagerPerks = create<ManagerPerksState>()(
         return Object.values(get().choices).includes(perkId);
       },
     }),
-    { name: "chronotransit-manager-perks" }
+    { name: "chronotransit-manager-perks", version: 1, migrate: (s: any) => ({ choices: {}, pendingChoice: null, ...s }) }
   )
 );

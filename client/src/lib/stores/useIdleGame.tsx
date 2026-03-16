@@ -1667,6 +1667,16 @@ export const useIdleGame = create<IdleGameState>()(
   })),
   {
     name: "chronotransit-idle-game",
+    version: 2,
+    migrate: (persistedState: any, version: number) => {
+      // Merge persisted state with defaults so new fields get their initial values
+      return {
+        queueSize: 1, boardingSpeed: 1, vipChance: 1, turnaroundTime: 1,
+        artifactScanner: 1, offlineInfra: 1, autoDispatch: 1, eraExpertise: 1,
+        _pendingOfflineEarnings: 0,
+        ...persistedState,
+      };
+    },
     // Only persist the fields that matter for offline recovery
     // customerEntities and runtime state are intentionally excluded to avoid stale data
     partialize: (state) => ({

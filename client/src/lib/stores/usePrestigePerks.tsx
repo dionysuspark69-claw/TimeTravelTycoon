@@ -97,6 +97,6 @@ export const usePrestigePerks = create<PrestigePerksState>()(
       },
       getPerksForCategory: () => [],
     }),
-    { name: "chronotransit-prestige-perks" }
+    { name: "chronotransit-prestige-perks", version: 1, migrate: (s: any) => ({ chosenPerks: {}, pendingChoice: false, ...s }) }
   )
 );

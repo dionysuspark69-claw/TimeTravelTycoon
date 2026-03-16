@@ -15,7 +15,7 @@ export const useSettings = create<SettingsState>()(
       set2DMode: (val) => set({ use2DMode: val }),
     }),
     {
-      name: "chronotransit-settings",
+      name: "chronotransit-settings", version: 1, migrate: (s: any) => ({ use2DMode: false, ...s }),
     }
   )
 );

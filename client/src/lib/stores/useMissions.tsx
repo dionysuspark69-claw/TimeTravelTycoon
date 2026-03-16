@@ -338,6 +338,6 @@ export const useMissions = create<MissionsState>()(
         }
       },
     })),
-    { name: "chronotransit-missions" }
+    { name: "chronotransit-missions", version: 2, migrate: (s: any) => ({ rerollsAvailable: 1, missionStreak: 0, completedMissionIds: [], missions: [], ...s }) }
   )
 );

@@ -2822,7 +2822,9 @@ export const useArtifacts = create<ArtifactsState>()(
       }
     }),
     {
-      name: "chronotransit-artifacts"
+      name: "chronotransit-artifacts",
+      version: 1,
+      migrate: (s: any) => ({ discoveries: [], totalDrops: 0, ...s }),
     }
   )
 );

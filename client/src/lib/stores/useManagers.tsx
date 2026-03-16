@@ -605,7 +605,7 @@ export const useManagers = create<ManagerState>()(
       return bonus;
     }
   })),
-  { name: "chronotransit-managers" }
+  { name: "chronotransit-managers", version: 1, migrate: (s: any) => ({ managers: {}, compoundInterestBonus: 0, ...s }) }
   )
 );
 

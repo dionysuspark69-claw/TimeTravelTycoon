@@ -499,6 +499,6 @@ export const useAchievements = create<AchievementState>()(
       );
     }
   })),
-  { name: "chronotransit-achievements" }
+  { name: "chronotransit-achievements", version: 1, migrate: (s: any) => ({ unlockedAchievements: [], claimedAchievements: [], ...s }) }
   )
 );
