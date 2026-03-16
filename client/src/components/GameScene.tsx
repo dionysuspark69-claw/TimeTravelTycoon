@@ -6,9 +6,11 @@ import { Starfield } from "./Starfield";
 import { EraDisplay } from "./EraDisplay";
 import { TemporalAnomaly } from "./TemporalAnomaly";
 import { ComboClick } from "./ComboClick";
+import { Scene2D } from "./Scene2D";
 import { Component, ErrorInfo, ReactNode } from "react";
 import { useIdleGame, TIME_PERIODS } from "@/lib/stores/useIdleGame";
 import { useIsMobile } from "@/hooks/use-is-mobile";
+import { useSettings } from "@/lib/stores/useSettings";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -144,6 +146,11 @@ const ERA_BG_COLORS: Record<string, string> = {
 export function GameScene() {
   const isMobile = useIsMobile();
   const currentDestination = useIdleGame(s => s.currentDestination);
+  const use2DMode = useSettings(s => s.use2DMode);
+  
+  if (use2DMode) {
+    return <Scene2D />;
+  }
   
   const cameraPosition: [number, number, number] = isMobile 
     ? [10, 8, 10]

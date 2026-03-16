@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Settings, Volume2, VolumeX, BarChart3, Trophy, Save, Cloud, CloudOff, User, LogIn, LogOut } from "lucide-react";
+import { Settings, Volume2, VolumeX, BarChart3, Trophy, Save, Cloud, CloudOff, User, LogIn, LogOut, Monitor } from "lucide-react";
 import { useIdleGame } from "@/lib/stores/useIdleGame";
 import { useManagers, MANAGER_TYPES } from "@/lib/stores/useManagers";
 import { useArtifacts } from "@/lib/stores/useArtifacts";
@@ -9,6 +9,7 @@ import { useMissions } from "@/lib/stores/useMissions";
 import { useAudio } from "@/lib/stores/useAudio";
 import { useAuth } from "@/lib/stores/useAuth";
 import { useSaveState } from "@/lib/stores/useSaveState";
+import { useSettings } from "@/lib/stores/useSettings";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatChronoValue } from "@/lib/utils";
 import { toast } from "sonner";
@@ -32,6 +33,7 @@ export function SettingsDialog() {
   const { isMuted, toggleMute } = useAudio();
   const { isAuthenticated, user, loginWithGoogle, logout } = useAuth();
   const { saveGame, isSaving, lastSaved } = useSaveState();
+  const { use2DMode, toggle2DMode } = useSettings();
   
   const handleManualSave = async () => {
     if (!isAuthenticated) {
@@ -114,6 +116,25 @@ export function SettingsDialog() {
               </div>
             </Card>
             
+            <Card className="bg-gray-800/50 border-cyan-500/30 p-6">
+              <h3 className="text-lg font-bold text-cyan-400 mb-4">Display</h3>
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-white font-semibold">2D Mode</div>
+                  <div className="text-gray-400 text-sm">Replace 3D scene with a modern 2D view</div>
+                </div>
+                <Button
+                  onClick={toggle2DMode}
+                  variant="outline"
+                  size="lg"
+                  className={`min-h-[44px] border-cyan-500/30 ${use2DMode ? "bg-cyan-700 hover:bg-cyan-600 text-white" : "bg-gray-700 hover:bg-gray-600"}`}
+                >
+                  <Monitor className="w-5 h-5 mr-2" />
+                  {use2DMode ? "2D On" : "3D On"}
+                </Button>
+              </div>
+            </Card>
+
             <Card className="bg-gray-800/50 border-cyan-500/30 p-6">
               <h3 className="text-lg font-bold text-cyan-400 mb-4">Save Progress</h3>
               <div className="space-y-4">
