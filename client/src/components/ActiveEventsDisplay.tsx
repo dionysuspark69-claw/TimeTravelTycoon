@@ -27,7 +27,7 @@ export function ActiveEventsDisplay() {
   }
   
   return (
-    <div className="fixed top-20 left-4 space-y-2 pointer-events-auto z-10">
+    <div className="fixed top-20 right-4 space-y-2 pointer-events-auto z-10 max-w-[220px]">
       {activeEvents.map((activeEvent) => {
         const remaining = timeRemaining[activeEvent.event.id] || 0;
         
