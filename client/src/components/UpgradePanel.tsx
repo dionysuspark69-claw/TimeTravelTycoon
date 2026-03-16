@@ -601,10 +601,6 @@ export function UpgradePanel() {
             </div>
           </Card>
 
-          <div className="border-t border-cyan-500/20 my-2 pt-2">
-            <AdBoostPanel />
-          </div>
-
           {/* Advanced Operations collapsible section */}
           <button
             onClick={() => setShowAdvanced(v => !v)}
@@ -773,6 +769,10 @@ export function UpgradePanel() {
               </Card>
             </div>
           )}
+
+          <div className="border-t border-cyan-500/20 my-2 pt-2">
+            <AdBoostPanel />
+          </div>
         </TabsContent>
         
         <TabsContent value="team" className="space-y-2 mt-4 max-h-[40vh] md:max-h-[45vh] overflow-y-auto pr-2 pb-4">
