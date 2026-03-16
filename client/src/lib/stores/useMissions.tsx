@@ -16,6 +16,7 @@ export interface Mission {
   startedAt?: number;
   baselineCoins?: number;
   baselineUpgrades?: number;
+  baselineTrips?: number;
 }
 
 interface MissionsState {
@@ -111,12 +112,12 @@ const MISSION_TEMPLATES = [
   },
   {
     type: "visit_destination" as MissionType,
-    descriptionTemplate: (_target: number) => `Travel to a new destination`,
-    baseTarget: 1,
-    targetScalePerLevel: 0,
-    rewardMultiplier: 500,
+    descriptionTemplate: (target: number) => `Complete ${target} trips at current destination`,
+    baseTarget: 10,
+    targetScalePerLevel: 5,
+    rewardMultiplier: 60,
     icon: "Map",
-    weight: 1
+    weight: 2
   }
 ];
 
@@ -215,6 +216,11 @@ export const useMissions = create<MissionsState>()(
           mission.baselineUpgrades = (gs.timeMachineCapacity || 0) + (gs.timeMachineSpeed || 0) + (gs.customerGenerationRate || 0);
         }
 
+        if (template.type === "visit_destination" && idleGame) {
+          const gs = idleGame.getState();
+          mission.baselineTrips = gs.totalTripsCompleted || 0;
+        }
+
         set({ nextMissionId: state.nextMissionId + 1 });
         return mission;
       },
@@ -246,7 +252,9 @@ export const useMissions = create<MissionsState>()(
               if (mission.baselineUpgrades !== undefined) newProgress = totalUpgrades - mission.baselineUpgrades;
               break;
             case "reach_level":     newProgress = machineLevel; break;
-            case "visit_destination": newProgress = destinationsUnlocked; break;
+            case "visit_destination":
+              if (mission.baselineTrips !== undefined) newProgress = tripsCompleted - mission.baselineTrips;
+              break;
           }
 
           if (newProgress >= mission.target && !state.completedMissionIds.includes(mission.id)) {
@@ -284,11 +292,13 @@ export const useMissions = create<MissionsState>()(
         const remaining = state.missions.filter(m => m.id !== missionId);
         const activeTypes = remaining.map(m => m.type);
 
-        const isChain = Math.random() < 0.2;
+        const completedMission = state.missions.find(m => m.id === missionId);
+        // Chains cannot spawn more chains (one follow-up layer only)
+        const isChain = Math.random() < 0.2 && completedMission?.icon !== "⛓️";
         const newMission = isChain
           ? (() => {
-              const completed = state.missions.find(m => m.id === missionId);
-              if (!completed) return state.generateMission(activeTypes);
+              if (!completedMission) return state.generateMission(activeTypes);
+              const completed = completedMission;
               const chainTarget = Math.floor(completed.target * 2);
               const chainReward = Math.floor(completed.reward * 3);
               return {
