@@ -32,17 +32,16 @@ function App() {
     fetchUser();
   }, [fetchUser]);
 
-  // Show game as soon as auth resolves - don't block on cloud load
-  // Cloud save loads in background and merges into state when ready
+  // Show game as soon as auth resolves
   useEffect(() => {
     if (!authLoading) {
       setShowGame(true);
     }
   }, [authLoading]);
 
-  // Hard fallback: show game after 5s no matter what
+  // Hard fallback: 7s max on loading screen
   useEffect(() => {
-    const fallback = setTimeout(() => setShowGame(true), 5000);
+    const fallback = setTimeout(() => setShowGame(true), 7000);
     return () => clearTimeout(fallback);
   }, []);
 

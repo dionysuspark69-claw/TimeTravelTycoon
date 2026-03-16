@@ -26,9 +26,9 @@ export const useAuth = create<AuthState>((set) => ({
   fetchUser: async () => {
     try {
       set({ loading: true });
-      // 3s timeout - if auth doesn't respond in 3s, proceed as guest
+      // 6s timeout - enough for Render cold starts without hanging forever
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 3000);
+      const timeout = setTimeout(() => controller.abort(), 6000);
       const response = await fetch("/api/auth/user", { signal: controller.signal });
       clearTimeout(timeout);
       

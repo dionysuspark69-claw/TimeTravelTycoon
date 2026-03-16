@@ -146,6 +146,9 @@ export const useSaveState = create<SaveState>((set, get) => ({
         (e: any) => e.state === "boarding" || e.state === "traveling"
       ).length;
 
+      // Defer all setState calls to next animation frame to avoid freezing the running game loop
+      await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+
       useIdleGame.setState({
         chronocoins: gs.chronocoins,
         totalEarned: gs.totalEarned,
