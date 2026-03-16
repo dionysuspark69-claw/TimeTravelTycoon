@@ -45,81 +45,63 @@ export function ArtifactOverlay() {
   const isComplete = progress >= 1;
 
   return (
-    <div className="absolute bottom-2 left-2 right-2 pointer-events-none z-10">
-      {/* Collection progress bar */}
-      <div className="flex items-center gap-2 mb-1.5">
-        <span className="text-gray-400 text-xs shrink-0">
-          {collection.name.replace(" Collection", "")}
-        </span>
-        <div className="flex-1 h-1 bg-gray-800/60 rounded-full overflow-hidden">
-          <div
-            className={`h-full rounded-full transition-all duration-500 ${isComplete ? "bg-yellow-400" : "bg-purple-400"}`}
-            style={{ width: `${progress * 100}%` }}
-          />
-        </div>
-        <span className={`text-xs font-bold shrink-0 ${isComplete ? "text-yellow-400" : "text-purple-300"}`}>
-          {discovered.length}/{collection.artifacts.length}
-        </span>
-      </div>
+    // Bottom-left only, max 50% width so it never reaches the right side click zone
+    <div className="absolute bottom-2 left-2 pointer-events-none z-10" style={{ maxWidth: "50%" }}>
 
-      {/* Artifact icons */}
-      <div className="flex gap-1.5 flex-wrap pointer-events-auto">
-        {collection.artifacts.map((artifact) => {
-          const found = hasArtifact(artifact.id);
-          return (
-            <div
-              key={artifact.id}
-              className="relative"
-              onMouseEnter={() => setTooltip(artifact.id)}
-              onMouseLeave={() => setTooltip(null)}
-            >
+      {/* Compact single row: progress bar + count + icons all inline */}
+      <div className="flex items-center gap-1 bg-black/50 backdrop-blur-sm rounded-lg px-1.5 py-1 border border-white/10">
+        {/* Artifact icons - horizontal, no wrap */}
+        <div className="flex gap-1 pointer-events-auto">
+          {collection.artifacts.map((artifact) => {
+            const found = hasArtifact(artifact.id);
+            return (
               <div
-                className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm transition-all ${
-                  found
-                    ? `${RARITY_BG[artifact.rarity]} shadow-lg`
-                    : "bg-gray-800/50 border border-gray-700/50"
-                }`}
-                style={
-                  found
-                    ? { boxShadow: `0 0 8px ${RARITY_GLOW[artifact.rarity]}` }
-                    : {}
-                }
+                key={artifact.id}
+                className="relative"
+                onMouseEnter={() => setTooltip(artifact.id)}
+                onMouseLeave={() => setTooltip(null)}
               >
-                {found ? (
-                  <span>{RARITY_EMOJI[artifact.rarity]}</span>
-                ) : (
-                  <span className="text-gray-600 text-xs">?</span>
+                <div
+                  className={`w-6 h-6 rounded flex items-center justify-center text-xs transition-all ${
+                    found
+                      ? `${RARITY_BG[artifact.rarity]}`
+                      : "bg-gray-800/50 border border-gray-700/30"
+                  }`}
+                  style={found ? { boxShadow: `0 0 6px ${RARITY_GLOW[artifact.rarity]}` } : {}}
+                >
+                  {found ? (
+                    <span style={{ fontSize: "10px" }}>{RARITY_EMOJI[artifact.rarity]}</span>
+                  ) : (
+                    <span className="text-gray-600" style={{ fontSize: "9px" }}>?</span>
+                  )}
+                </div>
+
+                {/* Tooltip - opens upward */}
+                {tooltip === artifact.id && found && (
+                  <div className="absolute bottom-8 left-0 z-50 pointer-events-none whitespace-nowrap">
+                    <div className="bg-gray-900 border border-gray-600 rounded-lg px-2 py-1.5 text-xs shadow-xl">
+                      <div className="font-bold text-white">{artifact.name}</div>
+                      <div className="text-gray-400 max-w-[160px] whitespace-normal">{artifact.description}</div>
+                      <div className="text-green-400 mt-0.5">+{(artifact.revenueBonus * 100).toFixed(1)}% revenue</div>
+                      <div className={`capitalize mt-0.5 font-semibold ${
+                        artifact.rarity === "legendary" ? "text-orange-400" :
+                        artifact.rarity === "epic" ? "text-purple-400" :
+                        artifact.rarity === "rare" ? "text-blue-400" :
+                        artifact.rarity === "uncommon" ? "text-green-400" : "text-gray-400"
+                      }`}>{artifact.rarity}</div>
+                    </div>
+                  </div>
                 )}
               </div>
-
-              {/* Tooltip */}
-              {tooltip === artifact.id && found && (
-                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-50 pointer-events-none whitespace-nowrap">
-                  <div className="bg-gray-900 border border-gray-600 rounded-lg px-2 py-1.5 text-xs shadow-xl">
-                    <div className="font-bold text-white">{artifact.name}</div>
-                    <div className="text-gray-400">{artifact.description}</div>
-                    <div className="text-green-400 mt-0.5">+{(artifact.revenueBonus * 100).toFixed(1)}% revenue</div>
-                    <div className={`capitalize mt-0.5 font-semibold ${
-                      artifact.rarity === "legendary" ? "text-orange-400" :
-                      artifact.rarity === "epic" ? "text-purple-400" :
-                      artifact.rarity === "rare" ? "text-blue-400" :
-                      artifact.rarity === "uncommon" ? "text-green-400" : "text-gray-400"
-                    }`}>{artifact.rarity}</div>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Collection complete banner */}
-      {isComplete && (
-        <div className="mt-1.5 flex items-center gap-1.5 bg-yellow-500/20 border border-yellow-500/40 rounded-lg px-2 py-1">
-          <span className="text-yellow-400 text-xs font-bold">Collection Complete!</span>
-          <span className="text-yellow-300 text-xs">+{(collection.setBonusMultiplier * 100).toFixed(0)}% revenue bonus active</span>
+            );
+          })}
         </div>
-      )}
+
+        {/* Progress count + optional complete star */}
+        <span className={`text-xs font-bold ml-0.5 shrink-0 ${isComplete ? "text-yellow-400" : "text-purple-300"}`}>
+          {isComplete ? "⭐" : `${discovered.length}/${collection.artifacts.length}`}
+        </span>
+      </div>
     </div>
   );
 }
