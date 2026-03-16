@@ -608,14 +608,24 @@ export function UpgradePanel() {
           {/* Advanced Operations collapsible section */}
           <button
             onClick={() => setShowAdvanced(v => !v)}
-            className="w-full flex items-center justify-between py-2 text-sm text-gray-400 hover:text-white border-t border-gray-700/50 mt-2"
+            className={`w-full flex items-center justify-between mt-3 px-3 py-2.5 rounded-lg border transition-all ${
+              showAdvanced
+                ? "bg-purple-900/30 border-purple-500/50 text-purple-300"
+                : "bg-gray-800/60 border-gray-600/50 text-gray-300 hover:border-purple-500/40 hover:text-purple-300"
+            }`}
           >
-            <span className="font-semibold">Advanced Operations</span>
-            <span>{showAdvanced ? "▲" : "▼"}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-base">⚙️</span>
+              <span className="font-bold text-sm">Advanced Operations</span>
+              <span className="text-xs px-1.5 py-0.5 rounded-full bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                {[queueSize, boardingSpeed, vipChance, artifactScanner, offlineInfra, autoDispatch, eraExpertise].filter(v => v > 1).length} active
+              </span>
+            </div>
+            <span className="text-xs">{showAdvanced ? "▲ collapse" : "▼ expand"}</span>
           </button>
 
           {showAdvanced && (
-            <div className="space-y-2 mt-1">
+            <div className="space-y-2 mt-2 bg-gray-900/30 rounded-lg p-2 border border-gray-700/30">
               <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mt-3 mb-1">Operations</div>
               {/* Queue Size */}
               <Card className="bg-gray-900/50 border-cyan-500/30 p-3">
