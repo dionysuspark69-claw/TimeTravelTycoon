@@ -444,6 +444,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Sitemap for SEO/AdSense content crawling
+  app.get("/sitemap.xml", (_req, res) => {
+    res.set("Content-Type", "application/xml");
+    res.send(`<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://timetraveltycoon.onrender.com/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://timetraveltycoon.onrender.com/about</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>`);
+  });
+
+  // Robots.txt
+  app.get("/robots.txt", (_req, res) => {
+    res.set("Content-Type", "text/plain");
+    res.send(`User-agent: *\nAllow: /\nSitemap: https://timetraveltycoon.onrender.com/sitemap.xml`);
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

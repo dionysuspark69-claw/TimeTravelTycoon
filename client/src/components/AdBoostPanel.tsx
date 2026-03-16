@@ -1,60 +1,67 @@
 import { useAdBoosts, AdBoostType } from "@/lib/stores/useAdBoosts";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
-import { Tv, Zap, CheckCircle2 } from "lucide-react";
-import { useState, useEffect, useCallback } from "react";
+import { Tv, Zap, CheckCircle2, ExternalLink } from "lucide-react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
-// AdSense publisher ID
 const AD_CLIENT = "ca-pub-7190597981311614";
 
-// Declare adsbygoogle global
 declare global {
   interface Window {
-    adsbygoogle: {
-      push: (config: object) => void;
-    };
+    adsbygoogle: { push: (config: object) => void }[];
   }
 }
 
-// Lazily inject AdSense script the first time an ad is requested
-function ensureAdSenseLoaded(): Promise<void> {
-  return new Promise((resolve) => {
-    if (document.querySelector('script[src*="adsbygoogle"]')) {
-      resolve();
-      return;
-    }
-    const script = document.createElement("script");
-    script.async = true;
-    script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${AD_CLIENT}`;
-    script.crossOrigin = "anonymous";
-    script.onload = () => resolve();
-    script.onerror = () => resolve(); // fail gracefully
-    document.head.appendChild(script);
-  });
+// Inject AdSense script once
+let adSenseInjected = false;
+function ensureAdSenseLoaded() {
+  if (adSenseInjected || document.querySelector('script[src*="adsbygoogle"]')) {
+    adSenseInjected = true;
+    return;
+  }
+  const script = document.createElement("script");
+  script.async = true;
+  script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${AD_CLIENT}`;
+  script.crossOrigin = "anonymous";
+  document.head.appendChild(script);
+  adSenseInjected = true;
 }
 
-function showRewardedAd(): Promise<boolean> {
-  return new Promise(async (resolve) => {
-    try {
-      await ensureAdSenseLoaded();
-      if (!window.adsbygoogle) {
-        resolve(false);
-        return;
-      }
-      window.adsbygoogle.push({
-        ad_client: AD_CLIENT,
-        ad_format: "rewarded",
-        ad_slot: "auto",
-        callback: {
-          onAdDismissed: () => resolve(false),
-          onAdViewed: () => resolve(true),
-          onNoAd: () => resolve(false),
-        },
-      });
-    } catch {
-      resolve(false);
+// Push an ad unit after it's mounted
+function pushAd() {
+  try {
+    (window.adsbygoogle = window.adsbygoogle || []).push({});
+  } catch {
+    // ignore
+  }
+}
+
+// A single display ad unit rendered inline
+function DisplayAd({ slotId }: { slotId: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const pushed = useRef(false);
+
+  useEffect(() => {
+    ensureAdSenseLoaded();
+    if (!pushed.current && ref.current) {
+      pushed.current = true;
+      // Small delay to let AdSense script load
+      setTimeout(pushAd, 500);
     }
-  });
+  }, []);
+
+  return (
+    <div ref={ref} className="w-full">
+      <ins
+        className="adsbygoogle"
+        style={{ display: "block", minHeight: "90px" }}
+        data-ad-client={AD_CLIENT}
+        data-ad-slot={slotId}
+        data-ad-format="auto"
+        data-full-width-responsive="true"
+      />
+    </div>
+  );
 }
 
 export function AdBoostPanel() {
@@ -70,6 +77,7 @@ export function AdBoostPanel() {
   } = useAdBoosts();
 
   const [, setTick] = useState(0);
+  const [adShowing, setAdShowing] = useState<AdBoostType | null>(null);
 
   useEffect(() => {
     const interval = setInterval(() => setTick((t) => t + 1), 100);
@@ -80,21 +88,25 @@ export function AdBoostPanel() {
   useEffect(() => {
     if (isWatchingAd && adWatchStartedAt) {
       const elapsed = Date.now() - adWatchStartedAt;
-      if (elapsed >= 5000) completeAdWatch();
+      if (elapsed >= 5000) {
+        completeAdWatch();
+        setAdShowing(null);
+      }
     }
   }, [isWatchingAd, adWatchStartedAt, completeAdWatch]);
 
   const handleWatchAd = useCallback(
-    async (type: AdBoostType) => {
+    (type: AdBoostType) => {
       startWatchingAd(type);
-      const rewarded = await showRewardedAd();
-      if (rewarded) {
-        completeAdWatch();
-      }
-      // If not rewarded, simulated timer fallback continues
+      setAdShowing(type);
     },
-    [startWatchingAd, completeAdWatch]
+    [startWatchingAd]
   );
+
+  const handleCancel = useCallback(() => {
+    cancelAdWatch();
+    setAdShowing(null);
+  }, [cancelAdWatch]);
 
   const formatTime = (ms: number) => {
     const seconds = Math.ceil(ms / 1000);
@@ -167,21 +179,36 @@ export function AdBoostPanel() {
           )}
 
           {isCurrentlyWatching && (
-            <div className="bg-cyan-900/30 rounded p-2">
-              <div className="flex items-center justify-between text-xs mb-1">
-                <span className="text-cyan-300">Watching Ad...</span>
-                <span className="text-white font-semibold">
-                  {formatTime(
-                    Math.max(0, 5000 - (Date.now() - (adWatchStartedAt || 0)))
-                  )}
-                </span>
+            <div className="space-y-2">
+              {/* Display ad shown while "watching" */}
+              <div className="bg-black/40 rounded-lg p-2 border border-cyan-500/20">
+                <div className="text-xs text-gray-500 text-center mb-1">Advertisement</div>
+                <DisplayAd slotId="auto" />
               </div>
-              <div className="bg-gray-800 rounded-full h-2 overflow-hidden">
-                <div
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 h-full transition-all animate-pulse"
-                  style={{ width: `${getAdWatchProgress()}%` }}
-                />
+              <div className="bg-cyan-900/30 rounded p-2">
+                <div className="flex items-center justify-between text-xs mb-1">
+                  <span className="text-cyan-300">Ad playing...</span>
+                  <span className="text-white font-semibold">
+                    {formatTime(
+                      Math.max(0, 5000 - (Date.now() - (adWatchStartedAt || 0)))
+                    )}
+                  </span>
+                </div>
+                <div className="bg-gray-800 rounded-full h-2 overflow-hidden">
+                  <div
+                    className="bg-gradient-to-r from-cyan-500 to-blue-500 h-full transition-all"
+                    style={{ width: `${getAdWatchProgress()}%` }}
+                  />
+                </div>
               </div>
+              <Button
+                onClick={handleCancel}
+                variant="outline"
+                className="w-full min-h-[44px]"
+                size="sm"
+              >
+                Cancel
+              </Button>
             </div>
           )}
 
@@ -202,17 +229,6 @@ export function AdBoostPanel() {
                 : `Cooldown: ${formatTime(cooldownRemaining)}`}
             </Button>
           )}
-
-          {isCurrentlyWatching && (
-            <Button
-              onClick={cancelAdWatch}
-              variant="outline"
-              className="w-full min-h-[44px]"
-              size="sm"
-            >
-              Cancel
-            </Button>
-          )}
         </div>
       </Card>
     );
@@ -229,31 +245,34 @@ export function AdBoostPanel() {
         <div className="flex items-start gap-2">
           <Zap className="w-4 h-4 text-cyan-400 mt-0.5 flex-shrink-0" />
           <p className="text-cyan-200 text-xs">
-            Watch short ads to get temporary boosts! Each boost type has a
-            5-minute cooldown.
+            Watch a short ad to get a temporary boost. Each boost type has a 5-minute cooldown.
           </p>
         </div>
       </div>
 
+      {/* Persistent display ad at top of panel */}
+      <div className="bg-black/30 rounded-lg p-2 border border-white/5">
+        <div className="text-xs text-gray-600 text-center mb-1">Advertisement</div>
+        <DisplayAd slotId="auto" />
+      </div>
+
       <div className="space-y-2">
-        {renderAdBoostButton(
-          "revenue",
-          "💰",
-          "2x Revenue",
-          "Double your ChronoCoin earnings for 5 minutes"
-        )}
-        {renderAdBoostButton(
-          "customers",
-          "👥",
-          "2x Customers",
-          "Attract twice as many customers for 5 minutes"
-        )}
-        {renderAdBoostButton(
-          "speed",
-          "⚡",
-          "1.5x Speed",
-          "Faster trips for 5 minutes"
-        )}
+        {renderAdBoostButton("revenue", "💰", "2x Revenue", "Double your ChronoCoin earnings for 5 minutes")}
+        {renderAdBoostButton("customers", "👥", "2x Customers", "Attract twice as many customers for 5 minutes")}
+        {renderAdBoostButton("speed", "⚡", "1.5x Speed", "Faster trips for 5 minutes")}
+      </div>
+
+      {/* Link to about page for SEO/AdSense content signal */}
+      <div className="pt-2 border-t border-white/5">
+        <a
+          href="/about"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1 text-xs text-gray-500 hover:text-cyan-400 transition-colors"
+        >
+          <ExternalLink className="w-3 h-3" />
+          About ChronoTransit
+        </a>
       </div>
     </div>
   );
