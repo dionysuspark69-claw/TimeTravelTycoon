@@ -7,7 +7,7 @@ import { useEffect } from "react";
 import { formatChronoValue } from "@/lib/utils";
 
 export function MissionsPanel() {
-  const { missions, initializeMissions, missionStreak, getStreakBonus } = useMissions();
+  const { missions, initializeMissions, missionStreak, getStreakBonus, rerollsAvailable, rerollMission } = useMissions();
   const { addChronocoins } = useIdleGame();
   
   useEffect(() => {
@@ -65,7 +65,8 @@ export function MissionsPanel() {
             <Card
               key={mission.id}
               className={`bg-gray-900/50 border-cyan-500/30 p-3 transition-all ${
-                isComplete ? "border-green-500 bg-green-900/20" : ""
+                isComplete ? "border-green-500 bg-green-900/20" :
+                mission.icon === "⛓️" ? "border-yellow-500/60 bg-yellow-900/10" : ""
               }`}
             >
               <div className="flex items-start justify-between mb-2">
@@ -81,6 +82,20 @@ export function MissionsPanel() {
                 
                 <div className="flex items-center gap-2">
                   {isComplete && <CheckCircle2 className="w-5 h-5 text-green-400" />}
+                  {!isComplete && (
+                    <button
+                      onClick={() => rerollMission(mission.id)}
+                      disabled={rerollsAvailable <= 0}
+                      className={`text-xs px-2 py-1 rounded border transition-colors ${
+                        rerollsAvailable > 0
+                          ? "border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10"
+                          : "border-gray-700 text-gray-600 cursor-not-allowed"
+                      }`}
+                      title={rerollsAvailable > 0 ? `Reroll (${rerollsAvailable} left)` : "No rerolls left"}
+                    >
+                      🔄 {rerollsAvailable}
+                    </button>
+                  )}
                   <div className="text-right">
                     <div className="text-cyan-400 font-semibold">+{formatChronoValue(mission.reward)}</div>
                     <div className="text-gray-500 text-xs">ChronoCoins</div>

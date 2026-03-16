@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { subscribeWithSelector, persist } from "zustand/middleware";
 import { formatChronoValue } from "@/lib/utils";
 
-export type MissionType = "earn_coins" | "complete_trips" | "hire_manager" | "use_boosts" | "unlock_destination" | "earn_in_time" | "upgrade_machine" | "reach_level";
+export type MissionType = "earn_coins" | "complete_trips" | "hire_manager" | "use_boosts" | "unlock_destination" | "earn_in_time" | "upgrade_machine" | "reach_level" | "visit_destination";
 
 export interface Mission {
   id: string;
@@ -24,6 +24,7 @@ interface MissionsState {
   nextMissionId: number;
   missionStreak: number;
   lastMissionCompletedAt: number;
+  rerollsAvailable: number;
 
   generateMission: (excludeTypes?: MissionType[]) => Mission;
   checkProgress: (coinsEarned: number, tripsCompleted: number, managersHired: number, boostsUsed: number, destinationsUnlocked: number, machineLevel: number, totalUpgrades: number) => void;
@@ -31,6 +32,7 @@ interface MissionsState {
   initializeMissions: () => void;
   getStreakBonus: () => { revenueBonus: number; speedBonus: number };
   updateStreak: () => void;
+  rerollMission: (missionId: string) => void;
 }
 
 const MISSION_TEMPLATES = [
@@ -106,6 +108,15 @@ const MISSION_TEMPLATES = [
     rewardMultiplier: 200,
     icon: "Lv",
     weight: 1
+  },
+  {
+    type: "visit_destination" as MissionType,
+    descriptionTemplate: (_target: number) => `Travel to a new destination`,
+    baseTarget: 1,
+    targetScalePerLevel: 0,
+    rewardMultiplier: 500,
+    icon: "Map",
+    weight: 1
   }
 ];
 
@@ -141,6 +152,7 @@ export const useMissions = create<MissionsState>()(
       nextMissionId: 0,
       missionStreak: 0,
       lastMissionCompletedAt: 0,
+      rerollsAvailable: 1,
 
       updateStreak: () => {
         const state = get();
@@ -148,6 +160,18 @@ export const useMissions = create<MissionsState>()(
         if (state.lastMissionCompletedAt > 0 && now - state.lastMissionCompletedAt > STREAK_DECAY_TIME) {
           set({ missionStreak: 0 });
         }
+      },
+
+      rerollMission: (missionId) => {
+        const state = get();
+        if (state.rerollsAvailable <= 0) return;
+        const remaining = state.missions.filter(m => m.id !== missionId);
+        const activeTypes = remaining.map(m => m.type);
+        const newMission = state.generateMission(activeTypes);
+        set({
+          missions: [...remaining, newMission],
+          rerollsAvailable: state.rerollsAvailable - 1,
+        });
       },
 
       getStreakBonus: () => {
@@ -222,6 +246,7 @@ export const useMissions = create<MissionsState>()(
               if (mission.baselineUpgrades !== undefined) newProgress = totalUpgrades - mission.baselineUpgrades;
               break;
             case "reach_level":     newProgress = machineLevel; break;
+            case "visit_destination": newProgress = destinationsUnlocked; break;
           }
 
           if (newProgress >= mission.target && !state.completedMissionIds.includes(mission.id)) {
@@ -258,13 +283,32 @@ export const useMissions = create<MissionsState>()(
 
         const remaining = state.missions.filter(m => m.id !== missionId);
         const activeTypes = remaining.map(m => m.type);
-        const newMission = state.generateMission(activeTypes);
+
+        const isChain = Math.random() < 0.2;
+        const newMission = isChain
+          ? (() => {
+              const completed = state.missions.find(m => m.id === missionId);
+              if (!completed) return state.generateMission(activeTypes);
+              const chainTarget = Math.floor(completed.target * 2);
+              const chainReward = Math.floor(completed.reward * 3);
+              return {
+                ...state.generateMission(activeTypes),
+                type: completed.type,
+                description: `[CHAIN] ${completed.description.replace(/\d[\d,.]*/g, String(chainTarget))}`,
+                target: chainTarget,
+                reward: chainReward,
+                progress: 0,
+                icon: "⛓️",
+              };
+            })()
+          : state.generateMission(activeTypes);
 
         set({
           completedMissionIds: [...state.completedMissionIds, missionId],
           missions: [...remaining, newMission],
           missionStreak: newStreak,
           lastMissionCompletedAt: now,
+          rerollsAvailable: Math.min(3, state.rerollsAvailable + 1),
         });
       },
 

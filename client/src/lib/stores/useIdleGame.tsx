@@ -3,6 +3,7 @@ import { subscribeWithSelector, persist } from "zustand/middleware";
 import { useArtifacts } from "./useArtifacts";
 import { useAudio } from "./useAudio";
 import { useChronoMeter } from "./useChronoMeter";
+import { usePrestigePerks } from "./usePrestigePerks";
 import { toast } from "sonner";
 import { getPrestigeRequirements } from "../utils";
 
@@ -19,6 +20,12 @@ export interface TimePeriod {
   customerGenModifier: number;
   pros: string[];
   cons: string[];
+  specialTrait?: {
+    id: string;
+    label: string;
+    description: string;
+    icon: string;
+  };
 }
 
 /**
@@ -75,7 +82,8 @@ export const TIME_PERIODS: TimePeriod[] = [
     revenueModifier: 1.5,
     customerGenModifier: 1.0,
     pros: ["Easily Impressed: +50% revenue"],
-    cons: ["Primitive Routes: -20% speed"]
+    cons: ["Primitive Routes: -20% speed"],
+    specialTrait: { id: "artifact_rich", label: "Artifact Rich", icon: "🏺", description: "Higher artifact drop chance" }
   },
   {
     id: "rome",
@@ -89,7 +97,8 @@ export const TIME_PERIODS: TimePeriod[] = [
     revenueModifier: 1.4,
     customerGenModifier: 1.2,
     pros: ["Imperial Splendor: +40% revenue", "Road Network: +10% speed", "Empire Travelers: +20% customers"],
-    cons: []
+    cons: [],
+    specialTrait: { id: "busy_hub", label: "Busy Hub", icon: "🏛️", description: "More customers arrive here" }
   },
   {
     id: "medieval",
@@ -103,7 +112,8 @@ export const TIME_PERIODS: TimePeriod[] = [
     revenueModifier: 1.2,
     customerGenModifier: 1.3,
     pros: ["Popular Era: +30% customer generation", "Historic Interest: +20% revenue"],
-    cons: []
+    cons: [],
+    specialTrait: { id: "artifact_rich", label: "Artifact Rich", icon: "⚔️", description: "Relics hide in every corner" }
   },
   {
     id: "viking",
@@ -145,7 +155,8 @@ export const TIME_PERIODS: TimePeriod[] = [
     revenueModifier: 1.0,
     customerGenModifier: 1.2,
     pros: ["Steam Power: +50% speed", "Working Class: +20% customers"],
-    cons: []
+    cons: [],
+    specialTrait: { id: "speed_hub", label: "Speed Hub", icon: "⚙️", description: "Trip speed bonus is doubled here" }
   },
   {
     id: "wildwest",
@@ -159,7 +170,8 @@ export const TIME_PERIODS: TimePeriod[] = [
     revenueModifier: 2.0,
     customerGenModifier: 0.8,
     pros: ["High Stakes: +100% revenue"],
-    cons: ["Dangerous Territory: -30% speed", "Cautious Travelers: -20% customers"]
+    cons: ["Dangerous Territory: -30% speed", "Cautious Travelers: -20% customers"],
+    specialTrait: { id: "high_value", label: "High Value", icon: "🤠", description: "High stakes mean high rewards" }
   },
   {
     id: "roaring20s",
@@ -173,7 +185,8 @@ export const TIME_PERIODS: TimePeriod[] = [
     revenueModifier: 1.5,
     customerGenModifier: 1.4,
     pros: ["Party Era: +40% customers", "Wealthy Tourists: +50% revenue", "Modern Travel: +30% speed"],
-    cons: []
+    cons: [],
+    specialTrait: { id: "busy_hub", label: "Busy Hub", icon: "🎷", description: "Everyone wants to party in the 20s" }
   },
   {
     id: "spaceage",
@@ -187,7 +200,8 @@ export const TIME_PERIODS: TimePeriod[] = [
     revenueModifier: 1.2,
     customerGenModifier: 1.0,
     pros: ["Rocket Tech: +80% speed", "Scientific Interest: +20% revenue"],
-    cons: []
+    cons: [],
+    specialTrait: { id: "speed_hub", label: "Speed Hub", icon: "🚀", description: "Fastest trip speed in the game" }
   },
   {
     id: "future",
@@ -201,7 +215,8 @@ export const TIME_PERIODS: TimePeriod[] = [
     revenueModifier: 0.8,
     customerGenModifier: 1.1,
     pros: ["Advanced Tech: +100% speed", "Curious Minds: +10% customers"],
-    cons: ["Jaded Tourists: -20% revenue"]
+    cons: ["Jaded Tourists: -20% revenue"],
+    specialTrait: { id: "speed_hub", label: "Speed Hub", icon: "🌆", description: "Advanced tech doubles speed bonus" }
   },
   {
     id: "cyberpunk",
@@ -215,7 +230,8 @@ export const TIME_PERIODS: TimePeriod[] = [
     revenueModifier: 1.8,
     customerGenModifier: 0.7,
     pros: ["High Tech: +60% speed", "Premium Clients: +80% revenue"],
-    cons: ["Dangerous Streets: -30% customers"]
+    cons: ["Dangerous Streets: -30% customers"],
+    specialTrait: { id: "high_value", label: "High Value", icon: "💎", description: "Premium clients pay extra per trip" }
   },
   {
     id: "farfuture",
@@ -229,7 +245,8 @@ export const TIME_PERIODS: TimePeriod[] = [
     revenueModifier: 5.0,
     customerGenModifier: 0.5,
     pros: ["Extreme Premium: +400% revenue"],
-    cons: ["Unstable Timelines: -50% speed", "Risky Travel: -50% customers"]
+    cons: ["Unstable Timelines: -50% speed", "Risky Travel: -50% customers"],
+    specialTrait: { id: "high_value", label: "High Value", icon: "⭐", description: "Extreme premium fares" }
   },
   {
     id: "triassic",
@@ -327,7 +344,8 @@ export const TIME_PERIODS: TimePeriod[] = [
     revenueModifier: 1.6,
     customerGenModifier: 1.3,
     pros: ["Golden Age: +60% revenue", "Naval Excellence: +10% speed", "Popular Destination: +30% customers"],
-    cons: []
+    cons: [],
+    specialTrait: { id: "busy_hub", label: "Busy Hub", icon: "🏛️", description: "Golden Age attracts crowds" }
   },
   {
     id: "china",
@@ -341,7 +359,8 @@ export const TIME_PERIODS: TimePeriod[] = [
     revenueModifier: 1.4,
     customerGenModifier: 1.4,
     pros: ["Silk Road: +20% speed", "Imperial Wealth: +40% revenue", "Mass Tourism: +40% customers"],
-    cons: []
+    cons: [],
+    specialTrait: { id: "busy_hub", label: "Busy Hub", icon: "🐉", description: "Silk Road brings the masses" }
   },
   {
     id: "mayan",
@@ -355,7 +374,8 @@ export const TIME_PERIODS: TimePeriod[] = [
     revenueModifier: 1.8,
     customerGenModifier: 0.9,
     pros: ["Mystical Allure: +80% revenue"],
-    cons: ["Jungle Routes: -20% speed", "Remote Location: -10% customers"]
+    cons: ["Jungle Routes: -20% speed", "Remote Location: -10% customers"],
+    specialTrait: { id: "artifact_rich", label: "Artifact Rich", icon: "🌿", description: "Ancient jungle hides many treasures" }
   },
   {
     id: "aztec",
@@ -1074,6 +1094,9 @@ export const useIdleGame = create<IdleGameState>()(
       
       const points = Math.max(1, Math.floor(state.totalEarned / 10000000));
       
+      // Trigger perk choice
+      usePrestigePerks.getState().setPendingChoice(true);
+      
       set({
         chronocoins: 0,
         totalEarned: 0,
@@ -1082,7 +1105,7 @@ export const useIdleGame = create<IdleGameState>()(
         timeMachineLevel: 1,
         timeMachineCapacity: 1,
         timeMachineSpeed: 1,
-        timeMachineCount: 1,
+        timeMachineCount: Math.max(1, 1 + usePrestigePerks.getState().getPerkValue("machine_retention")),
         customerGenerationRate: 1,
         waitingCustomers: 0,
         processingCustomers: 0,
@@ -1107,7 +1130,7 @@ export const useIdleGame = create<IdleGameState>()(
       const savedCps = state.coinsPerSecond;
       if (savedCps <= 0) return 0;
       const revenueMultiplier = 1 + (state.prestigePoints * 0.1);
-      return Math.floor(savedCps * 60 * maxMinutes * revenueMultiplier * 0.4);
+      return Math.floor(savedCps * 60 * maxMinutes * revenueMultiplier * usePrestigePerks.getState().getPerkValue("offline_efficiency"));
     },
     
     claimOfflineEarnings: () => {

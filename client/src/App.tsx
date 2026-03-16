@@ -18,6 +18,7 @@ import { NextGoalWidget } from "./components/NextGoalWidget";
 import { NewsTicker } from "./components/NewsTicker";
 import { PurchaseCelebration } from "./components/PurchaseCelebration";
 import { OnboardingTutorial } from "./components/OnboardingTutorial";
+import { PrestigePerkChoiceModal } from "./components/PrestigePerkChoiceModal";
 
 function App() {
   const [showGame, setShowGame] = useState(false);
@@ -86,6 +87,7 @@ function App() {
       <PurchaseCelebration />
       <FloatingTextManager />
       <OnboardingTutorial />
+      <PrestigePerkChoiceModal />
       <GameLoop />
       <SoundManager />
       <Toaster />

@@ -1,5 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { usePrestigePerks } from "./usePrestigePerks";
+
+const ARTIFACT_RICH_DESTINATIONS = new Set(["egypt", "medieval", "mayan", "prehistoric"]);
 
 export type ArtifactRarity = "common" | "uncommon" | "rare" | "epic" | "legendary";
 
@@ -2799,8 +2802,12 @@ export const useArtifacts = create<ArtifactsState>()(
         const collection = ARTIFACT_COLLECTIONS.find(c => c.destinationId === destinationId);
         if (!collection) return null;
         
+        const artifactRichMultiplier = ARTIFACT_RICH_DESTINATIONS.has(destinationId) ? 2.0 : 1.0;
+        const perkMultiplier = usePrestigePerks.getState().getPerkValue("artifact_luck");
+        const totalMultiplier = artifactRichMultiplier * perkMultiplier;
+        
         for (const artifact of collection.artifacts) {
-          if (Math.random() < artifact.dropRate) {
+          if (Math.random() < artifact.dropRate * totalMultiplier) {
             return artifact;
           }
         }

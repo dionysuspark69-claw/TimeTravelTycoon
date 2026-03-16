@@ -133,6 +133,13 @@ function DestinationsList() {
                 <div className="text-gray-400 text-sm">{destination.era}</div>
                 <div className="text-gray-500 text-xs">{destination.description}</div>
                 <div className="text-cyan-400 text-sm mt-1">Base Fare: {destination.baseFare}</div>
+                {destination.specialTrait && (
+                  <div className="flex items-center gap-1 mt-1">
+                    <span className="text-xs">{destination.specialTrait.icon}</span>
+                    <span className="text-xs font-semibold text-cyan-300">{destination.specialTrait.label}</span>
+                    <span className="text-xs text-gray-500">— {destination.specialTrait.description}</span>
+                  </div>
+                )}
                 {destination.pros.length > 0 && (
                   <div className="mt-2 space-y-1">
                     {destination.pros.map((pro, idx) => (
