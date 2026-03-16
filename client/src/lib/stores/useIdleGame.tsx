@@ -98,7 +98,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     customerGenModifier: 1.2,
     pros: ["Imperial Splendor: +40% revenue", "Road Network: +10% speed", "Empire Travelers: +20% customers"],
     cons: [],
-    specialTrait: { id: "busy_hub", label: "Busy Hub", icon: "🏛️", description: "More customers arrive here" }
+    specialTrait: { id: "busy_hub", label: "Busy Hub", icon: "🏛️", description: "Extra +25% customer rate" }
   },
   {
     id: "medieval",
@@ -156,7 +156,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     customerGenModifier: 1.2,
     pros: ["Steam Power: +50% speed", "Working Class: +20% customers"],
     cons: [],
-    specialTrait: { id: "speed_hub", label: "Speed Hub", icon: "⚙️", description: "Trip speed bonus is doubled here" }
+    specialTrait: { id: "speed_hub", label: "Speed Hub", icon: "⚙️", description: "Extra +30% trip speed bonus" }
   },
   {
     id: "wildwest",
@@ -171,7 +171,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     customerGenModifier: 0.8,
     pros: ["High Stakes: +100% revenue"],
     cons: ["Dangerous Territory: -30% speed", "Cautious Travelers: -20% customers"],
-    specialTrait: { id: "high_value", label: "High Value", icon: "🤠", description: "High stakes mean high rewards" }
+    specialTrait: { id: "high_value", label: "High Value", icon: "🤠", description: "Extra +25% revenue bonus" }
   },
   {
     id: "roaring20s",
@@ -186,7 +186,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     customerGenModifier: 1.4,
     pros: ["Party Era: +40% customers", "Wealthy Tourists: +50% revenue", "Modern Travel: +30% speed"],
     cons: [],
-    specialTrait: { id: "busy_hub", label: "Busy Hub", icon: "🎷", description: "Everyone wants to party in the 20s" }
+    specialTrait: { id: "busy_hub", label: "Busy Hub", icon: "🎷", description: "Extra +25% customer rate" }
   },
   {
     id: "spaceage",
@@ -201,7 +201,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     customerGenModifier: 1.0,
     pros: ["Rocket Tech: +80% speed", "Scientific Interest: +20% revenue"],
     cons: [],
-    specialTrait: { id: "speed_hub", label: "Speed Hub", icon: "🚀", description: "Fastest trip speed in the game" }
+    specialTrait: { id: "speed_hub", label: "Speed Hub", icon: "🚀", description: "Extra +30% trip speed bonus" }
   },
   {
     id: "future",
@@ -216,7 +216,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     customerGenModifier: 1.1,
     pros: ["Advanced Tech: +100% speed", "Curious Minds: +10% customers"],
     cons: ["Jaded Tourists: -20% revenue"],
-    specialTrait: { id: "speed_hub", label: "Speed Hub", icon: "🌆", description: "Advanced tech doubles speed bonus" }
+    specialTrait: { id: "speed_hub", label: "Speed Hub", icon: "🌆", description: "Extra +30% trip speed bonus" }
   },
   {
     id: "cyberpunk",
@@ -231,7 +231,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     customerGenModifier: 0.7,
     pros: ["High Tech: +60% speed", "Premium Clients: +80% revenue"],
     cons: ["Dangerous Streets: -30% customers"],
-    specialTrait: { id: "high_value", label: "High Value", icon: "💎", description: "Premium clients pay extra per trip" }
+    specialTrait: { id: "high_value", label: "High Value", icon: "💎", description: "Extra +25% revenue bonus" }
   },
   {
     id: "farfuture",
@@ -246,7 +246,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     customerGenModifier: 0.5,
     pros: ["Extreme Premium: +400% revenue"],
     cons: ["Unstable Timelines: -50% speed", "Risky Travel: -50% customers"],
-    specialTrait: { id: "high_value", label: "High Value", icon: "⭐", description: "Extreme premium fares" }
+    specialTrait: { id: "high_value", label: "High Value", icon: "⭐", description: "Extra +25% revenue bonus" }
   },
   {
     id: "triassic",
@@ -345,7 +345,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     customerGenModifier: 1.3,
     pros: ["Golden Age: +60% revenue", "Naval Excellence: +10% speed", "Popular Destination: +30% customers"],
     cons: [],
-    specialTrait: { id: "busy_hub", label: "Busy Hub", icon: "🏛️", description: "Golden Age attracts crowds" }
+    specialTrait: { id: "busy_hub", label: "Busy Hub", icon: "🏛️", description: "Extra +25% customer rate" }
   },
   {
     id: "china",
@@ -360,7 +360,7 @@ export const TIME_PERIODS: TimePeriod[] = [
     customerGenModifier: 1.4,
     pros: ["Silk Road: +20% speed", "Imperial Wealth: +40% revenue", "Mass Tourism: +40% customers"],
     cons: [],
-    specialTrait: { id: "busy_hub", label: "Busy Hub", icon: "🐉", description: "Silk Road brings the masses" }
+    specialTrait: { id: "busy_hub", label: "Busy Hub", icon: "🐉", description: "Extra +25% customer rate" }
   },
   {
     id: "mayan",
@@ -1429,6 +1429,10 @@ export const useIdleGame = create<IdleGameState>()(
       let multiplier = (1 + (state.prestigePoints * 0.1) + managerBonus + artifactBonus + chronoBonus) * destinationMod;
       
       const dest = TIME_PERIODS.find(d => d.id === state.currentDestination);
+      // High Value trait: additional +25% revenue on top of destination modifier
+      if (dest?.specialTrait?.id === "high_value") {
+        multiplier *= 1.25;
+      }
       if (dest?.specialTrait && state.eraExpertise > 1) {
         multiplier *= (1 + (state.eraExpertise - 1) * 0.05);
       }
@@ -1442,6 +1446,11 @@ export const useIdleGame = create<IdleGameState>()(
       const destinationMod = destination?.speedModifier || 1.0;
       
       let multiplier = (1 + managerBonus) * destinationMod;
+      // Speed Hub trait: additional +30% speed on top of destination modifier
+      const dest = TIME_PERIODS.find(d => d.id === state.currentDestination);
+      if (dest?.specialTrait?.id === "speed_hub") {
+        multiplier *= 1.30;
+      }
       
       return multiplier;
     },
@@ -1469,6 +1478,10 @@ export const useIdleGame = create<IdleGameState>()(
       const destinationCustomerMod = destination?.customerGenModifier || 1.0;
       
       let customerGenRate = state.customerGenerationRate * 0.5 * (1 + bonuses.customerRate) * destinationCustomerMod;
+      // Busy Hub trait: additional +25% customer rate
+      if (destination?.specialTrait?.id === "busy_hub") {
+        customerGenRate *= 1.25;
+      }
       
       if (perks.hasTemporalBeacon && now - state.lastTemporalBeaconTime < 1000) {
         customerGenRate *= 2;

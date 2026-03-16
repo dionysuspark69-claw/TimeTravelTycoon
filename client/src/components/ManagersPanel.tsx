@@ -1,8 +1,9 @@
 import { useIdleGame } from "@/lib/stores/useIdleGame";
 import { useManagers, MANAGER_TYPES } from "@/lib/stores/useManagers";
+import { useManagerPerks, MANAGER_PERK_BRANCHES } from "@/lib/stores/useManagerPerks";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
-import { ArrowUp, Users, Zap, DollarSign, Star, Crown, Sparkles, Bolt } from "lucide-react";
+import { ArrowUp, Users, Zap, DollarSign, Star, Crown, Sparkles, Bolt, GitBranch } from "lucide-react";
 import { useState, useEffect } from "react";
 import { formatChronoValue } from "@/lib/utils";
 
@@ -19,6 +20,7 @@ export function ManagersPanel() {
     overclockCooldownEndsAt,
     hasPerk
   } = useManagers();
+  const { choices, getChosenPerk, hasChosen } = useManagerPerks();
   
   const [overclockTimeLeft, setOverclockTimeLeft] = useState(0);
   const [overclockCooldownLeft, setOverclockCooldownLeft] = useState(0);
@@ -96,32 +98,61 @@ export function ManagersPanel() {
                   )}
                 </div>
                 
-                {unlockedPerks.length > 0 && (
-                  <div className="mt-2 space-y-1">
-                    {unlockedPerks.map((perk, idx) => (
-                      <div key={idx} className="flex items-center gap-2 text-xs">
-                        {perk.type === "active" ? (
-                          <Crown className="w-3 h-3 text-yellow-400" />
-                        ) : (
-                          <Star className="w-3 h-3 text-purple-400" />
-                        )}
-                        <span className="text-purple-300 font-semibold">{perk.name}:</span>
-                        <span className="text-gray-400">{perk.description}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                
-                {manager.perks.filter(p => level < p.level).length > 0 && (
-                  <div className="mt-2 space-y-1">
-                    {manager.perks.filter(p => level < p.level).map((perk, idx) => (
-                      <div key={idx} className="flex items-center gap-2 text-xs text-gray-600">
-                        <Sparkles className="w-3 h-3" />
-                        <span className="font-semibold">Level {perk.level}: {perk.name}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                {/* Branch-aware perk display */}
+                <div className="mt-2 space-y-1">
+                  {MANAGER_PERK_BRANCHES[manager.id]?.map((branch) => {
+                    const chosen = getChosenPerk(manager.id, branch.milestone);
+                    const isUnlocked = level >= branch.milestone;
+
+                    if (isUnlocked && chosen) {
+                      // Show the chosen perk
+                      const option = chosen === branch.optionA.id ? branch.optionA : branch.optionB;
+                      const isOptionA = chosen === branch.optionA.id;
+                      return (
+                        <div key={branch.milestone} className="flex items-start gap-2 text-xs">
+                          <GitBranch className="w-3 h-3 text-cyan-400 mt-0.5 shrink-0" />
+                          <span className="text-cyan-300 font-semibold">{option.name}:</span>
+                          <span className="text-gray-400">{option.description}</span>
+                        </div>
+                      );
+                    } else if (isUnlocked && !chosen) {
+                      // Should show pending choice - shouldn't normally happen
+                      return (
+                        <div key={branch.milestone} className="flex items-center gap-2 text-xs text-yellow-400">
+                          <Sparkles className="w-3 h-3" />
+                          <span className="font-semibold">Lv{branch.milestone}: Choose specialization!</span>
+                        </div>
+                      );
+                    } else {
+                      // Locked - show upcoming branch choice
+                      return (
+                        <div key={branch.milestone} className="flex items-center gap-2 text-xs text-gray-600">
+                          <GitBranch className="w-3 h-3" />
+                          <span className="font-semibold">Lv{branch.milestone}: Choose specialization</span>
+                          <span className="text-gray-700">({branch.optionA.name} / {branch.optionB.name})</span>
+                        </div>
+                      );
+                    }
+                  })}
+                  {/* Show non-branching perks for managers without MANAGER_PERK_BRANCHES */}
+                  {!MANAGER_PERK_BRANCHES[manager.id] && unlockedPerks.map((perk, idx) => (
+                    <div key={idx} className="flex items-center gap-2 text-xs">
+                      {perk.type === "active" ? (
+                        <Crown className="w-3 h-3 text-yellow-400" />
+                      ) : (
+                        <Star className="w-3 h-3 text-purple-400" />
+                      )}
+                      <span className="text-purple-300 font-semibold">{perk.name}:</span>
+                      <span className="text-gray-400">{perk.description}</span>
+                    </div>
+                  ))}
+                  {!MANAGER_PERK_BRANCHES[manager.id] && manager.perks.filter(p => level < p.level).map((perk, idx) => (
+                    <div key={idx} className="flex items-center gap-2 text-xs text-gray-600">
+                      <Sparkles className="w-3 h-3" />
+                      <span className="font-semibold">Level {perk.level}: {perk.name}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
               <div className="flex flex-col gap-2">
                 {manager.id === "technician" && hasPerk("technician", 25) && (

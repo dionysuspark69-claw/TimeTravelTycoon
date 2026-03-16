@@ -431,6 +431,8 @@ export function UpgradePanel() {
             </ToggleGroup>
           </div>
           
+          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 mt-1">Core Upgrades</div>
+
           <Card className="bg-gray-900/50 border-cyan-500/30 p-3">
             <div className="flex items-center justify-between">
               <div className="flex-1">
@@ -614,6 +616,7 @@ export function UpgradePanel() {
 
           {showAdvanced && (
             <div className="space-y-2 mt-1">
+              <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mt-3 mb-1">Operations</div>
               {/* Queue Size */}
               <Card className="bg-gray-900/50 border-cyan-500/30 p-3">
                 <div className="flex items-center justify-between">
@@ -654,6 +657,7 @@ export function UpgradePanel() {
                 </div>
               </Card>
 
+              <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mt-3 mb-1">Demand</div>
               {/* VIP Chance */}
               <Card className="bg-gray-900/50 border-cyan-500/30 p-3">
                 <div className="flex items-center justify-between">
@@ -676,6 +680,7 @@ export function UpgradePanel() {
 
               {/* Turnaround Time - hidden until mechanic is fully wired */}
 
+              <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mt-3 mb-1">Research</div>
               {/* Artifact Scanner */}
               <Card className="bg-gray-900/50 border-cyan-500/30 p-3">
                 <div className="flex items-center justify-between">
@@ -696,6 +701,7 @@ export function UpgradePanel() {
                 </div>
               </Card>
 
+              <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mt-3 mb-1">Infrastructure</div>
               {/* Offline Infrastructure */}
               <Card className="bg-gray-900/50 border-cyan-500/30 p-3">
                 <div className="flex items-center justify-between">

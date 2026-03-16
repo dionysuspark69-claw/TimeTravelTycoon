@@ -19,6 +19,7 @@ import { NewsTicker } from "./components/NewsTicker";
 import { PurchaseCelebration } from "./components/PurchaseCelebration";
 import { OnboardingTutorial } from "./components/OnboardingTutorial";
 import { PrestigePerkChoiceModal } from "./components/PrestigePerkChoiceModal";
+import { ManagerPerkChoiceModal } from "./components/ManagerPerkChoiceModal";
 
 function App() {
   const [showGame, setShowGame] = useState(false);
@@ -88,6 +89,7 @@ function App() {
       <FloatingTextManager />
       <OnboardingTutorial />
       <PrestigePerkChoiceModal />
+      <ManagerPerkChoiceModal />
       <GameLoop />
       <SoundManager />
       <Toaster />

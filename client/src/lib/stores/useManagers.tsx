@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { subscribeWithSelector, persist } from "zustand/middleware";
+import { useManagerPerks, MANAGER_PERK_BRANCHES } from "./useManagerPerks";
 
 export interface ManagerPerk {
   level: number;
@@ -400,6 +401,7 @@ interface ManagerState {
   hasPerk: (managerId: string, perkLevel: number) => boolean;
   getUnlockedPerks: (managerId: string) => ManagerPerk[];
   getTotalManagerLevels: () => number;
+  getChosenManagerPerk: (managerId: string, milestone: number) => string | null;
   
   triggerOverclock: () => boolean;
   updatePerkTimers: (deltaTime: number) => void;
@@ -444,10 +446,11 @@ export const useManagers = create<ManagerState>()(
       if (currentCoins < cost) return false;
       
       if (spendCoins(cost)) {
+        const newLevel = currentLevel + 1;
         set((state) => ({
           managers: {
             ...state.managers,
-            [managerId]: currentLevel + 1
+            [managerId]: newLevel
           }
         }));
         
@@ -455,6 +458,15 @@ export const useManagers = create<ManagerState>()(
         if (idleGame) {
           const currentTotal = idleGame.getState().totalManagerUpgrades || 0;
           idleGame.setState({ totalManagerUpgrades: currentTotal + 1 });
+        }
+
+        // Trigger branch perk choice at milestone levels
+        const branches = MANAGER_PERK_BRANCHES[managerId];
+        if (branches) {
+          const branch = branches.find(b => b.milestone === newLevel);
+          if (branch && !useManagerPerks.getState().hasChosen(managerId, branch.milestone)) {
+            useManagerPerks.getState().setPendingChoice({ managerId, milestone: branch.milestone });
+          }
         }
         
         return true;
@@ -464,8 +476,30 @@ export const useManagers = create<ManagerState>()(
     },
     
     hasPerk: (managerId, perkLevel) => {
-      const level = get().getManagerLevel(managerId);
-      return level >= perkLevel;
+      const managerLevel = get().getManagerLevel(managerId);
+      if (managerLevel < perkLevel) return false;
+      // If there's a branch at this milestone, check if they chose the original option
+      const branches = MANAGER_PERK_BRANCHES[managerId];
+      if (branches) {
+        const branch = branches.find(b => b.milestone === perkLevel);
+        if (branch) {
+          const chosen = useManagerPerks.getState().getChosenPerk(managerId, perkLevel);
+          // Original perks: recruiter_beacon, tech_slipstream, acct_compound, recruiter_vip, tech_overclock, acct_timeshare
+          const originalPerkIds: Record<string, Record<number, string>> = {
+            recruiter: { 10: "recruiter_beacon", 25: "recruiter_vip" },
+            technician: { 10: "tech_slipstream", 25: "tech_overclock" },
+            accountant: { 10: "acct_compound", 25: "acct_timeshare" },
+            "timeline-optimizer": { 10: "tlo_multiline", 25: "tlo_convergence" },
+          };
+          const originalId = originalPerkIds[managerId]?.[perkLevel];
+          if (originalId && chosen && chosen !== originalId) return false; // chose the B option
+        }
+      }
+      return true;
+    },
+
+    getChosenManagerPerk: (managerId, milestone) => {
+      return useManagerPerks.getState().getChosenPerk(managerId, milestone);
     },
     
     getUnlockedPerks: (managerId) => {
@@ -523,6 +557,11 @@ export const useManagers = create<ManagerState>()(
           bonus += level * manager.bonusPerLevel;
         }
       });
+
+      // recruiter_bulk: +15% customer gen (effective capacity bonus)
+      if (useManagerPerks.getState().hasPerkId("recruiter_bulk")) bonus += 0.15;
+      // tlo_efficiency: queue fills 30% faster
+      if (useManagerPerks.getState().hasPerkId("tlo_efficiency")) bonus += 0.30;
       
       return bonus;
     },
@@ -537,6 +576,9 @@ export const useManagers = create<ManagerState>()(
           bonus += level * manager.bonusPerLevel;
         }
       });
+
+      // tech_precision: +20% permanent speed
+      if (useManagerPerks.getState().hasPerkId("tech_precision")) bonus += 0.20;
       
       return bonus;
     },
@@ -555,6 +597,10 @@ export const useManagers = create<ManagerState>()(
       if (state.hasPerk("accountant", 10)) {
         bonus += state.compoundInterestBonus;
       }
+
+      // acct_optimizer: +15% fare
+      if (useManagerPerks.getState().hasPerkId("acct_optimizer")) bonus += 0.15;
+      // TODO: acct_surge (every 5th trip pays 2x) - requires GameLoop-level state tracking
       
       return bonus;
     }
