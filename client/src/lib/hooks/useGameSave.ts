@@ -11,13 +11,16 @@ export function useGameSave() {
     if (isAuthenticated && !hasLoadedOnce) {
       const doLoad = async () => {
         try {
-          // Calculate offline earnings from localStorage state BEFORE cloud load overwrites lastPlayTime
+          // Calculate offline earnings from localStorage BEFORE cloud load overwrites lastPlayTime
           useIdleGame.getState().calculateOfflineEarnings();
-          await useSaveState.getState().loadGame();
+          // Both run before game shows - no active subscribers, no freeze
+          await Promise.all([
+            useSaveState.getState().loadGame(),
+            useSaveState.getState().loadProfile(),
+          ]);
         } catch (e) {
-          console.error("Load failed, continuing to game:", e);
+          console.error("Load failed, continuing:", e);
         } finally {
-          // Always unblock the game, even if load throws
           setHasLoadedOnce(true);
         }
       };
@@ -26,15 +29,21 @@ export function useGameSave() {
   }, [isAuthenticated, hasLoadedOnce, setHasLoadedOnce]);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      return;
-    }
+    if (!isAuthenticated) return;
 
-    const interval = setInterval(() => {
+    // Save core game every 15s, profile every 60s
+    const coreInterval = setInterval(() => {
       useSaveState.getState().saveGame();
     }, 15000);
 
-    return () => clearInterval(interval);
+    const profileInterval = setInterval(() => {
+      useSaveState.getState().saveProfile();
+    }, 60000);
+
+    return () => {
+      clearInterval(coreInterval);
+      clearInterval(profileInterval);
+    };
   }, [isAuthenticated]);
 
   return {

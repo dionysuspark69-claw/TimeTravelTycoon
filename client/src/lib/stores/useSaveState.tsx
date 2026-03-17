@@ -16,8 +16,9 @@ interface SaveState {
   setLastSaved: (date: Date | null) => void;
   setHasLoadedOnce: (hasLoaded: boolean) => void;
   saveGame: () => Promise<void>;
+  saveProfile: () => Promise<void>;
   loadGame: () => Promise<void>;
-  loadProfile: () => Promise<void>; // background load after game is visible
+  loadProfile: () => Promise<void>;
 }
 
 export const useSaveState = create<SaveState>((set, get) => ({
@@ -32,15 +33,8 @@ export const useSaveState = create<SaveState>((set, get) => ({
     try {
       set({ isSaving: true });
       const state = useIdleGame.getState();
-      const managers = useManagers.getState();
-      const achievements = useAchievements.getState();
-      const artifacts = useArtifacts.getState();
-      const missions = useMissions.getState();
-      const prestigePerks = usePrestigePerks.getState();
-      const managerPerks = useManagerPerks.getState();
 
       const gameState = {
-        // Core
         chronocoins: state.chronocoins,
         totalEarned: state.totalEarned,
         totalTripsCompleted: state.totalTripsCompleted,
@@ -61,7 +55,6 @@ export const useSaveState = create<SaveState>((set, get) => ({
         eraExpertise: state.eraExpertise,
         waitingCustomers: state.waitingCustomers,
         processingCustomers: state.processingCustomers,
-        customerEntities: state.customerEntities,
         nextCustomerId: state.nextCustomerId,
         unlockedDestinations: state.unlockedDestinations,
         currentDestination: state.currentDestination,
@@ -70,21 +63,6 @@ export const useSaveState = create<SaveState>((set, get) => ({
         tutorialShown: state.tutorialShown,
         lastPlayTime: state.lastPlayTime,
         coinsPerSecond: state.coinsPerSecond,
-        // Profile (synced separately on load but saved together)
-        managers: managers.managers,
-        compoundInterestBonus: managers.compoundInterestBonus,
-        unlockedAchievements: achievements.unlockedAchievements,
-        claimedAchievements: achievements.claimedAchievements,
-        artifactDiscoveries: artifacts.discoveries,
-        artifactTotalDrops: artifacts.totalDrops,
-        missions: missions.missions,
-        completedMissionIds: missions.completedMissionIds,
-        nextMissionId: missions.nextMissionId,
-        missionStreak: missions.missionStreak,
-        lastMissionCompletedAt: missions.lastMissionCompletedAt,
-        rerollsAvailable: missions.rerollsAvailable,
-        prestigePerkChoices: prestigePerks.chosenPerks,
-        managerPerkChoices: managerPerks.choices,
       };
 
       const response = await fetch("/api/save", {
@@ -108,7 +86,44 @@ export const useSaveState = create<SaveState>((set, get) => ({
     }
   },
 
-  // Phase 1: load core state only - fast, blocks game start
+  saveProfile: async () => {
+    try {
+      const managers = useManagers.getState();
+      const achievements = useAchievements.getState();
+      const artifacts = useArtifacts.getState();
+      const missions = useMissions.getState();
+      const prestigePerks = usePrestigePerks.getState();
+      const managerPerks = useManagerPerks.getState();
+
+      const profileState = {
+        managers: managers.managers,
+        compoundInterestBonus: managers.compoundInterestBonus,
+        unlockedAchievements: achievements.unlockedAchievements,
+        claimedAchievements: achievements.claimedAchievements,
+        artifactDiscoveries: artifacts.discoveries,
+        artifactTotalDrops: artifacts.totalDrops,
+        missions: missions.missions,
+        completedMissionIds: missions.completedMissionIds,
+        nextMissionId: missions.nextMissionId,
+        missionStreak: missions.missionStreak,
+        lastMissionCompletedAt: missions.lastMissionCompletedAt,
+        rerollsAvailable: missions.rerollsAvailable,
+        prestigePerkChoices: prestigePerks.chosenPerks,
+        managerPerkChoices: managerPerks.choices,
+      };
+
+      await fetch("/api/save-profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ profileState }),
+      });
+    } catch (error) {
+      console.error("Error saving profile:", error);
+    }
+  },
+
+  // Loads core game state - runs BEFORE game shows, so no subscribers exist yet
   loadGame: async () => {
     try {
       const controller = new AbortController();
@@ -149,8 +164,6 @@ export const useSaveState = create<SaveState>((set, get) => ({
           offlineInfra: gs.offlineInfra || 1,
           autoDispatch: gs.autoDispatch || 1,
           eraExpertise: gs.eraExpertise || 1,
-          // customerEntities intentionally NOT restored - transient runtime state.
-          // Restoring them triggers 3D scene re-renders that freeze the game.
           waitingCustomers: 0,
           processingCustomers: 0,
           tripEndTime: null,
@@ -164,35 +177,18 @@ export const useSaveState = create<SaveState>((set, get) => ({
           lastPlayTime: gs.lastPlayTime || now,
           coinsPerSecond: gs.coinsPerSecond || 0,
         });
-
-        // Profile data (managers, achievements, etc.) stays in localStorage.
-        // loadProfile() disabled - it causes re-render cascade on live game.
-        // Cross-device sync will be handled separately when needed.
       }
     } catch (error) {
       console.error("Error loading game:", error);
     }
   },
 
-  // Phase 2: load profile from cloud ONLY if localStorage is empty (new device)
-  // If localStorage already has data, skip entirely - avoid unnecessary setState spam
+  // Loads profile state - also runs BEFORE game shows, so no subscribers exist yet
   loadProfile: async () => {
     try {
-      // Check if localStorage already has meaningful data
-      const hasLocalManagers = Object.keys(useManagers.getState().managers).length > 0;
-      const hasLocalAchievements = useAchievements.getState().unlockedAchievements.length > 0;
-      const hasLocalArtifacts = useArtifacts.getState().discoveries.length > 0;
-      const hasLocalMissions = useArtifacts.getState().discoveries.length > 0;
-
-      // If all stores are populated, cloud sync not needed this session
-      if (hasLocalManagers && hasLocalAchievements) {
-        console.log("Profile data in localStorage, skipping cloud profile load");
-        return;
-      }
-
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 8000);
-      const response = await fetch("/api/load", {
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      const response = await fetch("/api/load-profile", {
         credentials: "include",
         signal: controller.signal,
       });
@@ -201,43 +197,30 @@ export const useSaveState = create<SaveState>((set, get) => ({
       if (!response.ok) return;
 
       const data = await response.json();
-      if (!data.gameState) return;
-      const gs = data.gameState;
+      if (!data.profileState) return;
+      const ps = data.profileState;
 
-      const delay = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
-      const nextFrame = () => new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
-
-      // Only apply each store if localStorage was empty for that store
-      if (!hasLocalManagers && gs.managers && Object.keys(gs.managers).length > 0) {
-        await nextFrame();
-        useManagers.setState({ managers: gs.managers, compoundInterestBonus: gs.compoundInterestBonus || 0 });
-        await delay(100);
+      // All of these run before the game renders - no active subscribers
+      if (ps.managers && Object.keys(ps.managers).length > 0) {
+        useManagers.setState({ managers: ps.managers, compoundInterestBonus: ps.compoundInterestBonus || 0 });
       }
-      if (!hasLocalAchievements && gs.unlockedAchievements?.length > 0) {
-        await nextFrame();
-        useAchievements.setState({ unlockedAchievements: gs.unlockedAchievements || [], claimedAchievements: gs.claimedAchievements || [] });
-        await delay(100);
+      if (ps.unlockedAchievements?.length > 0 || ps.claimedAchievements?.length > 0) {
+        useAchievements.setState({ unlockedAchievements: ps.unlockedAchievements || [], claimedAchievements: ps.claimedAchievements || [] });
       }
-      if (!hasLocalArtifacts && gs.artifactDiscoveries?.length > 0) {
-        await nextFrame();
-        useArtifacts.setState({ discoveries: gs.artifactDiscoveries, totalDrops: gs.artifactTotalDrops || 0 });
-        await delay(100);
+      if (ps.artifactDiscoveries?.length > 0) {
+        useArtifacts.setState({ discoveries: ps.artifactDiscoveries, totalDrops: ps.artifactTotalDrops || 0 });
       }
-      if (!hasLocalMissions && gs.missions?.length > 0) {
-        await nextFrame();
-        useMissions.setState({ missions: gs.missions, completedMissionIds: gs.completedMissionIds || [], nextMissionId: gs.nextMissionId || 0, missionStreak: gs.missionStreak || 0, lastMissionCompletedAt: gs.lastMissionCompletedAt || 0, rerollsAvailable: gs.rerollsAvailable ?? 1 });
-        await delay(100);
+      if (ps.missions?.length > 0) {
+        useMissions.setState({ missions: ps.missions, completedMissionIds: ps.completedMissionIds || [], nextMissionId: ps.nextMissionId || 0, missionStreak: ps.missionStreak || 0, lastMissionCompletedAt: ps.lastMissionCompletedAt || 0, rerollsAvailable: ps.rerollsAvailable ?? 1 });
       }
-      if (gs.prestigePerkChoices && Object.keys(gs.prestigePerkChoices).length > 0) {
-        const hasLocalPerks = Object.keys(usePrestigePerks.getState().chosenPerks).length > 0;
-        if (!hasLocalPerks) { await nextFrame(); usePrestigePerks.setState({ chosenPerks: gs.prestigePerkChoices }); await delay(100); }
+      if (ps.prestigePerkChoices && Object.keys(ps.prestigePerkChoices).length > 0) {
+        usePrestigePerks.setState({ chosenPerks: ps.prestigePerkChoices });
       }
-      if (gs.managerPerkChoices && Object.keys(gs.managerPerkChoices).length > 0) {
-        const hasLocalManagerPerks = Object.keys(useManagerPerks.getState().choices).length > 0;
-        if (!hasLocalManagerPerks) { await nextFrame(); useManagerPerks.setState({ choices: gs.managerPerkChoices }); }
+      if (ps.managerPerkChoices && Object.keys(ps.managerPerkChoices).length > 0) {
+        useManagerPerks.setState({ choices: ps.managerPerkChoices });
       }
     } catch (error) {
-      console.log("Background profile load failed, using localStorage:", error);
+      console.log("Profile load failed, using localStorage:", error);
     }
   },
 }));

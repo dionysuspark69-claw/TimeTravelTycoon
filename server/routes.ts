@@ -444,6 +444,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Profile save/load - separate endpoint for managers, achievements, artifacts, missions, perks
+  // Stored as profileState inside the same gameSaves row
+  app.post("/api/save-profile", requireAuth, async (req, res) => {
+    try {
+      if (!req.user) return res.status(401).json({ message: "Unauthorized" });
+      const { profileState } = req.body;
+
+      const existing = await db.select().from(gameSaves).where(eq(gameSaves.userId, req.user.id)).limit(1);
+      if (existing.length > 0) {
+        const current = (existing[0].gameState as any) || {};
+        await db.update(gameSaves).set({
+          gameState: { ...current, _profile: profileState },
+          lastUpdated: new Date(),
+        }).where(eq(gameSaves.userId, req.user.id));
+      } else {
+        await db.insert(gameSaves).values({ userId: req.user.id, gameState: { _profile: profileState } });
+      }
+      res.json({ ok: true });
+    } catch (error) {
+      console.error("Profile save error:", error);
+      res.status(500).json({ message: "Failed to save profile" });
+    }
+  });
+
+  app.get("/api/load-profile", requireAuth, async (req, res) => {
+    try {
+      if (!req.user) return res.status(401).json({ message: "Unauthorized" });
+      const saves = await db.select().from(gameSaves).where(eq(gameSaves.userId, req.user.id)).limit(1);
+      if (saves.length === 0) return res.json({ profileState: null });
+      const gs = saves[0].gameState as any;
+      res.set("Cache-Control", "no-store");
+      res.json({ profileState: gs?._profile || null });
+    } catch (error) {
+      console.error("Profile load error:", error);
+      res.status(500).json({ message: "Failed to load profile" });
+    }
+  });
+
   // Sitemap for SEO/AdSense content crawling
   app.get("/sitemap.xml", (_req, res) => {
     res.set("Content-Type", "application/xml");
