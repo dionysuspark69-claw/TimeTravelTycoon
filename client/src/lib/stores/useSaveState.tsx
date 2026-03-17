@@ -165,8 +165,9 @@ export const useSaveState = create<SaveState>((set, get) => ({
           coinsPerSecond: gs.coinsPerSecond || 0,
         });
 
-        // Kick off background profile load after game has stabilized - don't await
-        setTimeout(() => useSaveState.getState().loadProfile(), 2000);
+        // Profile data (managers, achievements, etc.) stays in localStorage.
+        // loadProfile() disabled - it causes re-render cascade on live game.
+        // Cross-device sync will be handled separately when needed.
       }
     } catch (error) {
       console.error("Error loading game:", error);
