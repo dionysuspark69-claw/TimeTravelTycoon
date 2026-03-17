@@ -23,8 +23,9 @@ import { ManagerPerkChoiceModal } from "./components/ManagerPerkChoiceModal";
 
 function App() {
   const [showGame, setShowGame] = useState(false);
+  const [shownViaFallback, setShownViaFallback] = useState(false);
   const { loading: authLoading, isAuthenticated, fetchUser } = useAuth();
-  const { hasLoadedOnce } = useSaveState();
+  const { hasLoadedOnce, setHasLoadedOnce } = useSaveState();
 
   useGameSave();
 
@@ -33,18 +34,28 @@ function App() {
   }, [fetchUser]);
 
   // Show game once auth resolves AND load has been attempted
-  // loadGame is fast (no customerEntities, 5s timeout) so this won't block long
   useEffect(() => {
     if (!authLoading && (hasLoadedOnce || !isAuthenticated)) {
       setShowGame(true);
     }
   }, [authLoading, isAuthenticated, hasLoadedOnce]);
 
-  // Hard fallback: 8s max no matter what
+  // Hard fallback: if still loading after 8s, show game but mark as fallback
+  // If game shows via fallback while auth is still pending, skip cloud setState
+  // (auth comes back late → isAuthenticated→true → doLoad fires on live game = freeze)
   useEffect(() => {
-    const fallback = setTimeout(() => setShowGame(true), 8000);
+    const fallback = setTimeout(() => {
+      setShowGame(prev => {
+        if (!prev) {
+          setShownViaFallback(true);
+          // Mark load as done so doLoad won't fire after game is running
+          setHasLoadedOnce(true);
+        }
+        return true;
+      });
+    }, 8000);
     return () => clearTimeout(fallback);
-  }, []);
+  }, [setHasLoadedOnce]);
 
   if (!showGame) {
     return (

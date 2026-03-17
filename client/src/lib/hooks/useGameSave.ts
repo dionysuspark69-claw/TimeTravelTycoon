@@ -11,15 +11,13 @@ export function useGameSave() {
     if (isAuthenticated && !hasLoadedOnce) {
       const doLoad = async () => {
         try {
-          // Calculate offline earnings from localStorage BEFORE cloud load overwrites lastPlayTime
           useIdleGame.getState().calculateOfflineEarnings();
-          // Both run before game shows - no active subscribers, no freeze
           await Promise.all([
             useSaveState.getState().loadGame(),
             useSaveState.getState().loadProfile(),
           ]);
         } catch (e) {
-          console.error("Load failed, continuing:", e);
+          console.error("Load failed, using localStorage:", e);
         } finally {
           setHasLoadedOnce(true);
         }
