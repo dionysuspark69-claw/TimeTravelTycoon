@@ -129,14 +129,6 @@ export const useSaveState = create<SaveState>((set, get) => ({
       if (data.gameState) {
         const gs = data.gameState;
         const now = Date.now();
-        const restoredEntities = (gs.customerEntities || []).map((entity: any) => ({
-          ...entity,
-          hasReachedTarget: false,
-          stateChangedTime: now,
-        }));
-        const actualProcessingCount = restoredEntities.filter(
-          (e: any) => e.state === "boarding" || e.state === "traveling"
-        ).length;
 
         useIdleGame.setState({
           chronocoins: gs.chronocoins,
@@ -157,10 +149,12 @@ export const useSaveState = create<SaveState>((set, get) => ({
           offlineInfra: gs.offlineInfra || 1,
           autoDispatch: gs.autoDispatch || 1,
           eraExpertise: gs.eraExpertise || 1,
-          waitingCustomers: gs.waitingCustomers,
-          processingCustomers: actualProcessingCount,
-          tripEndTime: actualProcessingCount > 0 ? now : null,
-          customerEntities: restoredEntities,
+          // customerEntities intentionally NOT restored - transient runtime state.
+          // Restoring them triggers 3D scene re-renders that freeze the game.
+          waitingCustomers: 0,
+          processingCustomers: 0,
+          tripEndTime: null,
+          customerEntities: [],
           nextCustomerId: gs.nextCustomerId || 0,
           unlockedDestinations: gs.unlockedDestinations,
           currentDestination: gs.currentDestination,
@@ -170,7 +164,6 @@ export const useSaveState = create<SaveState>((set, get) => ({
           lastPlayTime: gs.lastPlayTime || now,
           coinsPerSecond: gs.coinsPerSecond || 0,
         });
-        useIdleGame.getState().updateCustomerStates();
 
         // Kick off background profile load after game has stabilized - don't await
         setTimeout(() => useSaveState.getState().loadProfile(), 2000);
