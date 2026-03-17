@@ -32,16 +32,17 @@ function App() {
     fetchUser();
   }, [fetchUser]);
 
-  // Show game as soon as auth resolves
+  // Show game once auth resolves AND load has been attempted
+  // loadGame is fast (no customerEntities, 5s timeout) so this won't block long
   useEffect(() => {
-    if (!authLoading) {
+    if (!authLoading && (hasLoadedOnce || !isAuthenticated)) {
       setShowGame(true);
     }
-  }, [authLoading]);
+  }, [authLoading, isAuthenticated, hasLoadedOnce]);
 
-  // Hard fallback: 7s max on loading screen
+  // Hard fallback: 8s max no matter what
   useEffect(() => {
-    const fallback = setTimeout(() => setShowGame(true), 7000);
+    const fallback = setTimeout(() => setShowGame(true), 8000);
     return () => clearTimeout(fallback);
   }, []);
 

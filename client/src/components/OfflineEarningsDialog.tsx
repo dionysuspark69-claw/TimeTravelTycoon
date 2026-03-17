@@ -7,22 +7,23 @@ import { formatChronoValue } from "@/lib/utils";
 
 export function OfflineEarningsDialog() {
   const [show, setShow] = useState(false);
-  const { calculateOfflineEarnings, claimOfflineEarnings } = useIdleGame();
   const [earnings, setEarnings] = useState(0);
-  
+
   useEffect(() => {
-    const offlineEarnings = calculateOfflineEarnings();
+    // Use getState() directly - no function reference in dep array
+    // This only runs once on mount, not on every store update
+    const offlineEarnings = useIdleGame.getState().calculateOfflineEarnings();
     if (offlineEarnings > 0) {
       setEarnings(offlineEarnings);
       setShow(true);
     }
-  }, [calculateOfflineEarnings]);
-  
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleClaim = () => {
-    claimOfflineEarnings();
+    useIdleGame.getState().claimOfflineEarnings();
     setShow(false);
   };
-  
+
   return (
     <Dialog open={show} onOpenChange={setShow}>
       <DialogContent className="bg-gradient-to-br from-gray-900 to-blue-900 border-cyan-500/50">
@@ -35,7 +36,7 @@ export function OfflineEarningsDialog() {
             While you were away, your time machine kept working!
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="my-6 text-center">
           <div className="text-gray-400 text-sm mb-2">You earned</div>
           <div className="text-5xl font-bold text-yellow-400 flex items-center justify-center gap-3">
@@ -44,7 +45,7 @@ export function OfflineEarningsDialog() {
           </div>
           <div className="text-gray-400 text-sm mt-2">ChronoCoins</div>
         </div>
-        
+
         <Button
           onClick={handleClaim}
           className="w-full bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 h-12 text-lg font-bold"
