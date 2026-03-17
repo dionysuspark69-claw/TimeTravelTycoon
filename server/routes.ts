@@ -261,10 +261,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .limit(1);
 
       if (existingSaves.length > 0) {
+        // Preserve _profile so saveGame doesn't overwrite what saveProfile wrote
+        const existing = existingSaves[0].gameState as any;
+        const merged = { ...gameState, _profile: existing?._profile };
         await db
           .update(gameSaves)
           .set({
-            gameState,
+            gameState: merged,
             lastUpdated: new Date(),
           })
           .where(eq(gameSaves.userId, req.user.id));
