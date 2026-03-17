@@ -180,9 +180,22 @@ export const useSaveState = create<SaveState>((set, get) => ({
     }
   },
 
-  // Phase 2: load profile data in background after game is visible
+  // Phase 2: load profile from cloud ONLY if localStorage is empty (new device)
+  // If localStorage already has data, skip entirely - avoid unnecessary setState spam
   loadProfile: async () => {
     try {
+      // Check if localStorage already has meaningful data
+      const hasLocalManagers = Object.keys(useManagers.getState().managers).length > 0;
+      const hasLocalAchievements = useAchievements.getState().unlockedAchievements.length > 0;
+      const hasLocalArtifacts = useArtifacts.getState().discoveries.length > 0;
+      const hasLocalMissions = useArtifacts.getState().discoveries.length > 0;
+
+      // If all stores are populated, cloud sync not needed this session
+      if (hasLocalManagers && hasLocalAchievements) {
+        console.log("Profile data in localStorage, skipping cloud profile load");
+        return;
+      }
+
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 8000);
       const response = await fetch("/api/load", {
@@ -197,58 +210,39 @@ export const useSaveState = create<SaveState>((set, get) => ({
       if (!data.gameState) return;
       const gs = data.gameState;
 
-      // Helper: wait for a clean frame before each store update
-      const nextFrame = () => new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
-      // Helper: small delay so updates are spread across frames, not batched
       const delay = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
+      const nextFrame = () => new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
 
-      if (gs.managers && Object.keys(gs.managers).length > 0) {
+      // Only apply each store if localStorage was empty for that store
+      if (!hasLocalManagers && gs.managers && Object.keys(gs.managers).length > 0) {
         await nextFrame();
-        useManagers.setState({
-          managers: gs.managers,
-          compoundInterestBonus: gs.compoundInterestBonus || 0,
-        });
+        useManagers.setState({ managers: gs.managers, compoundInterestBonus: gs.compoundInterestBonus || 0 });
+        await delay(100);
       }
-      await delay(50);
-      if (gs.unlockedAchievements?.length > 0 || gs.claimedAchievements?.length > 0) {
+      if (!hasLocalAchievements && gs.unlockedAchievements?.length > 0) {
         await nextFrame();
-        useAchievements.setState({
-          unlockedAchievements: gs.unlockedAchievements || [],
-          claimedAchievements: gs.claimedAchievements || [],
-        });
+        useAchievements.setState({ unlockedAchievements: gs.unlockedAchievements || [], claimedAchievements: gs.claimedAchievements || [] });
+        await delay(100);
       }
-      await delay(50);
-      if (gs.artifactDiscoveries?.length > 0) {
+      if (!hasLocalArtifacts && gs.artifactDiscoveries?.length > 0) {
         await nextFrame();
-        useArtifacts.setState({
-          discoveries: gs.artifactDiscoveries,
-          totalDrops: gs.artifactTotalDrops || 0,
-        });
+        useArtifacts.setState({ discoveries: gs.artifactDiscoveries, totalDrops: gs.artifactTotalDrops || 0 });
+        await delay(100);
       }
-      await delay(50);
-      if (gs.missions?.length > 0) {
+      if (!hasLocalMissions && gs.missions?.length > 0) {
         await nextFrame();
-        useMissions.setState({
-          missions: gs.missions,
-          completedMissionIds: gs.completedMissionIds || [],
-          nextMissionId: gs.nextMissionId || 0,
-          missionStreak: gs.missionStreak || 0,
-          lastMissionCompletedAt: gs.lastMissionCompletedAt || 0,
-          rerollsAvailable: gs.rerollsAvailable ?? 1,
-        });
+        useMissions.setState({ missions: gs.missions, completedMissionIds: gs.completedMissionIds || [], nextMissionId: gs.nextMissionId || 0, missionStreak: gs.missionStreak || 0, lastMissionCompletedAt: gs.lastMissionCompletedAt || 0, rerollsAvailable: gs.rerollsAvailable ?? 1 });
+        await delay(100);
       }
-      await delay(50);
       if (gs.prestigePerkChoices && Object.keys(gs.prestigePerkChoices).length > 0) {
-        await nextFrame();
-        usePrestigePerks.setState({ chosenPerks: gs.prestigePerkChoices });
+        const hasLocalPerks = Object.keys(usePrestigePerks.getState().chosenPerks).length > 0;
+        if (!hasLocalPerks) { await nextFrame(); usePrestigePerks.setState({ chosenPerks: gs.prestigePerkChoices }); await delay(100); }
       }
-      await delay(50);
       if (gs.managerPerkChoices && Object.keys(gs.managerPerkChoices).length > 0) {
-        await nextFrame();
-        useManagerPerks.setState({ choices: gs.managerPerkChoices });
+        const hasLocalManagerPerks = Object.keys(useManagerPerks.getState().choices).length > 0;
+        if (!hasLocalManagerPerks) { await nextFrame(); useManagerPerks.setState({ choices: gs.managerPerkChoices }); }
       }
     } catch (error) {
-      // Silent fail - localStorage has the data anyway
       console.log("Background profile load failed, using localStorage:", error);
     }
   },
