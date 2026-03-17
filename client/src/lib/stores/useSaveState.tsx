@@ -172,8 +172,8 @@ export const useSaveState = create<SaveState>((set, get) => ({
         });
         useIdleGame.getState().updateCustomerStates();
 
-        // Kick off background profile load - don't await
-        setTimeout(() => useSaveState.getState().loadProfile(), 500);
+        // Kick off background profile load after game has stabilized - don't await
+        setTimeout(() => useSaveState.getState().loadProfile(), 2000);
       }
     } catch (error) {
       console.error("Error loading game:", error);
@@ -197,28 +197,37 @@ export const useSaveState = create<SaveState>((set, get) => ({
       if (!data.gameState) return;
       const gs = data.gameState;
 
-      // Wait for a clean animation frame so we don't interrupt the game loop
-      await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+      // Helper: wait for a clean frame before each store update
+      const nextFrame = () => new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+      // Helper: small delay so updates are spread across frames, not batched
+      const delay = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
 
       if (gs.managers && Object.keys(gs.managers).length > 0) {
+        await nextFrame();
         useManagers.setState({
           managers: gs.managers,
           compoundInterestBonus: gs.compoundInterestBonus || 0,
         });
       }
+      await delay(50);
       if (gs.unlockedAchievements?.length > 0 || gs.claimedAchievements?.length > 0) {
+        await nextFrame();
         useAchievements.setState({
           unlockedAchievements: gs.unlockedAchievements || [],
           claimedAchievements: gs.claimedAchievements || [],
         });
       }
+      await delay(50);
       if (gs.artifactDiscoveries?.length > 0) {
+        await nextFrame();
         useArtifacts.setState({
           discoveries: gs.artifactDiscoveries,
           totalDrops: gs.artifactTotalDrops || 0,
         });
       }
+      await delay(50);
       if (gs.missions?.length > 0) {
+        await nextFrame();
         useMissions.setState({
           missions: gs.missions,
           completedMissionIds: gs.completedMissionIds || [],
@@ -228,10 +237,14 @@ export const useSaveState = create<SaveState>((set, get) => ({
           rerollsAvailable: gs.rerollsAvailable ?? 1,
         });
       }
+      await delay(50);
       if (gs.prestigePerkChoices && Object.keys(gs.prestigePerkChoices).length > 0) {
+        await nextFrame();
         usePrestigePerks.setState({ chosenPerks: gs.prestigePerkChoices });
       }
+      await delay(50);
       if (gs.managerPerkChoices && Object.keys(gs.managerPerkChoices).length > 0) {
+        await nextFrame();
         useManagerPerks.setState({ choices: gs.managerPerkChoices });
       }
     } catch (error) {
