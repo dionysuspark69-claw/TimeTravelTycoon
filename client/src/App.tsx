@@ -23,15 +23,15 @@ import { ManagerPerkChoiceModal } from "./components/ManagerPerkChoiceModal";
 
 function App() {
   const [showGame, setShowGame] = useState(false);
-  const [shownViaFallback, setShownViaFallback] = useState(false);
-  const { loading: authLoading, isAuthenticated, fetchUser } = useAuth();
+  const { loading: authLoading, isAuthenticated } = useAuth();
   const { hasLoadedOnce, setHasLoadedOnce } = useSaveState();
 
   useGameSave();
 
+  // Fire fetchUser exactly once on mount - never again
   useEffect(() => {
-    fetchUser();
-  }, [fetchUser]);
+    useAuth.getState().fetchUser();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Show game once auth resolves AND load has been attempted
   useEffect(() => {
@@ -40,19 +40,12 @@ function App() {
     }
   }, [authLoading, isAuthenticated, hasLoadedOnce]);
 
-  // Hard fallback: if still loading after 8s, show game but mark as fallback
-  // If game shows via fallback while auth is still pending, skip cloud setState
-  // (auth comes back late → isAuthenticated→true → doLoad fires on live game = freeze)
+  // Hard fallback: show game after 8s no matter what
+  // Also mark hasLoadedOnce=true so doLoad won't fire after game is running
   useEffect(() => {
     const fallback = setTimeout(() => {
-      setShowGame(prev => {
-        if (!prev) {
-          setShownViaFallback(true);
-          // Mark load as done so doLoad won't fire after game is running
-          setHasLoadedOnce(true);
-        }
-        return true;
-      });
+      setHasLoadedOnce(true);
+      setShowGame(true);
     }, 8000);
     return () => clearTimeout(fallback);
   }, [setHasLoadedOnce]);
