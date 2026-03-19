@@ -429,9 +429,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/load", requireAuth, async (req, res) => {
     try {
       if (!req.user) {
+        console.warn(`[LOAD] Unauthorized - User ID: ${req.user?.id}`);
         return res.status(401).json({ message: "Unauthorized" });
       }
 
+      console.log(`[LOAD] Request from user ${req.user.username} (${req.user.id})`);
       const saves = await db
         .select()
         .from(gameSaves)
@@ -439,10 +441,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .orderBy(desc(gameSaves.lastUpdated))
         .limit(1);
 
+      const gameState = saves.length > 0 ? saves[0].gameState : null;
+      console.log(`[LOAD] Returning save for user ${req.user.id}:`, {
+        hasSave: !!gameState,
+        keys: gameState ? Object.keys(gameState) : [],
+        rawSize: JSON.stringify(gameState).length,
+      });
+
       res.set("Cache-Control", "no-store");
-      res.json({ gameState: saves.length > 0 ? saves[0].gameState : null });
+      res.json({ gameState });
     } catch (error) {
-      console.error("Load error:", error);
+      console.error("[LOAD] Error:", error);
       res.status(500).json({ message: "Failed to load progress" });
     }
   });
@@ -473,14 +482,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/load-profile", requireAuth, async (req, res) => {
     try {
-      if (!req.user) return res.status(401).json({ message: "Unauthorized" });
+      if (!req.user) {
+        console.warn(`[LOAD-PROFILE] Unauthorized - User ID: ${req.user?.id}`);
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      console.log(`[LOAD-PROFILE] Request from user ${req.user.username} (${req.user.id})`);
       const saves = await db.select().from(gameSaves).where(eq(gameSaves.userId, req.user.id)).limit(1);
-      if (saves.length === 0) return res.json({ profileState: null });
+      if (saves.length === 0) {
+        console.log(`[LOAD-PROFILE] No save found for user ${req.user.id}`);
+        return res.json({ profileState: null });
+      }
+
       const gs = saves[0].gameState as any;
+      const profileState = gs?._profile || null;
+      console.log(`[LOAD-PROFILE] Returning profile for user ${req.user.id}:`, {
+        hasProfile: !!profileState,
+        keys: profileState ? Object.keys(profileState) : [],
+      });
+
       res.set("Cache-Control", "no-store");
-      res.json({ profileState: gs?._profile || null });
+      res.json({ profileState });
     } catch (error) {
-      console.error("Profile load error:", error);
+      console.error("[LOAD-PROFILE] Error:", error);
       res.status(500).json({ message: "Failed to load profile" });
     }
   });
