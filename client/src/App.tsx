@@ -40,13 +40,14 @@ function App() {
     }
   }, [authLoading, isAuthenticated, hasLoadedOnce]);
 
-  // Hard fallback: show game after 8s no matter what
+  // Hard fallback: show game after 6s no matter what
+  // Covers cases where auth redirect + load doesn't complete in time (especially mobile)
   // Also mark hasLoadedOnce=true so doLoad won't fire after game is running
   useEffect(() => {
     const fallback = setTimeout(() => {
       setHasLoadedOnce(true);
       setShowGame(true);
-    }, 8000);
+    }, 6000);
     return () => clearTimeout(fallback);
   }, [setHasLoadedOnce]);
 

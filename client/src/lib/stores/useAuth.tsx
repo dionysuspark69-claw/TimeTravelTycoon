@@ -26,10 +26,10 @@ export const useAuth = create<AuthState>((set) => ({
   fetchUser: async () => {
     try {
       set({ loading: true });
-      // 6s timeout - enough for Render cold starts without hanging forever
+      // 4s timeout - tighter than before; 8s fallback in App.tsx covers cold starts
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 6000);
-      const response = await fetch("/api/auth/user", { signal: controller.signal });
+      const timeout = setTimeout(() => controller.abort(), 4000);
+      const response = await fetch("/api/auth/user", { credentials: "include", signal: controller.signal });
       clearTimeout(timeout);
       
       if (response.ok) {

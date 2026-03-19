@@ -10,6 +10,12 @@ export function useGameSave() {
   useEffect(() => {
     if (isAuthenticated && !hasLoadedOnce) {
       const doLoad = async () => {
+        // Hard cap: if both loads exceed 6s total, unblock the game anyway
+        const hardCap = setTimeout(() => {
+          console.warn("doLoad hard cap hit - unblocking game");
+          setHasLoadedOnce(true);
+        }, 6000);
+
         try {
           useIdleGame.getState().calculateOfflineEarnings();
           await Promise.all([
@@ -19,6 +25,7 @@ export function useGameSave() {
         } catch (e) {
           console.error("Load failed, using localStorage:", e);
         } finally {
+          clearTimeout(hardCap);
           setHasLoadedOnce(true);
         }
       };
