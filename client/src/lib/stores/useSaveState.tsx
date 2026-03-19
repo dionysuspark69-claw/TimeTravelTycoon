@@ -8,7 +8,7 @@ import { usePrestigePerks } from "./usePrestigePerks";
 import { useManagerPerks } from "./useManagerPerks";
 import { toast } from "sonner";
 import { saveDebugLog, getSaveDebugLog, downloadSaveDebugLog } from "../logging/logger";
-import { validateAndSanitizeGameState, validateAndSanitizeProfileState, type GameStateSchema } from "../saveValidation";
+import { validateAndSanitizeGameState, validateAndSanitizeProfileState, type GameStateSchema } from "../savevalidation";
 
 interface SaveState {
   isSaving: boolean;
