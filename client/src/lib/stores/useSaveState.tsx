@@ -130,7 +130,7 @@ export const useSaveState = create<SaveState>((set, get) => ({
     try {
       saveDebugLog("Starting loadGame()", "INFO");
       const controller = new AbortController();
-      const loadTimeout = setTimeout(() => controller.abort(), 3000);
+      const loadTimeout = setTimeout(() => controller.abort(), 10000);
       const response = await fetch("/api/load", {
         credentials: "include",
         signal: controller.signal,
@@ -226,7 +226,7 @@ export const useSaveState = create<SaveState>((set, get) => ({
     try {
       saveDebugLog("Starting loadProfile()", "INFO");
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 3000);
+      const timeout = setTimeout(() => controller.abort(), 10000);
       const response = await fetch("/api/load-profile", {
         credentials: "include",
         signal: controller.signal,
