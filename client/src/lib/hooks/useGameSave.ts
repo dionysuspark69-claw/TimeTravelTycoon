@@ -14,7 +14,7 @@ export function useGameSave() {
         const hardCap = setTimeout(() => {
           console.warn("doLoad hard cap hit - unblocking game");
           setHasLoadedOnce(true);
-        }, 6000);
+        }, 15000);
 
         try {
           useIdleGame.getState().calculateOfflineEarnings();

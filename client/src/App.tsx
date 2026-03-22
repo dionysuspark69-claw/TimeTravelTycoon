@@ -47,7 +47,7 @@ function App() {
     const fallback = setTimeout(() => {
       setHasLoadedOnce(true);
       setShowGame(true);
-    }, 6000);
+    }, 15000);
     return () => clearTimeout(fallback);
   }, [setHasLoadedOnce]);
 
