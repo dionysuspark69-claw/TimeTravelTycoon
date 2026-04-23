@@ -1,4 +1,6 @@
 import { create } from "zustand";
+
+let saveErrorToastShown = false;
 import { useIdleGame } from "./useIdleGame";
 import { useManagers } from "./useManagers";
 import { useAchievements } from "./useAchievements";
@@ -82,7 +84,14 @@ export const useSaveState = create<SaveState>((set, get) => ({
       set({ lastSaved: new Date() });
     } catch (error) {
       console.error("Error saving game:", error);
-      toast.error(`Failed to save: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      if (!saveErrorToastShown) {
+        saveErrorToastShown = true;
+        toast.error("Auto-save failed. Progress may not be saved.", {
+          duration: 8000,
+          onDismiss: () => { saveErrorToastShown = false; },
+          onAutoClose: () => { saveErrorToastShown = false; },
+        });
+      }
     } finally {
       set({ isSaving: false });
     }
@@ -161,7 +170,7 @@ export const useSaveState = create<SaveState>((set, get) => ({
 
       if ((validated as any)._validationIssues) {
         saveDebugLog("Validation issues detected:", "WARN", (validated as any)._validationIssues);
-        toast.warn("Save file had issues; some data may have been reset");
+        toast.warning("Save file had issues; some data may have been reset");
       }
 
       const gs = validated as GameStateSchema;
@@ -195,7 +204,7 @@ export const useSaveState = create<SaveState>((set, get) => ({
         customerEntities: [],
         nextCustomerId: gs.nextCustomerId,
         unlockedDestinations: gs.unlockedDestinations,
-        currentDestination: gs.currentDestination,
+        currentDestination: gs.currentDestination ?? undefined,
         prestigeLevel: gs.prestigeLevel,
         prestigePoints: gs.prestigePoints,
         tutorialShown: gs.tutorialShown || useIdleGame.getState().tutorialShown,
@@ -212,6 +221,7 @@ export const useSaveState = create<SaveState>((set, get) => ({
       const defaults = validateAndSanitizeGameState(null);
       useIdleGame.setState({
         ...defaults,
+        currentDestination: defaults.currentDestination ?? undefined,
         lastPlayTime: Date.now(),
         waitingCustomers: 0,
         processingCustomers: 0,
@@ -259,7 +269,7 @@ export const useSaveState = create<SaveState>((set, get) => ({
 
       if ((validated as any)._validationIssues) {
         saveDebugLog("Profile validation issues:", "WARN", (validated as any)._validationIssues);
-        toast.warn("Profile had issues; some data may have been reset");
+        toast.warning("Profile had issues; some data may have been reset");
       }
 
       const ps = validated;
@@ -311,6 +321,6 @@ export const useSaveState = create<SaveState>((set, get) => ({
 // Expose debug utilities on window for dev/debugging
 if (typeof window !== "undefined") {
   (window as any).getSaveDebugLog = getSaveDebugLog;
-  (window as any).clearSaveDebugLog = clearSaveDebugLog;
+  (window as any).clearSaveDebugLog = () => { /* clearSaveDebugLog removed */ };
   (window as any).downloadSaveDebugLog = downloadSaveDebugLog;
 }

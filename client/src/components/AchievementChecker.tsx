@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useIdleGame } from "@/lib/stores/useIdleGame";
-import { useAchievements, Achievement } from "@/lib/stores/useAchievements";
+import { useAchievements, type Achievement } from "@/lib/stores/useAchievements";
 import { AchievementNotification } from "./AchievementNotification";
 
 export function AchievementChecker() {
@@ -14,12 +14,10 @@ export function AchievementChecker() {
   const totalManagerUpgrades = useIdleGame(s => s.totalManagerUpgrades);
   const chronocoins = useIdleGame(s => s.chronocoins);
   
-  const { checkAchievements } = useAchievements();
   const [currentNotification, setCurrentNotification] = useState<Achievement | null>(null);
   const [queue, setQueue] = useState<Achievement[]>([]);
-  // Throttle: don't re-check achievements more than once every 5 seconds
   const lastCheckRef = useRef(0);
-  
+
   useEffect(() => {
     const now = Date.now();
     if (now - lastCheckRef.current < 5000) return;
@@ -34,11 +32,10 @@ export function AchievementChecker() {
       timeMachineCount,
       totalTripsCompleted,
       totalManagerUpgrades,
-      currentCoins: chronocoins
+      currentCoins: chronocoins,
     };
-    
-    const newAchievements = checkAchievements(stats);
-    
+
+    const newAchievements = useAchievements.getState().checkAchievements(stats);
     if (newAchievements.length > 0) {
       setQueue(prev => [...prev, ...newAchievements]);
     }

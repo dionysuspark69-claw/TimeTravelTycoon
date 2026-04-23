@@ -200,7 +200,9 @@ export function validateAndSanitizeProfileState(raw: any): any {
   }
 
   if (isArray(raw.artifactDiscoveries)) {
-    sanitized.artifactDiscoveries = raw.artifactDiscoveries.filter(isString);
+    sanitized.artifactDiscoveries = raw.artifactDiscoveries.filter(
+      (d: any) => d && typeof d === "object" && typeof d.artifactId === "string"
+    );
   }
   if (isNumber(raw.artifactTotalDrops)) {
     sanitized.artifactTotalDrops = raw.artifactTotalDrops;
@@ -216,7 +218,7 @@ export function validateAndSanitizeProfileState(raw: any): any {
     sanitized.nextMissionId = raw.nextMissionId;
   }
   if (isNumber(raw.missionStreak)) {
-    sanitized.missionStreak = raw.missionStreak;
+    sanitized.missionStreak = Math.max(0, raw.missionStreak);
   }
   if (isNumber(raw.lastMissionCompletedAt)) {
     sanitized.lastMissionCompletedAt = raw.lastMissionCompletedAt;

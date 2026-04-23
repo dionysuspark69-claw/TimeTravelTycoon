@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, Component, type ReactNode } from "react";
 import "@fontsource/inter";
 import { GameScene } from "./components/GameScene";
 import { GameUI } from "./components/GameUI";
@@ -20,6 +20,32 @@ import { PurchaseCelebration } from "./components/PurchaseCelebration";
 import { OnboardingTutorial } from "./components/OnboardingTutorial";
 import { PrestigePerkChoiceModal } from "./components/PrestigePerkChoiceModal";
 import { ManagerPerkChoiceModal } from "./components/ManagerPerkChoiceModal";
+
+class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="w-full h-full flex flex-col items-center justify-center bg-gray-900 text-white gap-4">
+          <div className="text-2xl font-bold">Something went wrong</div>
+          <button
+            className="px-4 py-2 bg-cyan-600 rounded hover:bg-cyan-500"
+            onClick={() => window.location.reload()}
+          >
+            Reload Game
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 function App() {
   const [showGame, setShowGame] = useState(false);
@@ -53,13 +79,16 @@ function App() {
 
   if (!showGame) {
     return (
-      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900">
-        <div className="text-white text-2xl font-bold">Loading ChronoTransit...</div>
+      <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 gap-4">
+        <div className="w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin" />
+        <div className="text-white text-xl font-bold animate-pulse">Loading ChronoTransit...</div>
+        <div className="text-gray-400 text-sm">Connecting to time stream...</div>
       </div>
     );
   }
 
   return (
+    <ErrorBoundary>
     <div className="w-full h-full flex flex-col bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 overflow-hidden">
       <div className="flex-1 relative">
         <GameScene />
@@ -83,6 +112,7 @@ function App() {
       <SoundManager />
       <Toaster />
     </div>
+    </ErrorBoundary>
   );
 }
 

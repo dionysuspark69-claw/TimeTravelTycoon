@@ -41,10 +41,24 @@ export function GameLoop() {
     let lastTime = Date.now();
     let animationFrameId: number;
     let lastCompoundCheck = 0;
+    let paused = false;
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        paused = true;
+      } else {
+        paused = false;
+        lastTime = Date.now(); // reset so we don't get a huge deltaTime on resume
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     const gameLoop = () => {
+      animationFrameId = requestAnimationFrame(gameLoop);
+      if (paused) return;
+
       const currentTime = Date.now();
-      const deltaTime = currentTime - lastTime;
+      const deltaTime = Math.min(currentTime - lastTime, 1000); // cap at 1s to avoid catch-up spikes
       lastTime = currentTime;
 
       // Read functions directly from store singletons - safe, no stale closure risk
@@ -99,15 +113,13 @@ export function GameLoop() {
         totalUpgradesRef.current
       );
 
-      animationFrameId = requestAnimationFrame(gameLoop);
     };
 
     animationFrameId = requestAnimationFrame(gameLoop);
 
     return () => {
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-      }
+      cancelAnimationFrame(animationFrameId);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   // Empty dep array: loop starts once, never restarts. Refs keep values current.
   // Store setState (from profile load, etc.) will NOT trigger loop restart.

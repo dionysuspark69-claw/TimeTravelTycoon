@@ -34,9 +34,9 @@ export function useGameSave() {
   }, [isAuthenticated, hasLoadedOnce, setHasLoadedOnce]);
 
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated || !hasLoadedOnce) return;
 
-    // Save core game every 15s, profile every 60s
+    // Save core game every 15s, profile every 60s — only after load completes
     const coreInterval = setInterval(() => {
       useSaveState.getState().saveGame();
     }, 15000);
@@ -49,7 +49,7 @@ export function useGameSave() {
       clearInterval(coreInterval);
       clearInterval(profileInterval);
     };
-  }, [isAuthenticated]);
+  }, [isAuthenticated, hasLoadedOnce]);
 
   return {
     saveGame: useSaveState.getState().saveGame,
