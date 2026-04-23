@@ -139,16 +139,18 @@ export const useSaveState = create<SaveState>((set, get) => ({
     try {
       saveDebugLog("Starting loadGame()", "INFO");
       const controller = new AbortController();
+      // Keep the abort timer active through the body read, not just headers.
+      // Clearing it early means a stalled body never gets cancelled.
       const loadTimeout = setTimeout(() => controller.abort(), 10000);
       const response = await fetch("/api/load", {
         credentials: "include",
         signal: controller.signal,
       });
-      clearTimeout(loadTimeout);
 
       saveDebugLog(`Load response status: ${response.status}`, "DEBUG");
 
       if (!response.ok) {
+        clearTimeout(loadTimeout);
         if (response.status === 404) {
           saveDebugLog("No save found (404)", "INFO");
           return;
@@ -157,10 +159,10 @@ export const useSaveState = create<SaveState>((set, get) => ({
         throw new Error(errorData.message || "Failed to load game");
       }
 
-      const rawText = await response.clone().text();
-      saveDebugLog("Raw save payload:", "DEBUG", rawText);
-
+      // Read body while abort timer is still active so a stalled body gets cancelled
       const data = await response.json();
+      clearTimeout(loadTimeout);
+
       if (!data || !data.gameState) {
         throw new Error("Malformed response: missing gameState");
       }
@@ -241,12 +243,11 @@ export const useSaveState = create<SaveState>((set, get) => ({
         credentials: "include",
         signal: controller.signal,
       });
-      clearTimeout(timeout);
 
       saveDebugLog(`Load profile response status: ${response.status}`, "DEBUG");
 
       if (!response.ok) {
-        // 404 is okay; no profile saved yet
+        clearTimeout(timeout);
         if (response.status === 404) {
           saveDebugLog("No profile saved (404)", "INFO");
         } else {
@@ -255,10 +256,9 @@ export const useSaveState = create<SaveState>((set, get) => ({
         return;
       }
 
-      const rawText = await response.clone().text();
-      saveDebugLog("Raw profile payload:", "DEBUG", rawText);
-
+      // Read body while abort timer is still active
       const data = await response.json();
+      clearTimeout(timeout);
       if (!data || !data.profileState) {
         saveDebugLog("Profile payload missing profileState", "WARN");
         return;
