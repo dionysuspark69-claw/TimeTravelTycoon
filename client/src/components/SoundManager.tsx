@@ -29,9 +29,7 @@ export function SoundManager() {
       if (isMuted) {
         bgMusic.pause();
       } else {
-        bgMusic.play().catch(() => {
-          console.log("Background music play prevented");
-        });
+        bgMusic.play().catch(() => {});
       }
     }
   }, [isMuted]);

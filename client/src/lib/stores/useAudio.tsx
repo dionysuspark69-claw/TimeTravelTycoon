@@ -35,81 +35,52 @@ export const useAudio = create<AudioState>((set, get) => ({
   setCurrentEra: (era) => set({ currentEra: era }),
   
   toggleMute: () => {
-    const { isMuted } = get();
-    const newMutedState = !isMuted;
-    
-    // Just update the muted state
-    set({ isMuted: newMutedState });
-    
-    // Log the change
-    console.log(`Sound ${newMutedState ? 'muted' : 'unmuted'}`);
+    set(s => ({ isMuted: !s.isMuted }));
   },
-  
+
   playHit: () => {
     const { hitSound, isMuted } = get();
-    if (hitSound) {
-      // If sound is muted, don't play anything
-      if (isMuted) {
-        console.log("Hit sound skipped (muted)");
-        return;
-      }
-      
-      // Clone the sound to allow overlapping playback
+    if (hitSound && !isMuted) {
       const soundClone = hitSound.cloneNode() as HTMLAudioElement;
       soundClone.volume = 0.3;
-      soundClone.play().catch(error => {
-        console.log("Hit sound play prevented:", error);
-      });
+      soundClone.play().catch(() => {});
     }
   },
-  
+
   playSuccess: () => {
     const { successSound, isMuted } = get();
-    if (successSound) {
-      if (isMuted) {
-        console.log("Success sound skipped (muted)");
-        return;
-      }
-      
+    if (successSound && !isMuted) {
       successSound.currentTime = 0;
-      successSound.play().catch(error => {
-        console.log("Success sound play prevented:", error);
-      });
+      successSound.play().catch(() => {});
     }
   },
-  
+
   playTimeTravel: () => {
     const { hitSound, isMuted } = get();
     if (hitSound && !isMuted) {
       const soundClone = hitSound.cloneNode() as HTMLAudioElement;
       soundClone.volume = 0.4;
       soundClone.playbackRate = 0.8;
-      soundClone.play().catch(error => {
-        console.log("Time travel sound play prevented:", error);
-      });
+      soundClone.play().catch(() => {});
     }
   },
-  
+
   playBoarding: () => {
     const { hitSound, isMuted } = get();
     if (hitSound && !isMuted) {
       const soundClone = hitSound.cloneNode() as HTMLAudioElement;
       soundClone.volume = 0.2;
       soundClone.playbackRate = 1.2;
-      soundClone.play().catch(error => {
-        console.log("Boarding sound play prevented:", error);
-      });
+      soundClone.play().catch(() => {});
     }
   },
-  
+
   playAchievement: () => {
     const { successSound, isMuted } = get();
     if (successSound && !isMuted) {
       const soundClone = successSound.cloneNode() as HTMLAudioElement;
       soundClone.volume = 0.5;
-      soundClone.play().catch(error => {
-        console.log("Achievement sound play prevented:", error);
-      });
+      soundClone.play().catch(() => {});
     }
   }
 }));

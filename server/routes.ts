@@ -1,11 +1,28 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { eq, desc, or, sql, asc } from "drizzle-orm";
+import rateLimit from "express-rate-limit";
 import passport from "./passport-config";
 import { getUserInfo } from "@replit/repl-auth";
 import bcrypt from "bcrypt";
 import { db } from "./db";
 import { gameSaves, users, leaderboardEntries, type User } from "@shared/schema";
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { message: "Too many attempts, please try again later" },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const saveLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  message: { message: "Save rate limit exceeded" },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 declare global {
   namespace Express {
@@ -28,14 +45,13 @@ function requireAuth(req: Request, res: Response, next: NextFunction) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+  app.get("/auth/google", authLimiter, passport.authenticate("google", { scope: ["profile", "email"] }));
 
   app.get(
     "/auth/google/callback",
     passport.authenticate("google", { failureRedirect: "/" }),
     (req, res) => {
-      console.log("🔑 OAuth callback - User authenticated:", req.user ? `${req.user.username} (ID: ${req.user.id})` : "NO USER");
-      console.log("🔑 Session ID:", req.sessionID);
+      console.log("🔑 OAuth callback - User authenticated:", req.user ? req.user.username : "NO USER");
       
       if (!req.user) {
         console.error("✗ No user in session after OAuth callback!");
@@ -61,7 +77,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   );
 
-  app.post("/auth/username", async (req, res) => {
+  app.post("/auth/username", authLimiter, async (req, res) => {
     try {
       const { username, password } = req.body;
 
@@ -82,8 +98,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Username must be between 2 and 50 characters" });
       }
 
-      if (password.length < 4) {
-        return res.status(400).json({ message: "Password must be at least 4 characters" });
+      if (password.length < 8) {
+        return res.status(400).json({ message: "Password must be at least 8 characters" });
+      }
+      if (password.length > 128) {
+        return res.status(400).json({ message: "Password too long" });
       }
 
       const existingUsers = await db
@@ -191,7 +210,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.error("Replit Auth login error:", err);
           return res.status(500).json({ message: "Failed to log in" });
         }
-        res.json({ success: true, user: { id: user.id, username: user.username, replitUserId: user.replitUserId, googleId: user.googleId } });
+        req.session.save((saveErr) => {
+          if (saveErr) {
+            console.error("Replit Auth session save error:", saveErr);
+            return res.status(500).json({ message: "Failed to persist session" });
+          }
+          res.json({ success: true, user: { id: user.id, username: user.username, replitUserId: user.replitUserId, googleId: user.googleId } });
+        });
       });
     } catch (error) {
       console.error("Replit Auth error:", error);
@@ -201,10 +226,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/auth/user", async (req, res) => {
     try {
-      console.log("👤 /api/auth/user - Session ID:", req.sessionID);
-      console.log("👤 /api/auth/user - Authenticated:", req.isAuthenticated());
-      console.log("👤 /api/auth/user - User:", req.user ? `${req.user.username} (ID: ${req.user.id})` : "NO USER");
-      
       if (!req.user) {
         return res.status(401).json({ message: "Not authenticated" });
       }
@@ -246,7 +267,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/save", requireAuth, async (req, res) => {
+  app.post("/api/save", requireAuth, saveLimiter, async (req, res) => {
     try {
       if (!req.user) {
         return res.status(401).json({ message: "Unauthorized" });
@@ -429,7 +450,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/load", requireAuth, async (req, res) => {
     try {
       if (!req.user) {
-        console.warn(`[LOAD] Unauthorized - User ID: ${req.user?.id}`);
+        console.warn(`[LOAD] Unauthorized request`);
         return res.status(401).json({ message: "Unauthorized" });
       }
 
@@ -483,7 +504,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/load-profile", requireAuth, async (req, res) => {
     try {
       if (!req.user) {
-        console.warn(`[LOAD-PROFILE] Unauthorized - User ID: ${req.user?.id}`);
+        console.warn(`[LOAD-PROFILE] Unauthorized request`);
         return res.status(401).json({ message: "Unauthorized" });
       }
 

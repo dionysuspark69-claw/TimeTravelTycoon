@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { subscribeWithSelector, persist } from "zustand/middleware";
 import { useArtifacts } from "./useArtifacts";
+import { useAchievements } from "./useAchievements";
 import { useAudio } from "./useAudio";
 import { useChronoMeter } from "./useChronoMeter";
 import { usePrestigePerks } from "./usePrestigePerks";
@@ -890,9 +891,50 @@ interface IdleGameState {
   
   getRevenueMultiplier: (managerBonus?: number) => number;
   getSpeedMultiplier: (managerBonus?: number) => number;
-  
+
   getCurrentFare: () => number;
 }
+
+const RARITY_COLORS: Record<string, string> = {
+  common: "[Common]",
+  uncommon: "[Uncommon]",
+  rare: "[Rare]",
+  epic: "[Epic]",
+  legendary: "[Legendary]",
+};
+
+const DISCOVERY_MESSAGES: Record<string, string> = {
+  trex_tooth: "A passenger accidentally kicked it loose from a fossil bed!",
+  raptor_claw: "Found stuck in your time machine's seat cushion... somehow.",
+  amber_fossil: "A tourist dropped it while frantically running from a T-Rex!",
+  dino_egg_shell: "Your customer sat on it by mistake. Oops.",
+  fern_print: "Peeled off the ground after a heavy landing!",
+  golden_ankh: "A pharaoh tossed it as a tip for an excellent trip!",
+  scarab_amulet: "Found wedged between pyramid stones during pickup.",
+  papyrus_scroll: "Blown into the cabin by a desert sandstorm!",
+  canopic_jar: "A mummy left this behind. No, really.",
+  clay_tablet: "Accidentally swapped for a customer's luggage!",
+  excalibur_shard: "Chipped off during a jousting tournament detour!",
+  holy_grail_piece: "A monk dropped it while boarding in a hurry.",
+  knights_signet: "Rolled under your seat during a bumpy castle landing!",
+  chainmail_link: "Snagged on your time machine during a battlefield pickup.",
+  wooden_shield: "Splintered off when a knight used your door as cover!",
+  davinci_sketch: "Leonardo himself doodled it on your napkin!",
+  galileo_lens: "He forgot it while star-gazing from your observation deck.",
+  medici_coin: "Payment from a wealthy patron - overly generous!",
+  artists_palette: "Michelangelo left it behind after getting paint everywhere.",
+  printing_block: "Gutenberg traded it for a ride to the future!",
+  steam_governor: "Fell off a train you were racing against!",
+  edison_bulb: "Edison himself tested it in your cabin. It works!",
+  factory_blueprint: "Blown out of an industrial magnate's briefcase.",
+  brass_gear: "Popped loose from a malfunctioning machine nearby.",
+  coal_sample: "A worker accidentally dropped his lunch pail!",
+  quantum_core: "A tech entrepreneur left it as collateral for the fare!",
+  neural_chip: "Downloaded from a passenger's failed brain backup.",
+  fusion_cell: "Swapped for your outdated battery by a helpful engineer.",
+  holo_projector: "A kid dropped it playing holographic games in transit.",
+  smart_fabric: "Torn from a passenger's self-repairing jacket!",
+};
 
 export const useIdleGame = create<IdleGameState>()(
   persist(
@@ -1227,20 +1269,7 @@ export const useIdleGame = create<IdleGameState>()(
       const fare = state.getCurrentFare();
       const clickRevenue = fare * 5;
       state.addChronocoins(clickRevenue);
-      
-      const clickTimestamp = Date.now();
-      
-      set({ 
-        coinsPerSecond: clickRevenue,
-        lastClickBoostTime: clickTimestamp
-      });
-      
-      setTimeout(() => {
-        const currentState = get();
-        if (currentState.lastClickBoostTime === clickTimestamp) {
-          set({ coinsPerSecond: 0 });
-        }
-      }, 10000);
+      set({ lastClickBoostTime: Date.now() });
     },
     
     prestige: () => {
@@ -1249,15 +1278,21 @@ export const useIdleGame = create<IdleGameState>()(
       if (state.totalEarned < earnReq) return;
       if (state.timeMachineLevel < levelReq) return;
       if (state.timeMachineCount < countReq) return;
-      
+
       const points = Math.max(1, Math.floor(state.totalEarned / 10000000));
-      
+      const startId = TIME_PERIODS[0].id;
+
+      // Clear claimed achievements so players can't re-farm them across prestiges
+      useAchievements.getState().resetClaimedForPrestige();
+
       // Trigger perk choice
       usePrestigePerks.getState().setPendingChoice(true);
-      
+
       set({
         chronocoins: 0,
         totalEarned: 0,
+        totalTripsCompleted: 0,
+        totalCustomersServed: 0,
         prestigeLevel: state.prestigeLevel + 1,
         prestigePoints: state.prestigePoints + points,
         timeMachineLevel: 1,
@@ -1265,35 +1300,52 @@ export const useIdleGame = create<IdleGameState>()(
         timeMachineSpeed: 1,
         timeMachineCount: Math.max(1, 1 + usePrestigePerks.getState().getPerkValue("machine_retention")),
         customerGenerationRate: 1,
+        queueSize: 1,
+        boardingSpeed: 1,
+        vipChance: 0.05,
+        turnaroundTime: 10,
+        autoDispatch: 0,
+        coinsPerSecond: 0,
+        _pendingOfflineEarnings: 0,
         waitingCustomers: 0,
         processingCustomers: 0,
         tripEndTime: null,
         customerEntities: [],
         nextCustomerId: 0,
-        unlockedDestinations: ["dinosaur"],
-        currentDestination: "dinosaur"
+        unlockedDestinations: [startId],
+        currentDestination: startId,
+        lastPlayTime: Date.now(),
       });
     },
     
     calculateOfflineEarnings: () => {
       const state = get();
-      // If already calculated this session, return cached value
       if (state._pendingOfflineEarnings > 0) return state._pendingOfflineEarnings;
-      
+
       const now = Date.now();
       const timeAway = now - state.lastPlayTime;
       const minutesAway = timeAway / 1000 / 60;
-      
+
       if (minutesAway < 1) return 0;
-      
-      const maxMinutes = Math.min(minutesAway, 240 + (state.offlineInfra - 1) * 60);
-      
-      const savedCps = state.coinsPerSecond;
-      if (savedCps <= 0) return 0;
+
+      // Hard cap: max 48 h regardless of system clock manipulation
+      const infraCap = 240 + (Math.max(1, state.offlineInfra) - 1) * 60;
+      const maxMinutes = Math.min(minutesAway, Math.min(infraCap, 2880));
+
+      // Fall back to a fare-based estimate when coinsPerSecond hasn't been set yet
+      // (new accounts or post-prestige sessions that logged off before the first trip)
+      let savedCps = state.coinsPerSecond;
+      if (!savedCps || savedCps <= 0) {
+        const dest = TIME_PERIODS.find(d => d.id === state.currentDestination);
+        const fare = dest ? Math.floor(dest.baseFare * state.timeMachineLevel) : 10;
+        const capacity = Math.max(1, state.timeMachineCapacity * state.timeMachineCount);
+        const travelSec = Math.max(0.5, 3 / Math.max(0.1, state.timeMachineSpeed));
+        savedCps = (fare * capacity) / travelSec;
+      }
+
       const revenueMultiplier = 1 + (state.prestigePoints * 0.1);
       const earnings = Math.floor(savedCps * 60 * maxMinutes * revenueMultiplier * usePrestigePerks.getState().getPerkValue("offline_efficiency"));
-      
-      // Cache so claimOfflineEarnings uses the exact same value
+
       if (earnings > 0) set({ _pendingOfflineEarnings: earnings });
       return earnings;
     },
@@ -1338,22 +1390,25 @@ export const useIdleGame = create<IdleGameState>()(
         e => e.state === "waiting" || e.state === "approaching"
       ).length;
       
-      const updatedEntities = state.customerEntities.map((entity, index) => {
+      let runningQueueCount = 0;
+      const updatedEntities = state.customerEntities.map((entity) => {
+        if (entity.state === "waiting" || entity.state === "approaching") {
+          runningQueueCount++;
+        }
         if (entity.state === "spawning" && now - entity.stateChangedTime > 100) {
-          const queueIndex = state.customerEntities.filter(
-            (e, i) => i < index && (e.state === "waiting" || e.state === "approaching")
-          ).length;
-          
+          const queueIndex = runningQueueCount;
+          runningQueueCount++;
+
           const QUEUE_START: [number, number, number] = [-6, 0, -2];
           const queuePos: [number, number, number] = [
             QUEUE_START[0] + Math.floor(queueIndex / 5) * 0.8,
             QUEUE_START[1],
             QUEUE_START[2] + (queueIndex % 5) * 0.6
           ];
-          
-          return { 
-            ...entity, 
-            state: "approaching" as CustomerState, 
+
+          return {
+            ...entity,
+            state: "approaching" as CustomerState,
             stateChangedTime: now,
             targetPosition: queuePos
           };
@@ -1500,7 +1555,8 @@ export const useIdleGame = create<IdleGameState>()(
       
       const newCustomers = customerGenRate * (deltaTime / 1000);
       
-      const travelTime = 3000 / (state.timeMachineSpeed * state.getSpeedMultiplier(bonuses.speed));
+      const safeSpeed = Math.max(0.01, state.timeMachineSpeed * state.getSpeedMultiplier(bonuses.speed));
+      const travelTime = 3000 / safeSpeed;
       const capacity = state.timeMachineCapacity * state.timeMachineCount;
       
       let waitingCustomers = state.waitingCustomers + newCustomers;
@@ -1521,8 +1577,8 @@ export const useIdleGame = create<IdleGameState>()(
           const id = `customer-${nextId}`;
           const colorIndex = nextId % 5;
           // VIP rate: 1% base + 1% per level above 1, capped at 20% (level 20)
-          const vipRate = Math.min(0.20, 0.01 + (state.vipChance - 1) * 0.01);
-          const isVIP = (perks.hasVIP || state.vipChance > 1) && Math.random() < vipRate;
+          const vipRate = Math.min(0.20, Math.max(0.01, 0.01 + (state.vipChance - 1) * 0.01));
+          const isVIP = perks.hasVIP ? Math.random() < vipRate : (state.vipChance > 1 && Math.random() < vipRate);
           newEntities.push({
             id,
             state: "spawning",
@@ -1558,7 +1614,9 @@ export const useIdleGame = create<IdleGameState>()(
         state.addChronocoins(revenue);
         
         const coinsPerSec = revenue / (travelTime / 1000);
-        set({ coinsPerSecond: coinsPerSec });
+        if (Number.isFinite(coinsPerSec) && coinsPerSec > 0) {
+          set({ coinsPerSecond: coinsPerSec });
+        }
         
         const artifactsStore = useArtifacts.getState();
         const droppedArtifact = artifactsStore.checkForArtifactDrop(state.currentDestination);
@@ -1566,57 +1624,11 @@ export const useIdleGame = create<IdleGameState>()(
           const isFirstDiscovery = !artifactsStore.hasArtifact(droppedArtifact.id);
           artifactsStore.discoverArtifact(droppedArtifact.id);
           
-          const rarityColors = {
-            common: "[Common]",
-            uncommon: "[Uncommon]",
-            rare: "[Rare]",
-            epic: "[Epic]",
-            legendary: "[Legendary]"
-          };
-          
-          const discoveryMessages: Record<string, string> = {
-            trex_tooth: "A passenger accidentally kicked it loose from a fossil bed!",
-            raptor_claw: "Found stuck in your time machine's seat cushion... somehow.",
-            amber_fossil: "A tourist dropped it while frantically running from a T-Rex!",
-            dino_egg_shell: "Your customer sat on it by mistake. Oops.",
-            fern_print: "Peeled off the ground after a heavy landing!",
-            
-            golden_ankh: "A pharaoh tossed it as a tip for an excellent trip!",
-            scarab_amulet: "Found wedged between pyramid stones during pickup.",
-            papyrus_scroll: "Blown into the cabin by a desert sandstorm!",
-            canopic_jar: "A mummy left this behind. No, really.",
-            clay_tablet: "Accidentally swapped for a customer's luggage!",
-            
-            excalibur_shard: "Chipped off during a jousting tournament detour!",
-            holy_grail_piece: "A monk dropped it while boarding in a hurry.",
-            knights_signet: "Rolled under your seat during a bumpy castle landing!",
-            chainmail_link: "Snagged on your time machine during a battlefield pickup.",
-            wooden_shield: "Splintered off when a knight used your door as cover!",
-            
-            davinci_sketch: "Leonardo himself doodled it on your napkin!",
-            galileo_lens: "He forgot it while star-gazing from your observation deck.",
-            medici_coin: "Payment from a wealthy patron - overly generous!",
-            artists_palette: "Michelangelo left it behind after getting paint everywhere.",
-            printing_block: "Gutenberg traded it for a ride to the future!",
-            
-            steam_governor: "Fell off a train you were racing against!",
-            edison_bulb: "Edison himself tested it in your cabin. It works!",
-            factory_blueprint: "Blown out of an industrial magnate's briefcase.",
-            brass_gear: "Popped loose from a malfunctioning machine nearby.",
-            coal_sample: "A worker accidentally dropped his lunch pail!",
-            
-            quantum_core: "A tech entrepreneur left it as collateral for the fare!",
-            neural_chip: "Downloaded from a passenger's failed brain backup.",
-            fusion_cell: "Swapped for your outdated battery by a helpful engineer.",
-            holo_projector: "A kid dropped it playing holographic games in transit.",
-            smart_fabric: "Torn from a passenger's self-repairing jacket!"
-          };
-          
-          const discoveryMsg = discoveryMessages[droppedArtifact.id] || "Your passenger accidentally left it behind!";
+          const discoveryMsg = DISCOVERY_MESSAGES[droppedArtifact.id] || "Your passenger accidentally left it behind!";
           
           if (isFirstDiscovery) {
             toast.success(`Artifact Discovered!`, {
-              description: `${rarityColors[droppedArtifact.rarity]} ${droppedArtifact.name} - ${discoveryMsg}`,
+              description: `${RARITY_COLORS[droppedArtifact.rarity] ?? ""} ${droppedArtifact.name} - ${discoveryMsg}`,
               duration: 5000
             });
           }

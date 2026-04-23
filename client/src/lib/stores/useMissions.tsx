@@ -318,7 +318,7 @@ export const useMissions = create<MissionsState>()(
           missions: [...remaining, newMission],
           missionStreak: newStreak,
           lastMissionCompletedAt: now,
-          rerollsAvailable: Math.min(3, state.rerollsAvailable + 1),
+          rerollsAvailable: Math.min(1, state.rerollsAvailable + 1),
         });
       },
 

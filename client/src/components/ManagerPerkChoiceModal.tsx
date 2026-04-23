@@ -23,7 +23,7 @@ export function ManagerPerkChoiceModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/70">
+    <div className="fixed inset-0 z-70 flex items-center justify-center bg-black/70">
       <div className="bg-gray-900 border-2 border-cyan-500 rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl">
         <div className="text-center mb-4">
           <div

@@ -7,12 +7,19 @@ import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import { Pool, neonConfig } from "@neondatabase/serverless";
 import createMemoryStore from "memorystore";
+import helmet from "helmet";
 import passport from "./passport-config";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
+if (process.env.NODE_ENV === "production" && !process.env.SESSION_SECRET) {
+  console.error("FATAL: SESSION_SECRET env var must be set in production");
+  process.exit(1);
+}
+
 const app = express();
 app.set("trust proxy", 1);
+app.use(helmet({ contentSecurityPolicy: false }));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: false, limit: "10mb" }));
 
@@ -55,8 +62,7 @@ app.use(passport.session());
 
 app.use((req, res, next) => {
   if (req.path.startsWith("/api")) {
-    console.log(`🍪 ${req.method} ${req.path} - SessionID: ${req.sessionID || 'NONE'}, Authenticated: ${req.isAuthenticated()}, User: ${req.user ? req.user.username : 'NONE'}`);
-    console.log(`🍪 Cookie header:`, req.headers.cookie ? 'present' : 'MISSING');
+    console.log(`🍪 ${req.method} ${req.path} - Authenticated: ${req.isAuthenticated()}, User: ${req.user ? req.user.username : 'NONE'}`);
   }
   next();
 });

@@ -431,6 +431,7 @@ interface AchievementState {
   isClaimed: (achievementId: string) => boolean;
   getUnlockedCount: () => number;
   getUnclaimedAchievements: () => Achievement[];
+  resetClaimedForPrestige: () => void;
 }
 
 export const useAchievements = create<AchievementState>()(
@@ -494,10 +495,14 @@ export const useAchievements = create<AchievementState>()(
     
     getUnclaimedAchievements: () => {
       const state = get();
-      return ACHIEVEMENTS.filter(a => 
+      return ACHIEVEMENTS.filter(a =>
         state.unlockedAchievements.includes(a.id) && !state.claimedAchievements.includes(a.id)
       );
-    }
+    },
+
+    resetClaimedForPrestige: () => {
+      set({ claimedAchievements: [], unlockedAchievements: [] });
+    },
   })),
   { name: "chronotransit-achievements", version: 1, migrate: (s: any) => ({ unlockedAchievements: [], claimedAchievements: [], ...s }) }
   )
