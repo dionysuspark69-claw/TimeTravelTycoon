@@ -188,7 +188,9 @@ export const useMissions = create<MissionsState>()(
       generateMission: (excludeTypes: MissionType[] = []) => {
         const state = get();
         const template = selectTemplate(excludeTypes);
-        const target = scaledTarget(template, state.completedMissionIds.length);
+        // Use nextMissionId as the completion counter — it's unbounded and accurate,
+        // unlike completedMissionIds which is capped to avoid save bloat.
+        const target = scaledTarget(template, state.nextMissionId);
         const reward = Math.max(10, Math.floor(target * template.rewardMultiplier));
 
         const mission: Mission = {
@@ -313,8 +315,11 @@ export const useMissions = create<MissionsState>()(
             })()
           : state.generateMission(activeTypes);
 
+        // Cap to last 200 IDs — only used for dedup checks on active missions,
+        // so keeping the full history is wasteful and bloats the save file.
+        const updatedIds = [...state.completedMissionIds, missionId].slice(-200);
         set({
-          completedMissionIds: [...state.completedMissionIds, missionId],
+          completedMissionIds: updatedIds,
           missions: [...remaining, newMission],
           missionStreak: newStreak,
           lastMissionCompletedAt: now,
