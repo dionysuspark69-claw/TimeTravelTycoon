@@ -6,8 +6,8 @@ import { Starfield } from "./Starfield";
 import { EraDisplay } from "./EraDisplay";
 import { TemporalAnomaly } from "./TemporalAnomaly";
 import { ComboClick } from "./ComboClick";
-import { Scene2D } from "./Scene2D";
 import { ArtifactOverlay } from "./ArtifactOverlay";
+import PixelScene from "./PixelScene";
 import { Component, ErrorInfo, ReactNode } from "react";
 import { useIdleGame, TIME_PERIODS } from "@/lib/stores/useIdleGame";
 import { useIsMobile } from "@/hooks/use-is-mobile";
@@ -147,10 +147,29 @@ const ERA_BG_COLORS: Record<string, string> = {
 export function GameScene() {
   const isMobile = useIsMobile();
   const currentDestination = useIdleGame(s => s.currentDestination);
+  const timeMachineLevel = useIdleGame(s => s.timeMachineLevel);
+  const timeMachineCount = useIdleGame(s => s.timeMachineCount);
+  const waitingCustomers = useIdleGame(s => s.waitingCustomers);
   const use2DMode = useSettings(s => s.use2DMode);
-  
+
+  // PixelScene is the default; Three.js only when 2D mode is off
   if (use2DMode) {
-    return <Scene2D />;
+    const era = currentDestination || "dinosaur";
+    const tier = Math.min(5, Math.max(1, Math.ceil(timeMachineLevel / 5))) as 1 | 2 | 3 | 4 | 5;
+    return (
+      <div className="w-full h-[50vh] md:h-[60vh] relative">
+        <ComboClick />
+        <PixelScene
+          era={era}
+          tier={tier}
+          fleetSize={timeMachineCount}
+          queueSize={waitingCustomers}
+        />
+        <EraDisplay />
+        <TemporalAnomaly />
+        <ArtifactOverlay />
+      </div>
+    );
   }
   
   const cameraPosition: [number, number, number] = isMobile 

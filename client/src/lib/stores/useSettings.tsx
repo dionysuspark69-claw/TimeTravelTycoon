@@ -10,12 +10,12 @@ interface SettingsState {
 export const useSettings = create<SettingsState>()(
   persist(
     (set) => ({
-      use2DMode: false,
+      use2DMode: true,
       toggle2DMode: () => set((s) => ({ use2DMode: !s.use2DMode })),
       set2DMode: (val) => set({ use2DMode: val }),
     }),
     {
-      name: "chronotransit-settings", version: 1, migrate: (s: any) => ({ use2DMode: false, ...s }),
+      name: "chronotransit-settings", version: 2, migrate: (s: any) => ({ use2DMode: true, ...s }),
     }
   )
 );
