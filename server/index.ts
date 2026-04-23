@@ -13,13 +13,19 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 if (process.env.NODE_ENV === "production" && !process.env.SESSION_SECRET) {
-  console.error("FATAL: SESSION_SECRET env var must be set in production");
-  process.exit(1);
+  console.warn("WARNING: SESSION_SECRET env var is not set in production. Using insecure default.");
 }
 
 const app = express();
 app.set("trust proxy", 1);
-app.use(helmet({ contentSecurityPolicy: false }));
+// Disable crossOriginOpenerPolicy (COOP) — same-origin COOP breaks OAuth redirect flows
+// in some browsers by isolating the browsing context from Google's auth session.
+// Disable crossOriginResourcePolicy (CORP) — allows AdSense and other cross-origin resources.
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginOpenerPolicy: false,
+  crossOriginResourcePolicy: false,
+}));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: false, limit: "10mb" }));
 

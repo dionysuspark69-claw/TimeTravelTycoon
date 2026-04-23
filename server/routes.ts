@@ -462,9 +462,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .orderBy(desc(gameSaves.lastUpdated))
         .limit(1);
 
-      const gameState = saves.length > 0 ? saves[0].gameState : null;
+      if (saves.length === 0) {
+        console.log(`[LOAD] No save found for user ${req.user.id}`);
+        return res.status(404).json({ message: "No save found" });
+      }
+
+      const gameState = saves[0].gameState;
       console.log(`[LOAD] Returning save for user ${req.user.id}:`, {
-        hasSave: !!gameState,
         keys: gameState ? Object.keys(gameState) : [],
         rawSize: JSON.stringify(gameState).length,
       });
