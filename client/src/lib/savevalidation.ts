@@ -212,7 +212,11 @@ export function validateAndSanitizeProfileState(raw: any): any {
     sanitized.missions = raw.missions;
   }
   if (isArray(raw.completedMissionIds)) {
-    sanitized.completedMissionIds = raw.completedMissionIds.filter((id: any) => typeof id === "number" || typeof id === "string");
+    // Trim to last 200 — older IDs are never needed (active missions always have fresh IDs).
+    // This shrinks bloated saves from veteran players on the next save cycle.
+    sanitized.completedMissionIds = raw.completedMissionIds
+      .filter((id: any) => typeof id === "number" || typeof id === "string")
+      .slice(-200);
   }
   if (isNumber(raw.nextMissionId)) {
     sanitized.nextMissionId = raw.nextMissionId;

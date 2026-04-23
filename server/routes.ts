@@ -468,10 +468,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const gameState = saves[0].gameState;
-      console.log(`[LOAD] Returning save for user ${req.user.id}:`, {
-        keys: gameState ? Object.keys(gameState) : [],
-        rawSize: JSON.stringify(gameState).length,
-      });
+      console.log(`[LOAD] Returning save for user ${req.user.id}, keys: ${gameState ? Object.keys(gameState).length : 0}`);
 
       res.set("Cache-Control", "no-store");
       res.json({ gameState });
