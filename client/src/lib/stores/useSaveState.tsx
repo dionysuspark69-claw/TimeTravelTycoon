@@ -141,7 +141,7 @@ export const useSaveState = create<SaveState>((set, get) => ({
       const controller = new AbortController();
       // Keep the abort timer active through the body read, not just headers.
       // Clearing it early means a stalled body never gets cancelled.
-      const loadTimeout = setTimeout(() => controller.abort(), 10000);
+      const loadTimeout = setTimeout(() => controller.abort(), 8000);
       const response = await fetch("/api/load", {
         credentials: "include",
         signal: controller.signal,
@@ -238,7 +238,7 @@ export const useSaveState = create<SaveState>((set, get) => ({
     try {
       saveDebugLog("Starting loadProfile()", "INFO");
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 10000);
+      const timeout = setTimeout(() => controller.abort(), 8000);
       const response = await fetch("/api/load-profile", {
         credentials: "include",
         signal: controller.signal,

@@ -10,11 +10,11 @@ export function useGameSave() {
   useEffect(() => {
     if (isAuthenticated && !hasLoadedOnce) {
       const doLoad = async () => {
-        // Hard cap: if both loads exceed 6s total, unblock the game anyway
+        // Hard cap: if both loads exceed this, unblock the game anyway
         const hardCap = setTimeout(() => {
           console.warn("doLoad hard cap hit - unblocking game");
           setHasLoadedOnce(true);
-        }, 15000);
+        }, 10000);
 
         try {
           useIdleGame.getState().calculateOfflineEarnings();
