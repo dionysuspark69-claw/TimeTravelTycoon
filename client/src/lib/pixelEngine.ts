@@ -94,7 +94,7 @@ export function drawSprite(
   oy: number,
   paletteOverride: Partial<typeof PALETTE> = {}
 ) {
-  const P: Record<string, string> = { ...PALETTE, ...paletteOverride };
+  const P: Record<string, string> = { ...PALETTE, ...(paletteOverride as Record<string, string>) };
   for (let r = 0; r < sprite.length; r++) {
     const row = sprite[r];
     for (let c = 0; c < row.length; c++) {

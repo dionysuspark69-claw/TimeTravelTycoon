@@ -21,7 +21,7 @@ interface SaveState {
   setHasLoadedOnce: (hasLoaded: boolean) => void;
   saveGame: () => Promise<void>;
   saveProfile: () => Promise<void>;
-  loadGame: () => Promise<void>;
+  loadGame: (localLastPlayTime?: number) => Promise<boolean>;
   loadProfile: () => Promise<void>;
 }
 
