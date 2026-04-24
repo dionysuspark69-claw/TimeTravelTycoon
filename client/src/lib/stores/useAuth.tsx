@@ -26,16 +26,17 @@ export const useAuth = create<AuthState>((set) => ({
   fetchUser: async () => {
     try {
       set({ loading: true });
-      // 4s timeout - tighter than before; 8s fallback in App.tsx covers cold starts
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 8000);
       const response = await fetch("/api/auth/user", { credentials: "include", signal: controller.signal });
-      clearTimeout(timeout);
-      
+      // Keep abort timer active through body read — cold-start servers can send
+      // headers immediately but stall the body while initializing.
       if (response.ok) {
         const user = await response.json();
+        clearTimeout(timeout);
         set({ user, isAuthenticated: true, loading: false });
       } else {
+        clearTimeout(timeout);
         set({ user: null, isAuthenticated: false, loading: false });
       }
     } catch (error) {

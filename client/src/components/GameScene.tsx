@@ -157,7 +157,7 @@ export function GameScene() {
     const era = currentDestination || "dinosaur";
     const tier = Math.min(5, Math.max(1, Math.ceil(timeMachineLevel / 5))) as 1 | 2 | 3 | 4 | 5;
     return (
-      <div className="w-full h-[50vh] md:h-[60vh] relative">
+      <div className="w-full h-[50vh] md:h-[60vh] relative overflow-hidden">
         <ComboClick />
         <PixelScene
           era={era}

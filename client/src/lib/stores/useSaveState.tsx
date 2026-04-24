@@ -134,14 +134,13 @@ export const useSaveState = create<SaveState>((set, get) => ({
     }
   },
 
-  // Loads core game state - runs BEFORE game shows, so no subscribers exist yet
-  loadGame: async () => {
+  // Loads game state from server. Returns true if server data was applied.
+  // Pass localLastPlayTime to skip overwriting if local state is already newer.
+  loadGame: async (localLastPlayTime = 0): Promise<boolean> => {
     try {
       saveDebugLog("Starting loadGame()", "INFO");
       const controller = new AbortController();
-      // Keep the abort timer active through the body read, not just headers.
-      // Clearing it early means a stalled body never gets cancelled.
-      const loadTimeout = setTimeout(() => controller.abort(), 10000);
+      const loadTimeout = setTimeout(() => controller.abort(), 8000);
       const response = await fetch("/api/load", {
         credentials: "include",
         signal: controller.signal,
@@ -152,35 +151,33 @@ export const useSaveState = create<SaveState>((set, get) => ({
       if (!response.ok) {
         clearTimeout(loadTimeout);
         if (response.status === 404) {
-          saveDebugLog("No save found (404)", "INFO");
-          return;
+          saveDebugLog("No save found on server (404)", "INFO");
+        } else {
+          saveDebugLog(`Load HTTP error: ${response.status}`, "WARN");
         }
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || "Failed to load game");
+        return false;
       }
 
-      // Read body while abort timer is still active so a stalled body gets cancelled
       const data = await response.json();
       clearTimeout(loadTimeout);
 
-      if (!data || !data.gameState) {
-        throw new Error("Malformed response: missing gameState");
+      if (!data?.gameState) {
+        saveDebugLog("Malformed response: missing gameState", "WARN");
+        return false;
       }
 
-      saveDebugLog("Validating gameState schema", "DEBUG");
-      const validated = validateAndSanitizeGameState(data.gameState);
+      const serverLastPlay: number = data.gameState.lastPlayTime || 0;
+      if (localLastPlayTime > 0 && serverLastPlay <= localLastPlayTime) {
+        saveDebugLog(`Server save (${serverLastPlay}) not newer than local (${localLastPlayTime}), keeping local state`, "INFO");
+        return false;
+      }
 
+      const validated = validateAndSanitizeGameState(data.gameState);
       if ((validated as any)._validationIssues) {
-        saveDebugLog("Validation issues detected:", "WARN", (validated as any)._validationIssues);
-        toast.warning("Save file had issues; some data may have been reset");
+        saveDebugLog("Validation issues:", "WARN", (validated as any)._validationIssues);
       }
 
       const gs = validated as GameStateSchema;
-      const now = Date.now();
-
-      // Log assignments
-      saveDebugLog("Applying gameState to store", "DEBUG", gs);
-
       useIdleGame.setState({
         chronocoins: gs.chronocoins,
         totalEarned: gs.totalEarned,
@@ -210,83 +207,57 @@ export const useSaveState = create<SaveState>((set, get) => ({
         prestigeLevel: gs.prestigeLevel,
         prestigePoints: gs.prestigePoints,
         tutorialShown: gs.tutorialShown || useIdleGame.getState().tutorialShown,
-        lastPlayTime: gs.lastPlayTime || now,
+        lastPlayTime: gs.lastPlayTime || Date.now(),
         coinsPerSecond: gs.coinsPerSecond,
       });
 
-      saveDebugLog("loadGame() completed successfully", "INFO");
+      saveDebugLog("loadGame() applied server state", "INFO");
+      return true;
     } catch (error) {
-      console.error("Error loading game:", error);
       saveDebugLog(`loadGame() failed: ${error instanceof Error ? error.message : String(error)}`, "ERROR");
-      // Still set hasLoadedOnce via finally in doLoad, but we want a clean default state
-      // Apply default state now to ensure consistency
-      const defaults = validateAndSanitizeGameState(null);
-      useIdleGame.setState({
-        ...defaults,
-        currentDestination: defaults.currentDestination ?? undefined,
-        lastPlayTime: Date.now(),
-        waitingCustomers: 0,
-        processingCustomers: 0,
-        tripEndTime: null,
-        customerEntities: [],
-      });
+      // On any error, keep current state — do not overwrite with defaults.
+      return false;
     }
   },
 
-  // Loads profile state - also runs BEFORE game shows, so no subscribers exist yet
-  loadProfile: async () => {
+  // Loads profile state from server and applies it.
+  loadProfile: async (): Promise<void> => {
     try {
       saveDebugLog("Starting loadProfile()", "INFO");
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 10000);
+      const timeout = setTimeout(() => controller.abort(), 8000);
       const response = await fetch("/api/load-profile", {
         credentials: "include",
         signal: controller.signal,
       });
 
-      saveDebugLog(`Load profile response status: ${response.status}`, "DEBUG");
-
       if (!response.ok) {
         clearTimeout(timeout);
-        if (response.status === 404) {
-          saveDebugLog("No profile saved (404)", "INFO");
-        } else {
-          saveDebugLog(`Load profile HTTP error: ${response.status}`, "WARN");
-        }
+        saveDebugLog(`Load profile HTTP ${response.status}`, response.status === 404 ? "INFO" : "WARN");
         return;
       }
 
-      // Read body while abort timer is still active
       const data = await response.json();
       clearTimeout(timeout);
-      if (!data || !data.profileState) {
+      if (!data?.profileState) {
         saveDebugLog("Profile payload missing profileState", "WARN");
         return;
       }
 
-      saveDebugLog("Validating profileState schema", "DEBUG");
       const validated = validateAndSanitizeProfileState(data.profileState);
-
       if ((validated as any)._validationIssues) {
         saveDebugLog("Profile validation issues:", "WARN", (validated as any)._validationIssues);
-        toast.warning("Profile had issues; some data may have been reset");
       }
 
       const ps = validated;
-
-      // All of these run before the game renders - no active subscribers
-      saveDebugLog("Applying profile state to stores", "DEBUG", ps);
       if (Object.keys(ps.managers).length > 0) {
         useManagers.setState({ managers: ps.managers, compoundInterestBonus: ps.compoundInterestBonus || 0 });
-        saveDebugLog("Managers loaded", "DEBUG", ps.managers);
       }
       if (ps.unlockedAchievements?.length > 0 || ps.claimedAchievements?.length > 0) {
         useAchievements.setState({ unlockedAchievements: ps.unlockedAchievements || [], claimedAchievements: ps.claimedAchievements || [] });
-        saveDebugLog("Achievements loaded", "DEBUG", { unlocked: ps.unlockedAchievements, claimed: ps.claimedAchievements });
       }
       if (ps.artifactDiscoveries?.length > 0) {
         useArtifacts.setState({ discoveries: ps.artifactDiscoveries, totalDrops: ps.artifactTotalDrops || 0 });
-        saveDebugLog("Artifacts loaded", "DEBUG", ps.artifactDiscoveries);
       }
       if (ps.missions?.length > 0) {
         useMissions.setState({
@@ -297,23 +268,17 @@ export const useSaveState = create<SaveState>((set, get) => ({
           lastMissionCompletedAt: ps.lastMissionCompletedAt || 0,
           rerollsAvailable: ps.rerollsAvailable ?? 1,
         });
-        saveDebugLog("Missions loaded", "DEBUG", ps.missions);
       }
       if (ps.prestigePerkChoices && Object.keys(ps.prestigePerkChoices).length > 0) {
         usePrestigePerks.setState({ chosenPerks: ps.prestigePerkChoices });
-        saveDebugLog("Prestige perks loaded", "DEBUG", ps.prestigePerkChoices);
       }
       if (ps.managerPerkChoices && Object.keys(ps.managerPerkChoices).length > 0) {
         useManagerPerks.setState({ choices: ps.managerPerkChoices });
-        saveDebugLog("Manager perks loaded", "DEBUG", ps.managerPerkChoices);
       }
-
-      saveDebugLog("loadProfile() completed successfully", "INFO");
+      saveDebugLog("loadProfile() applied server profile", "INFO");
     } catch (error) {
-      console.log("Profile load failed:", error);
       saveDebugLog(`loadProfile() failed: ${error instanceof Error ? error.message : String(error)}`, "ERROR");
-      // Log full error details to debug log
-      console.error("Profile load exception:", error);
+      // On error, keep current state — do not overwrite.
     }
   },
 }));

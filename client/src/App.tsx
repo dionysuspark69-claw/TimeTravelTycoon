@@ -1,4 +1,4 @@
-import { useEffect, useState, Component, type ReactNode } from "react";
+import { useEffect, useState, useMemo, Component, type ReactNode } from "react";
 import "@fontsource/inter";
 import { GameScene } from "./components/GameScene";
 import { GameUI } from "./components/GameUI";
@@ -13,7 +13,7 @@ import { ActiveEventsDisplay } from "./components/ActiveEventsDisplay";
 import { Toaster } from "./components/ui/sonner";
 import { useAuth } from "./lib/stores/useAuth";
 import { useSaveState } from "./lib/stores/useSaveState";
-import { useGameSave } from "./lib/hooks/useGameSave";
+import { useGameSave, hasLocalSave } from "./lib/hooks/useGameSave";
 import { NextGoalWidget } from "./components/NextGoalWidget";
 import { NewsTicker } from "./components/NewsTicker";
 import { PurchaseCelebration } from "./components/PurchaseCelebration";
@@ -48,34 +48,36 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
 }
 
 function App() {
-  const [showGame, setShowGame] = useState(false);
+  // Returning users have game state in localStorage — show game immediately, no network wait.
+  // New users (no localStorage) see a brief loading screen until the server send their save.
+  const localSaveExists = useMemo(() => hasLocalSave(), []);
+  const [showGame, setShowGame] = useState(localSaveExists);
+
   const { loading: authLoading, isAuthenticated } = useAuth();
-  const { hasLoadedOnce, setHasLoadedOnce } = useSaveState();
+  const { hasLoadedOnce } = useSaveState();
 
   useGameSave();
 
-  // Fire fetchUser exactly once on mount - never again
+  // Fire auth check exactly once on mount.
   useEffect(() => {
     useAuth.getState().fetchUser();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Show game once auth resolves AND load has been attempted
+  // For new users: show game once auth + server load resolve.
   useEffect(() => {
+    if (localSaveExists) return; // already showing
     if (!authLoading && (hasLoadedOnce || !isAuthenticated)) {
       setShowGame(true);
     }
-  }, [authLoading, isAuthenticated, hasLoadedOnce]);
+  }, [localSaveExists, authLoading, isAuthenticated, hasLoadedOnce]);
 
-  // Hard fallback: show game after 6s no matter what
-  // Covers cases where auth redirect + load doesn't complete in time (especially mobile)
-  // Also mark hasLoadedOnce=true so doLoad won't fire after game is running
+  // Hard fallback for new users: show game after 6s regardless of network state.
+  // Does NOT set hasLoadedOnce — server sync can still finish and apply the save.
   useEffect(() => {
-    const fallback = setTimeout(() => {
-      setHasLoadedOnce(true);
-      setShowGame(true);
-    }, 15000);
+    if (localSaveExists) return;
+    const fallback = setTimeout(() => setShowGame(true), 6000);
     return () => clearTimeout(fallback);
-  }, [setHasLoadedOnce]);
+  }, [localSaveExists]);
 
   if (!showGame) {
     return (
@@ -89,29 +91,29 @@ function App() {
 
   return (
     <ErrorBoundary>
-    <div className="w-full h-full flex flex-col bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 overflow-hidden">
-      <div className="flex-1 relative">
-        <GameScene />
-        <GameUI />
-        <ActiveEventsDisplay />
-        <NewsTicker />
+      <div className="w-full h-full flex flex-col bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 overflow-hidden">
+        <div className="flex-1 relative">
+          <GameScene />
+          <GameUI />
+          <ActiveEventsDisplay />
+          <NewsTicker />
+        </div>
+
+        <NextGoalWidget />
+        <UpgradePanel />
+
+        <OfflineEarningsDialog />
+        <PrestigeTutorial />
+        <AchievementChecker />
+        <PurchaseCelebration />
+        <FloatingTextManager />
+        <OnboardingTutorial />
+        <PrestigePerkChoiceModal />
+        <ManagerPerkChoiceModal />
+        <GameLoop />
+        <SoundManager />
+        <Toaster />
       </div>
-
-      <NextGoalWidget />
-      <UpgradePanel />
-
-      <OfflineEarningsDialog />
-      <PrestigeTutorial />
-      <AchievementChecker />
-      <PurchaseCelebration />
-      <FloatingTextManager />
-      <OnboardingTutorial />
-      <PrestigePerkChoiceModal />
-      <ManagerPerkChoiceModal />
-      <GameLoop />
-      <SoundManager />
-      <Toaster />
-    </div>
     </ErrorBoundary>
   );
 }
