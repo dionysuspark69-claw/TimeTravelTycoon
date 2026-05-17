@@ -154,7 +154,9 @@ export function GameScene() {
     return (
       <div className="w-full h-[50vh] md:h-[60vh] relative overflow-hidden flex items-center justify-center">
         <ComboClick />
-        <AntFarmViewport />
+        <WebGLErrorBoundary>
+          <AntFarmViewport />
+        </WebGLErrorBoundary>
         <EraDisplay />
         <TemporalAnomaly />
         <ArtifactOverlay />

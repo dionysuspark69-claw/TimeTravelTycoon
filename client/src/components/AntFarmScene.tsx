@@ -47,6 +47,8 @@ export default function AntFarmScene({
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const stateRef = useRef({ frame: 0, elevY: STRATUM_H, dir: 1, lastStratum: -1, raf: 0 });
+  const onArriveRef = useRef(onArrive);
+  onArriveRef.current = onArrive;
 
   const currentIdx = useMemo(
     () => Math.max(0, STRATA.findIndex(s => s.era === currentEra)),
@@ -95,7 +97,7 @@ export default function AntFarmScene({
       const stratIdx = Math.round(s.elevY / STRATUM_H);
       if (Math.abs(delta) < 1.5 && stratIdx !== s.lastStratum) {
         s.lastStratum = stratIdx;
-        onArrive?.(visible[stratIdx]?.era);
+        onArriveRef.current?.(visible[stratIdx]?.era);
       }
 
       render(ctx, s, visible, currentIdx - startIdx, queueSize, tier, {
@@ -105,7 +107,7 @@ export default function AntFarmScene({
     }
     stateRef.current.raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(stateRef.current.raf);
-  }, [visible, currentIdx, startIdx, sceneH, width, shaftX, queueSize, tier, onArrive]);
+  }, [visible, currentIdx, startIdx, sceneH, width, shaftX, queueSize, tier]);
 
   return (
     <div className={className} style={{ position: "relative", display: "inline-block" }}>
