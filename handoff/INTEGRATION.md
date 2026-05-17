@@ -1,119 +1,126 @@
-# ChronoTransit — Pixel Graphics Integration
+# ChronoTransit — Cross-Section World
 
-Drop-in pixel-art graphics for the 2D mode of ChronoTransit. Everything is procedural: no images, no atlases, no external assets. One canvas per scene, RAF-driven, ~2 kB of sprite data per era.
-
-## What's in this folder
+Drop-in pixel-art viewport for ChronoTransit. The world is rendered as a vertical cross-section — every era is a stratum stacked from far-future on top down to dinosaurs at the bottom, with a time-elevator that shuttles passengers between them.
 
 ```
-handoff/client/src/
-├── lib/
-│   └── pixelEngine.ts         # palette, era palettes, sprites, renderer
-└── components/
-    ├── PixelScene.tsx         # drop-in GameScene replacement
-    ├── PixelCustomer.tsx      # single customer sprite (for lists, tooltips)
-    └── PixelMachine.tsx       # single machine sprite (for fleet UI)
+┌──────────────────────────┬──────┐
+│  ▓▓ FUTURE             ▓ │  ▼   │
+│  ▒▒ CYBERPUNK           ▒│  ●   │ ← depth-map rail
+│  ▓▓ SPACE AGE          ▓ │  ▒   │
+└──────────────────────────┴──────┘
+   AntFarmScene viewport      DepthMap
 ```
 
-## Install
+## Install (literal cp)
 
-1. Copy `handoff/client/src/lib/pixelEngine.ts` → `client/src/lib/pixelEngine.ts`
-2. Copy `handoff/client/src/components/Pixel*.tsx` → `client/src/components/`
+```bash
+cp handoff/client/src/lib/pixelEngine.ts          client/src/lib/
+cp handoff/client/src/components/AntFarmScene.tsx client/src/components/
+cp handoff/client/src/components/DepthMap.tsx     client/src/components/
+cp handoff/client/src/components/AntFarmViewport.tsx client/src/components/
+cp handoff/client/src/components/PixelCustomer.tsx client/src/components/
+cp handoff/client/src/components/PixelMachine.tsx  client/src/components/
+cp handoff/client/src/components/PixelElevator.tsx client/src/components/
+```
 
-No new dependencies. Pure TypeScript + Canvas 2D.
+No new dependencies. Pure TypeScript + Canvas 2D + React.
 
-## Wire into your existing scene
+## Wire it into GameScene
 
-In `client/src/components/GameScene.tsx` (or wherever the current 2D viewport lives), replace the placeholder boxes with:
+Edit `client/src/components/GameScene.tsx`. Replace the `<Canvas>` (`@react-three/fiber`) block with:
 
 ```tsx
-import PixelScene from "./PixelScene";
-import { useIdleGame } from "../state/useIdleGame";
+import AntFarmViewport from "./AntFarmViewport";
 
-export default function GameScene() {
-  const { currentEra, fleetTier, fleetSize, queueSize, onDepart } = useIdleGame(s => ({
-    currentEra: s.currentEra,
-    fleetTier: s.fleetTier,        // 1..5
-    fleetSize: s.fleet.length,
-    queueSize: s.queue.length,
-    onDepart: s.completeTrip,
-  }));
-
+export function GameScene() {
+  // ...existing setup
   return (
-    <div className="flex items-center justify-center h-full bg-black">
-      <PixelScene
-        era={currentEra}
-        tier={fleetTier as 1|2|3|4|5}
-        fleetSize={fleetSize}
-        queueSize={queueSize}
-        onDepart={onDepart}
-        className="rounded-md shadow-2xl"
-      />
+    <div className="w-full h-[50vh] md:h-[60vh] relative flex items-center justify-center">
+      <ComboClick />
+      <AntFarmViewport />
+      <EraDisplay />
+      <TemporalAnomaly />
+      <ArtifactOverlay />
     </div>
   );
 }
 ```
 
-### Replace CustomerAvatar in lists
+`AntFarmViewport` reads from your `useIdleGame` store directly. Open
+`AntFarmViewport.tsx` and rename the selectors to match your store (the file's
+top comment lists exactly which keys it expects).
 
-Anywhere you currently render `<CustomerAvatar era={...} />`, swap in:
+## Files
 
-```tsx
-import PixelCustomer from "../components/PixelCustomer";
-<PixelCustomer era={customer.era} scale={2} />
-```
-
-### Fleet upgrade UI
-
-```tsx
-import PixelMachine from "../components/PixelMachine";
-<PixelMachine tier={slot.tier} era={currentEra} scale={3} />
-```
+| File | Purpose |
+| --- | --- |
+| `lib/pixelEngine.ts` | Palette · 23 era palettes · sprite data (characters / machines / landmarks / terrain) · `drawSprite` · `drawLandmark` · `drawElevator` · `drawSky` |
+| `components/AntFarmScene.tsx` | Cross-section viewport canvas — strata + shaft + elevator |
+| `components/DepthMap.tsx` | 23-stratum side rail, clickable, shows unlock state |
+| `components/AntFarmViewport.tsx` | Wrapper combining the two + binding to `useIdleGame` |
+| `components/PixelCustomer.tsx` | Single customer sprite (queue tiles, tooltips) |
+| `components/PixelMachine.tsx` | Single top-down machine sprite (upgrade icons) |
+| `components/PixelElevator.tsx` | Single elevator sprite (UI icons) |
 
 ## Era keys
 
-`pixelEngine.ts` ships 23 eras with palettes + terrain + customer outfit recipes:
+Your existing era IDs need to match these. `pixelEngine.ts` ships 23 of them:
 
 ```
-dinosaur egypt rome medieval viking renaissance industrial wildwest
-roaring20s spaceage future cyberpunk atlantis prehistoric mooncolony
-aiutopia mars timeorigin quantum paradise timeloop multiversal temporal
+dinosaur prehistoric egypt atlantis rome viking medieval renaissance
+industrial wildwest roaring20s spaceage cyberpunk mooncolony mars
+future aiutopia paradise timeorigin quantum timeloop multiversal temporal
 ```
 
-Map your existing era IDs to these keys. If you have more than 23, add a recipe to `CHAR_RECIPES`, a palette to `ERA_PALETTES`, and a `terrain` key to `ERA_META` — everything else is generated.
+If you have more / fewer, edit the `STRATA` array in `pixelEngine.ts` — top entry = surface (far future), last entry = deepest stratum (deep past). Each entry is `{ era, depth, landmark }`. Add a recipe to `CHAR_RECIPES`, a palette to `ERA_PALETTES`, and either pick an existing `LandmarkKind` or add a new branch to `drawLandmark`.
 
-## Perf notes (budgets and why this ships)
+## Performance
 
-| Metric              | Before (three.js)  | After (PixelScene) |
-| ------------------- | ------------------ | ------------------ |
-| Initial bundle      | ~600 kB (three)    | +8 kB              |
-| Mobile FPS (mid)    | 30–45              | 60 locked          |
-| Memory (idle)       | ~90 MB             | ~6 MB              |
-| Scene draw calls/fr | 400+               | 1 canvas blit      |
+| Metric | Before (three.js) | After (cross-section) |
+| --- | --- | --- |
+| Bundle delta | — | **+12 KB** total |
+| External assets | textures (~350 KB) | **none** |
+| Mobile FPS (median) | ~28 | **60 locked** |
+| Memory idle | ~90 MB | **~6 MB** |
+| Draw calls / frame | ~400 | **1 canvas blit** |
+| RAF when tab hidden | runs | **auto-paused** |
 
-- Terrain tile is rendered once into an offscreen canvas per era change.
-- Every sprite is palette-keyed: one character recipe × 23 era palettes = 23 visually distinct customers at zero extra memory.
-- The render loop stops when the tab is hidden (RAF is paused by the browser automatically).
+The viewport is one `<canvas>` element painted by a single RAF loop. The render
+function is ~200 lines and does no allocations during steady-state.
 
 ## Feature-flag the rollout
 
-Your store already has `use2DMode`. Gate the pixel scene behind it so you can ship to a percentage of users:
+Your store already has `use2DMode`. Gate the cross-section behind it:
 
 ```tsx
-{use2DMode ? <PixelScene {...} /> : <LegacyThreeScene {...} />}
+{use2DMode
+  ? <AntFarmViewport />
+  : <LegacyThreeScene />}
 ```
 
-## Diff summary (for the PR)
+When you're ready to delete the 3D scene entirely, remove `three`, `@react-three/fiber`, `@react-three/drei`, `@react-three/postprocessing` from `package.json` — they're no longer referenced.
 
-- **Add** `client/src/lib/pixelEngine.ts`
-- **Add** `client/src/components/PixelScene.tsx`
-- **Add** `client/src/components/PixelCustomer.tsx`
-- **Add** `client/src/components/PixelMachine.tsx`
-- **Modify** `client/src/components/GameScene.tsx` (swap the viewport contents — see snippet above)
-- **Optional** replace `CustomerAvatar` usages with `PixelCustomer`
+## Adding a new stratum
 
-## Known follow-ups (not blocking)
+```ts
+// pixelEngine.ts
+ERA_PALETTES.steampunk = { A: "#d49a3e", B: "#5e3c12", E: "#fce0a3" };
+ERA_META.steampunk     = { label: "Steampunk", terrain: "soot" };
+CHAR_RECIPES.steampunk = {
+  hair: "G", shirt: "D", shirtShade: "0", pants: "D", pantsShade: "0",
+  hat:  { 0: ["_","_","D","D","D","D","D","D","D","D","_","_"],
+          1: ["_","D","D","D","D","D","D","D","D","D","D","_"] },
+};
+STRATA.splice(15, 0, { era: "steampunk", depth: "+1890", landmark: "smokestack" });
+```
 
-- Portal boarding/departure VFX are placeholders — simple contrails + orbit dots. Upgrade to palette-cycled spritesheet if you want more punch.
-- VIP glow, artifact sparkle, coin burst: add a `fx` layer on top of the item sort.
-- Add era IDs beyond the 23 shipped: recipe + palette + terrain key.
-- Add an 8-direction walk cycle for NPCs if you ever add pathing.
+That's the full cost of a new era.
+
+## Known follow-ups (next round, not blocking)
+
+- Departure / arrival VFX flash when capsule lands on a stratum
+- VIP customer gold glow
+- Artifact pickup sparkle anchored to landmark positions
+- Soft parallax on the shaft when scrolling between strata windows
+- Optional fullscreen mode that shows all 23 strata at once (use the existing
+  `AntFarmCrossSection` from the design canvas as reference)

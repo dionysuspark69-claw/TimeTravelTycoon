@@ -1,6 +1,5 @@
 /**
- * PixelCustomer.tsx — tiny standalone component for lists/tooltips/queue UI.
- * Renders one customer sprite animated. Use this wherever CustomerAvatar is today.
+ * PixelCustomer.tsx — single customer sprite, animated. For queue lists / tooltips.
  */
 import { useEffect, useRef } from "react";
 import { CHARACTERS, CHAR_W, CHAR_H, drawSprite, getEraPalette } from "../lib/pixelEngine";
@@ -23,7 +22,7 @@ export default function PixelCustomer({ era, scale = 3, animate = true, classNam
     const loop = () => {
       ctx.clearRect(0, 0, CHAR_W, CHAR_H);
       const f = animate ? Math.floor(t / 15) % 3 : 0;
-      drawSprite(ctx, frames[f], 0, 0, { A: pal.A, B: pal.B, E: pal.E });
+      drawSprite(ctx, frames[f], 0, 0, pal);
       t++; raf = requestAnimationFrame(loop);
     };
     loop();
