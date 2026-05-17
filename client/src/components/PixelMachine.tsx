@@ -1,5 +1,6 @@
 /**
- * PixelMachine.tsx — for fleet list / upgrade UI. Renders one time-machine sprite.
+ * PixelMachine.tsx — single top-down machine sprite (5 tiers).
+ * Useful for upgrade-cards / fleet lists. NOT used in the cross-section viewport.
  */
 import { useEffect, useRef } from "react";
 import { MACHINES, MACH_W, MACH_H, drawSprite, getEraPalette } from "../lib/pixelEngine";
@@ -22,7 +23,7 @@ export default function PixelMachine({ tier, era, scale = 3, className }: Props)
     const loop = () => {
       ctx.clearRect(0, 0, MACH_W, MACH_H);
       const f = Math.floor(t / 20) % 2;
-      drawSprite(ctx, frames[f], 0, 0, { A: pal.A, B: pal.B, E: pal.E });
+      drawSprite(ctx, frames[f], 0, 0, pal);
       t++; raf = requestAnimationFrame(loop);
     };
     loop();

@@ -7,9 +7,9 @@ import { EraDisplay } from "./EraDisplay";
 import { TemporalAnomaly } from "./TemporalAnomaly";
 import { ComboClick } from "./ComboClick";
 import { ArtifactOverlay } from "./ArtifactOverlay";
-import PixelScene from "./PixelScene";
+import AntFarmViewport from "./AntFarmViewport";
 import { Component, ErrorInfo, ReactNode } from "react";
-import { useIdleGame, TIME_PERIODS } from "@/lib/stores/useIdleGame";
+import { useIdleGame } from "@/lib/stores/useIdleGame";
 import { useIsMobile } from "@/hooks/use-is-mobile";
 import { useSettings } from "@/lib/stores/useSettings";
 
@@ -147,24 +147,14 @@ const ERA_BG_COLORS: Record<string, string> = {
 export function GameScene() {
   const isMobile = useIsMobile();
   const currentDestination = useIdleGame(s => s.currentDestination);
-  const timeMachineLevel = useIdleGame(s => s.timeMachineLevel);
-  const timeMachineCount = useIdleGame(s => s.timeMachineCount);
-  const waitingCustomers = useIdleGame(s => s.waitingCustomers);
   const use2DMode = useSettings(s => s.use2DMode);
 
-  // PixelScene is the default; Three.js only when 2D mode is off
+  // AntFarmViewport (cross-section world) is the default; Three.js only when 2D mode is off
   if (use2DMode) {
-    const era = currentDestination || "dinosaur";
-    const tier = Math.min(5, Math.max(1, Math.ceil(timeMachineLevel / 5))) as 1 | 2 | 3 | 4 | 5;
     return (
-      <div className="w-full h-[50vh] md:h-[60vh] relative overflow-hidden">
+      <div className="w-full h-[50vh] md:h-[60vh] relative overflow-hidden flex items-center justify-center">
         <ComboClick />
-        <PixelScene
-          era={era}
-          tier={tier}
-          fleetSize={timeMachineCount}
-          queueSize={waitingCustomers}
-        />
+        <AntFarmViewport />
         <EraDisplay />
         <TemporalAnomaly />
         <ArtifactOverlay />
