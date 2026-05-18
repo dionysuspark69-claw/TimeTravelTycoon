@@ -13,6 +13,10 @@
  *
  * The viewport autonomously shows STRATUM_WINDOW strata at a time, centered
  * on currentEra. The elevator animates between unlocked strata.
+ *
+ * Perf: static layers (terrain tiles, landmarks, stratum labels, shaft body)
+ * are pre-painted to an offscreen canvas when `visible` changes. The per-frame
+ * loop blits the cache and overlays only the animated layers.
  */
 
 import { useEffect, useMemo, useRef } from "react";
@@ -79,6 +83,16 @@ export default function AntFarmScene({
     ctx.imageSmoothingEnabled = false;
     ctx.scale(dpr, dpr);
 
+    // Pre-paint static layers (terrain, landmarks, stratum labels, shaft
+    // body) to an offscreen canvas. Rebuilt whenever this effect re-runs —
+    // i.e. when `visible`/`width`/`sceneH` change.
+    const cache = document.createElement("canvas");
+    cache.width = width;
+    cache.height = sceneH;
+    const cctx = cache.getContext("2d", { alpha: false })!;
+    cctx.imageSmoothingEnabled = false;
+    renderStatic(cctx, visible, { width, sceneH, shaftX });
+
     const minY = 4;
     const maxY = sceneH - ELEV_H - 4;
     stateRef.current.elevY = Math.min(Math.max(minY, stateRef.current.elevY), maxY);
@@ -100,7 +114,8 @@ export default function AntFarmScene({
         onArriveRef.current?.(visible[stratIdx]?.era);
       }
 
-      render(ctx, s, visible, currentIdx - startIdx, queueSize, tier, {
+      ctx.drawImage(cache, 0, 0);
+      renderDynamic(ctx, s, visible, currentIdx - startIdx, queueSize, tier, {
         width, sceneH, shaftX,
       });
       s.raf = requestAnimationFrame(frame);
@@ -145,13 +160,11 @@ export default function AntFarmScene({
 }
 
 // ─────────────────────────────────────────────────────────────
-function render(
+// Static pass — terrain, sky gradients, landmarks, stratum labels, shaft
+// body. Drawn once into an offscreen cache and blitted per frame.
+function renderStatic(
   ctx: CanvasRenderingContext2D,
-  state: { frame: number; elevY: number },
   strata: typeof STRATA,
-  currentRelIdx: number,
-  queueSize: number,
-  tier: number,
   geom: { width: number; sceneH: number; shaftX: number },
 ) {
   const { width: W, sceneH: H, shaftX } = geom;
@@ -166,7 +179,7 @@ function render(
     const tile = TERRAIN[era];
     const yTop = i * STRATUM_H;
 
-    // Sky band
+    // Sky band gradient
     const skyH = Math.round(STRATUM_H * 0.42);
     const skyGrad = ctx.createLinearGradient(0, yTop, 0, yTop + skyH);
     skyGrad.addColorStop(0, "#06040a");
@@ -174,13 +187,11 @@ function render(
     ctx.fillStyle = skyGrad;
     ctx.fillRect(0, yTop, W, skyH);
 
-    drawSky(ctx, era, 0, yTop, W, skyH, state.frame);
-
     // Horizon
     ctx.fillStyle = pal.A;
     ctx.fillRect(0, yTop + skyH, W, 1);
 
-    // Substrate
+    // Substrate (the expensive one — cached once)
     for (let ty = yTop + skyH + 1; ty < yTop + STRATUM_H; ty += TILE)
       for (let tx = 0; tx < W; tx += TILE)
         drawSprite(ctx, tile, tx, ty, pal);
@@ -190,16 +201,6 @@ function render(
 
     // Landmark
     drawLandmark(ctx, stratum.landmark, 80 + (i * 40) % 200, yTop + skyH - LANDMARK_H, pal);
-
-    // Passengers on surface (scale with queueSize for active stratum)
-    const surfY = yTop + skyH - CHAR_H + 1;
-    const count = i === currentRelIdx ? Math.min(4, Math.max(1, queueSize)) : 1;
-    for (let p = 0; p < count; p++) {
-      const cx = 20 + p * 18 + (i * 60) % 200;
-      if (cx + CHAR_W > shaftX) continue;
-      const f = (state.frame / 12 + i + p) | 0;
-      drawSprite(ctx, CHARACTERS[era][f % 3], cx, surfY, pal);
-    }
 
     // Stratum label tab
     ctx.fillStyle = pal.B; ctx.fillRect(4, yTop + 4, 100, 14);
@@ -222,17 +223,55 @@ function render(
     }
   }
 
-  // Shaft
+  // Shaft body
   ctx.fillStyle = "#000";  ctx.fillRect(shaftX, 0, SHAFT_W, H);
   ctx.fillStyle = "#1a1218"; ctx.fillRect(shaftX + SHAFT_W, 0, 3, H);
   ctx.fillStyle = "#3a3640";
   ctx.fillRect(shaftX + 2, 0, 1, H);
   ctx.fillRect(shaftX + SHAFT_W - 3, 0, 1, H);
 
+  // Shaft tick marks at stratum boundaries
   for (let i = 0; i <= strata.length; i++) {
     ctx.fillStyle = "#55525f";
     ctx.fillRect(shaftX + 1, i * STRATUM_H - 1, SHAFT_W - 2, 1);
   }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Dynamic pass — anything that depends on frame or elevator position.
+function renderDynamic(
+  ctx: CanvasRenderingContext2D,
+  state: { frame: number; elevY: number },
+  strata: typeof STRATA,
+  currentRelIdx: number,
+  queueSize: number,
+  tier: number,
+  geom: { width: number; sceneH: number; shaftX: number },
+) {
+  const { width: W, sceneH: H, shaftX } = geom;
+
+  for (let i = 0; i < strata.length; i++) {
+    const stratum = strata[i];
+    const era = stratum.era;
+    const pal = ERA_PALETTES[era];
+    const yTop = i * STRATUM_H;
+    const skyH = Math.round(STRATUM_H * 0.42);
+
+    // Animated sky particles (drawn over cached sky gradient)
+    drawSky(ctx, era, 0, yTop, W, skyH, state.frame);
+
+    // Passengers on surface (scale with queueSize for active stratum)
+    const surfY = yTop + skyH - CHAR_H + 1;
+    const count = i === currentRelIdx ? Math.min(4, Math.max(1, queueSize)) : 1;
+    for (let p = 0; p < count; p++) {
+      const cx = 20 + p * 18 + (i * 60) % 200;
+      if (cx + CHAR_W > shaftX) continue;
+      const f = (state.frame / 12 + i + p) | 0;
+      drawSprite(ctx, CHARACTERS[era][f % 3], cx, surfY, pal);
+    }
+  }
+
+  // Shaft scanlines (purple beam pulse)
   for (let y = 0; y < H; y += 4) {
     const phase = (y + state.frame * 2) % 16;
     if (phase < 3) {
@@ -241,7 +280,7 @@ function render(
     }
   }
 
-  // Elevator
+  // Elevator + side rails above it
   const idx = Math.max(0, Math.min(strata.length - 1, Math.floor((state.elevY + ELEV_H / 2) / STRATUM_H)));
   const elevPal = ERA_PALETTES[strata[idx].era];
   ctx.fillStyle = "#3a3640";
@@ -254,7 +293,7 @@ function render(
   ctx.fillRect(shaftX - 4, state.elevY - 2, SHAFT_W + 8, ELEV_H + 4);
   ctx.globalAlpha = 1;
 
-  // Glass scanlines
+  // Glass scanlines (canvas-wide, last so they sit on top)
   ctx.fillStyle = "rgba(255,255,255,0.015)";
   for (let y = 0; y < H; y += 3) ctx.fillRect(0, y, W, 1);
 }
