@@ -49,25 +49,20 @@
       </div>
     </noscript>
 
-    <div id="replit-auth-container" style="display: none;">
-      <script
-        authed="window.handleReplitAuth && window.handleReplitAuth()"
-        src="https://auth.util.repl.co/script.js"
-      ></script>
-    </div>
     <script>
-      // Boot guard: if the app script fails to load (e.g. browser cached an
-      // old index.html that points at a bundle hash that no longer exists on
-      // the server post-deploy), force a one-time hard reload that bypasses
-      // the cache. Without this, users whose cached index.html predates the
-      // no-store fix stay stuck on a blank page until they manually clear
-      // their cache or use incognito.
+      // Boot guard: if OUR bundle (/assets/*) fails to load — e.g. the browser
+      // cached an index.html that points at a hash that no longer exists post-
+      // deploy — force a one-time hard reload that bypasses the cache. Limited
+      // to /assets/* so third-party scripts (ads, etc.) erroring out can't
+      // trigger a reload loop. Flag persists for the tab's lifetime — clearing
+      // it on `load` was a bug because a late third-party error could then
+      // re-trigger the guard.
       (function () {
         var FLAG = "__cb_reload";
         window.addEventListener("error", function (e) {
           var t = e && e.target;
           if (!t || !(t instanceof HTMLScriptElement)) return;
-          if (!t.src) return;
+          if (!t.src || t.src.indexOf("/assets/") === -1) return;
           try {
             if (sessionStorage.getItem(FLAG)) return;
             sessionStorage.setItem(FLAG, "1");
@@ -76,10 +71,6 @@
           u.searchParams.set("cb", Date.now().toString(36));
           window.location.replace(u.toString());
         }, true);
-        // Clear the one-shot flag once the app boots successfully.
-        window.addEventListener("load", function () {
-          try { sessionStorage.removeItem(FLAG); } catch (_) {}
-        });
       })();
     </script>
     <script type="module" src="/src/main.tsx"></script>
