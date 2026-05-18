@@ -3,6 +3,16 @@
 // function and routes traffic to it per vercel.json rewrites.
 
 import type { IncomingMessage, ServerResponse } from "http";
+
+// Dump env-var presence at module load. With this we can confirm from runtime
+// logs whether the secrets actually reached the function's process.
+console.log("ENV DATABASE_URL set:", !!process.env.DATABASE_URL);
+console.log("ENV SESSION_SECRET set:", !!process.env.SESSION_SECRET);
+console.log("ENV GOOGLE_CLIENT_ID set:", !!process.env.GOOGLE_CLIENT_ID);
+console.log("ENV GOOGLE_CLIENT_SECRET set:", !!process.env.GOOGLE_CLIENT_SECRET);
+console.log("ENV GOOGLE_CALLBACK_URL set:", !!process.env.GOOGLE_CALLBACK_URL);
+console.log("ENV NODE_ENV:", process.env.NODE_ENV);
+
 import { buildApp } from "./app";
 
 let app: unknown;
