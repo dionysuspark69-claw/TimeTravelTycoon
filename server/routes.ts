@@ -4,7 +4,7 @@ import { eq, desc, or, sql, asc } from "drizzle-orm";
 import rateLimit from "express-rate-limit";
 import passport from "./passport-config";
 import { getUserInfo } from "@replit/repl-auth";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { db } from "./db";
 import { gameSaves, users, leaderboardEntries, type User } from "@shared/schema";
 
