@@ -71,13 +71,22 @@ function App() {
     }
   }, [localSaveExists, authLoading, isAuthenticated, hasLoadedOnce]);
 
-  // Hard fallback for new users: show game after 6s regardless of network state.
+  // Hard fallback for new users: show game after 2s regardless of network state.
   // Does NOT set hasLoadedOnce — server sync can still finish and apply the save.
   useEffect(() => {
     if (localSaveExists) return;
-    const fallback = setTimeout(() => setShowGame(true), 6000);
+    const fallback = setTimeout(() => setShowGame(true), 2000);
     return () => clearTimeout(fallback);
   }, [localSaveExists]);
+
+  // After 1s the user can manually skip the loading screen — gives them an
+  // escape hatch if anything in the boot path is taking longer than expected.
+  const [canSkip, setCanSkip] = useState(false);
+  useEffect(() => {
+    if (showGame) return;
+    const t = setTimeout(() => setCanSkip(true), 1000);
+    return () => clearTimeout(t);
+  }, [showGame]);
 
   if (!showGame) {
     return (
@@ -85,6 +94,15 @@ function App() {
         <div className="w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin" />
         <div className="text-white text-xl font-bold animate-pulse">Loading ChronoTransit...</div>
         <div className="text-gray-400 text-sm">Connecting to time stream...</div>
+        {canSkip && (
+          <button
+            type="button"
+            onClick={() => setShowGame(true)}
+            className="mt-4 px-4 py-2 text-sm text-cyan-200 border border-cyan-700 rounded hover:bg-cyan-900/30"
+          >
+            Continue to game →
+          </button>
+        )}
       </div>
     );
   }
