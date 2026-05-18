@@ -5,9 +5,39 @@
 import type { IncomingMessage, ServerResponse } from "http";
 import { buildApp } from "./app";
 
-const appPromise = buildApp();
+let app: unknown;
+let bootError: Error | null = null;
+
+const appPromise: Promise<unknown> = (async () => {
+  try {
+    const a = await buildApp();
+    app = a;
+    return a;
+  } catch (e) {
+    bootError = e instanceof Error ? e : new Error(String(e));
+    console.error("✗ buildApp() failed:", bootError);
+    console.error(bootError.stack);
+    throw bootError;
+  }
+})();
 
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
-  const app = await appPromise;
-  return (app as any)(req, res);
+  try {
+    const a = app ?? (await appPromise);
+    return (a as any)(req, res);
+  } catch (e) {
+    const err = e instanceof Error ? e : new Error(String(e));
+    console.error("✗ handler failed:", err);
+    console.error(err.stack);
+    res.statusCode = 500;
+    res.setHeader("content-type", "application/json");
+    res.end(
+      JSON.stringify({
+        error: "function_boot_failed",
+        message: err.message,
+        stack: err.stack?.split("\n").slice(0, 8).join("\n"),
+        bootError: bootError ? { message: bootError.message, stack: bootError.stack?.split("\n").slice(0, 8).join("\n") } : null,
+      }),
+    );
+  }
 }
