@@ -91,10 +91,10 @@ var insertGameSaveSchema = createInsertSchema(gameSaves).pick({
 
 // server/db.ts
 if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL is required");
+  console.error("\u2717 DATABASE_URL is not set \u2014 every DB query will fail");
 }
 neonConfig2.fetchConnectionCache = true;
-var sql = neon(process.env.DATABASE_URL);
+var sql = neon(process.env.DATABASE_URL || "postgres://invalid/invalid");
 var db = drizzle(sql, { schema: schema_exports });
 
 // server/passport-config.ts
@@ -636,6 +636,12 @@ async function buildApp() {
 }
 
 // server/vercel-entry.ts
+console.log("ENV DATABASE_URL set:", !!process.env.DATABASE_URL);
+console.log("ENV SESSION_SECRET set:", !!process.env.SESSION_SECRET);
+console.log("ENV GOOGLE_CLIENT_ID set:", !!process.env.GOOGLE_CLIENT_ID);
+console.log("ENV GOOGLE_CLIENT_SECRET set:", !!process.env.GOOGLE_CLIENT_SECRET);
+console.log("ENV GOOGLE_CALLBACK_URL set:", !!process.env.GOOGLE_CALLBACK_URL);
+console.log("ENV NODE_ENV:", process.env.NODE_ENV);
 var app;
 var bootError = null;
 var appPromise = (async () => {
