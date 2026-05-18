@@ -181,9 +181,9 @@ function requireAuth(req, res, next) {
   }
   res.status(401).json({ message: "Unauthorized" });
 }
-async function registerRoutes(app) {
-  app.get("/auth/google", authLimiter, passport_config_default.authenticate("google", { scope: ["profile", "email"] }));
-  app.get(
+async function registerRoutes(app2) {
+  app2.get("/auth/google", authLimiter, passport_config_default.authenticate("google", { scope: ["profile", "email"] }));
+  app2.get(
     "/auth/google/callback",
     passport_config_default.authenticate("google", { failureRedirect: "/" }),
     (req, res) => {
@@ -206,7 +206,7 @@ async function registerRoutes(app) {
       });
     }
   );
-  app.post("/auth/username", authLimiter, async (req, res) => {
+  app2.post("/auth/username", authLimiter, async (req, res) => {
     try {
       const { username, password } = req.body;
       if (!username || typeof username !== "string" || username.trim().length === 0) {
@@ -281,7 +281,7 @@ async function registerRoutes(app) {
       res.status(500).json({ message: "Failed to authenticate" });
     }
   });
-  app.post("/auth/replit", async (req, res) => {
+  app2.post("/auth/replit", async (req, res) => {
     try {
       const replitUserInfo = getUserInfo(req);
       if (!replitUserInfo || !replitUserInfo.id) {
@@ -320,7 +320,7 @@ async function registerRoutes(app) {
       res.status(500).json({ message: "Failed to authenticate" });
     }
   });
-  app.get("/api/auth/user", async (req, res) => {
+  app2.get("/api/auth/user", async (req, res) => {
     try {
       if (!req.user) {
         return res.status(401).json({ message: "Not authenticated" });
@@ -336,7 +336,7 @@ async function registerRoutes(app) {
       res.status(500).json({ message: "Failed to get user info" });
     }
   });
-  app.post("/api/auth/logout", async (req, res) => {
+  app2.post("/api/auth/logout", async (req, res) => {
     try {
       req.logout((err) => {
         if (err) {
@@ -350,7 +350,7 @@ async function registerRoutes(app) {
       res.status(500).json({ message: "Failed to logout" });
     }
   });
-  app.get("/api/db/test", async (req, res) => {
+  app2.get("/api/db/test", async (req, res) => {
     try {
       const result = await db.execute(sql2`SELECT NOW()`);
       res.json({ ok: true, result });
@@ -359,7 +359,7 @@ async function registerRoutes(app) {
       res.status(500).json({ ok: false, error: error instanceof Error ? error.message : "Database connection failed" });
     }
   });
-  app.post("/api/save", requireAuth, saveLimiter, async (req, res) => {
+  app2.post("/api/save", requireAuth, saveLimiter, async (req, res) => {
     try {
       if (!req.user) {
         return res.status(401).json({ message: "Unauthorized" });
@@ -428,7 +428,7 @@ async function registerRoutes(app) {
     timeMachineCount: leaderboardEntries.timeMachineCount,
     unlockedDestinationsCount: leaderboardEntries.unlockedDestinationsCount
   };
-  app.get("/api/leaderboard/:category", async (req, res) => {
+  app2.get("/api/leaderboard/:category", async (req, res) => {
     try {
       const category = req.params.category;
       if (!VALID_CATEGORIES.includes(category)) {
@@ -467,7 +467,7 @@ async function registerRoutes(app) {
       res.status(500).json({ message: "Failed to fetch leaderboard" });
     }
   });
-  app.get("/api/leaderboard-ranks/me", requireAuth, async (req, res) => {
+  app2.get("/api/leaderboard-ranks/me", requireAuth, async (req, res) => {
     try {
       const ranks = {};
       for (const category of VALID_CATEGORIES) {
@@ -482,7 +482,7 @@ async function registerRoutes(app) {
       res.status(500).json({ message: "Failed to fetch your ranks" });
     }
   });
-  app.get("/api/load", requireAuth, async (req, res) => {
+  app2.get("/api/load", requireAuth, async (req, res) => {
     try {
       if (!req.user) {
         console.warn(`[LOAD] Unauthorized request`);
@@ -503,7 +503,7 @@ async function registerRoutes(app) {
       res.status(500).json({ message: "Failed to load progress" });
     }
   });
-  app.post("/api/save-profile", requireAuth, async (req, res) => {
+  app2.post("/api/save-profile", requireAuth, async (req, res) => {
     try {
       if (!req.user) return res.status(401).json({ message: "Unauthorized" });
       const { profileState } = req.body;
@@ -523,7 +523,7 @@ async function registerRoutes(app) {
       res.status(500).json({ message: "Failed to save profile" });
     }
   });
-  app.get("/api/load-profile", requireAuth, async (req, res) => {
+  app2.get("/api/load-profile", requireAuth, async (req, res) => {
     try {
       if (!req.user) {
         console.warn(`[LOAD-PROFILE] Unauthorized request`);
@@ -548,7 +548,7 @@ async function registerRoutes(app) {
       res.status(500).json({ message: "Failed to load profile" });
     }
   });
-  app.get("/sitemap.xml", (_req, res) => {
+  app2.get("/sitemap.xml", (_req, res) => {
     res.set("Content-Type", "application/xml");
     res.send(`<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -564,13 +564,13 @@ async function registerRoutes(app) {
   </url>
 </urlset>`);
   });
-  app.get("/robots.txt", (_req, res) => {
+  app2.get("/robots.txt", (_req, res) => {
     res.set("Content-Type", "text/plain");
     res.send(`User-agent: *
 Allow: /
 Sitemap: https://timetraveltycoon.onrender.com/sitemap.xml`);
   });
-  const httpServer = createServer(app);
+  const httpServer = createServer(app2);
   return httpServer;
 }
 
@@ -579,15 +579,15 @@ if (process.env.NODE_ENV === "production" && !process.env.SESSION_SECRET) {
   console.warn("WARNING: SESSION_SECRET env var is not set in production. Using insecure default.");
 }
 async function buildApp() {
-  const app = express();
-  app.set("trust proxy", 1);
-  app.use(helmet({
+  const app2 = express();
+  app2.set("trust proxy", 1);
+  app2.use(helmet({
     contentSecurityPolicy: false,
     crossOriginOpenerPolicy: false,
     crossOriginResourcePolicy: false
   }));
-  app.use(express.json({ limit: "10mb" }));
-  app.use(express.urlencoded({ extended: false, limit: "10mb" }));
+  app2.use(express.json({ limit: "10mb" }));
+  app2.use(express.urlencoded({ extended: false, limit: "10mb" }));
   console.log("\u2713 neonConfig.webSocketConstructor type:", typeof neonConfig3.webSocketConstructor);
   console.log("\u2713 globalThis.WebSocket type:", typeof globalThis.WebSocket);
   const MemoryStore = createMemoryStore(session);
@@ -601,7 +601,7 @@ async function buildApp() {
       createTableIfMissing: true
     });
   }
-  app.use(
+  app2.use(
     session({
       store: sessionStore,
       secret: process.env.SESSION_SECRET || "chronotransit-secret-key-change-in-production",
@@ -617,29 +617,58 @@ async function buildApp() {
       proxy: true
     })
   );
-  app.use(passport_config_default.initialize());
-  app.use(passport_config_default.session());
-  app.use((req, _res, next) => {
+  app2.use(passport_config_default.initialize());
+  app2.use(passport_config_default.session());
+  app2.use((req, _res, next) => {
     if (req.path.startsWith("/api")) {
       console.log(`\u{1F36A} ${req.method} ${req.path} - Authenticated: ${req.isAuthenticated()}, User: ${req.user ? req.user.username : "NONE"}`);
     }
     next();
   });
-  await registerRoutes(app);
-  app.use((err, _req, res, _next) => {
+  await registerRoutes(app2);
+  app2.use((err, _req, res, _next) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
     console.error("Request error:", err);
     res.status(status).json({ message });
   });
-  return app;
+  return app2;
 }
 
 // server/vercel-entry.ts
-var appPromise = buildApp();
+var app;
+var bootError = null;
+var appPromise = (async () => {
+  try {
+    const a = await buildApp();
+    app = a;
+    return a;
+  } catch (e) {
+    bootError = e instanceof Error ? e : new Error(String(e));
+    console.error("\u2717 buildApp() failed:", bootError);
+    console.error(bootError.stack);
+    throw bootError;
+  }
+})();
 async function handler(req, res) {
-  const app = await appPromise;
-  return app(req, res);
+  try {
+    const a = app ?? await appPromise;
+    return a(req, res);
+  } catch (e) {
+    const err = e instanceof Error ? e : new Error(String(e));
+    console.error("\u2717 handler failed:", err);
+    console.error(err.stack);
+    res.statusCode = 500;
+    res.setHeader("content-type", "application/json");
+    res.end(
+      JSON.stringify({
+        error: "function_boot_failed",
+        message: err.message,
+        stack: err.stack?.split("\n").slice(0, 8).join("\n"),
+        bootError: bootError ? { message: bootError.message, stack: bootError.stack?.split("\n").slice(0, 8).join("\n") } : null
+      })
+    );
+  }
 }
 export {
   handler as default
