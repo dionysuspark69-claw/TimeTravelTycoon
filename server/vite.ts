@@ -79,10 +79,26 @@ export function serveStatic(app: Express) {
     );
   }
 
-  app.use(express.static(distPath));
+  // Hashed bundle assets (e.g. /assets/index-XXXX.js) are immutable — long-cache.
+  // Everything else falls back to no-store so stale index.html can't pin the
+  // browser to a bundle that no longer exists after a deploy.
+  app.use(
+    express.static(distPath, {
+      etag: true,
+      lastModified: true,
+      setHeaders: (res, filePath) => {
+        if (/[\\/]assets[\\/]/.test(filePath)) {
+          res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+        } else {
+          res.setHeader("Cache-Control", "no-store, must-revalidate");
+        }
+      },
+    }),
+  );
 
   // fall through to index.html if the file doesn't exist
   app.use("*", (_req, res) => {
+    res.setHeader("Cache-Control", "no-store, must-revalidate");
     res.sendFile(path.resolve(distPath, "index.html"));
   });
 }
