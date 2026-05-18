@@ -164,7 +164,7 @@ export default function AntFarmScene({
         }}
       >
         <span style={{ width: 6, height: 6, background: pal.A, boxShadow: `0 0 6px ${pal.A}` }} />
-        STRATUM {String(currentIdx + 1).padStart(2, "0")} · {ERA_META[currentEra]?.label.toUpperCase()} · {STRATA[currentIdx].depth}
+        STRATUM {String(currentIdx + 1).padStart(2, "0")} · {(ERA_META[currentEra]?.label ?? STRATA[currentIdx]?.era ?? "—").toUpperCase()} · {STRATA[currentIdx]?.depth ?? ""}
       </div>
     </div>
   );
