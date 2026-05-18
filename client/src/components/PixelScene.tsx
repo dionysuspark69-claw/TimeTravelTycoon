@@ -71,11 +71,8 @@ export default function PixelScene({ era, tier, fleetSize, queueSize, onDepart, 
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = SCENE_W * PIXEL_SCALE * dpr;
     canvas.height = SCENE_H * PIXEL_SCALE * dpr;
-    // Let CSS scale the canvas to fit the container width on any screen size.
-    // height: auto maintains the correct 16:9 aspect ratio automatically.
-    canvas.style.width = "100%";
-    canvas.style.height = "auto";
-    canvas.style.display = "block";
+    canvas.style.width = `${SCENE_W * PIXEL_SCALE}px`;
+    canvas.style.height = `${SCENE_H * PIXEL_SCALE}px`;
     const ctx = canvas.getContext("2d", { alpha: false })!;
     ctx.imageSmoothingEnabled = false;
     ctx.scale(PIXEL_SCALE * dpr, PIXEL_SCALE * dpr);
@@ -164,7 +161,7 @@ export default function PixelScene({ era, tier, fleetSize, queueSize, onDepart, 
     <canvas
       ref={canvasRef}
       className={className}
-      style={{ imageRendering: "pixelated", background: PALETTE["0"] }}
+      style={{ imageRendering: "pixelated", display: "block", background: PALETTE["0"] }}
     />
   );
 }
