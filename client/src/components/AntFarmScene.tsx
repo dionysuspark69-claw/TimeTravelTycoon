@@ -59,11 +59,21 @@ export default function AntFarmScene({
     [currentEra],
   );
 
-  // Window of visible strata, centered on currentEra.
-  const { startIdx, visible } = useMemo(() => {
-    const start = Math.max(0, Math.min(STRATA.length - STRATUM_WINDOW, currentIdx - 1));
-    return { startIdx: start, visible: STRATA.slice(start, start + STRATUM_WINDOW) };
-  }, [currentIdx]);
+  // Window of visible strata, centered on currentEra. Split into two memos so
+  // `visible` keeps a stable reference while the elevator scrubs within the
+  // same window — the static cache then only rebuilds on actual window changes.
+  const startIdx = useMemo(
+    () => Math.max(0, Math.min(STRATA.length - STRATUM_WINDOW, currentIdx - 1)),
+    [currentIdx],
+  );
+  const visible = useMemo(
+    () => STRATA.slice(startIdx, startIdx + STRATUM_WINDOW),
+    [startIdx],
+  );
+
+  // Live values consumed by the per-frame loop without rebuilding the cache.
+  const liveRef = useRef({ currentIdx, queueSize, tier });
+  liveRef.current = { currentIdx, queueSize, tier };
 
   const sceneH = STRATUM_H * visible.length;
   const shaftX = width - 130;
@@ -99,10 +109,11 @@ export default function AntFarmScene({
 
     function frame() {
       const s = stateRef.current;
+      const live = liveRef.current;
       s.frame = (s.frame + 1) % 10000;
 
       // Drift elevator toward current stratum's middle.
-      const targetStratum = currentIdx - startIdx;
+      const targetStratum = live.currentIdx - startIdx;
       const targetY = targetStratum * STRATUM_H + (STRATUM_H - ELEV_H) / 2;
       const delta = targetY - s.elevY;
       s.elevY += Math.sign(delta) * Math.min(Math.abs(delta), 1.4);
@@ -115,14 +126,14 @@ export default function AntFarmScene({
       }
 
       ctx.drawImage(cache, 0, 0);
-      renderDynamic(ctx, s, visible, currentIdx - startIdx, queueSize, tier, {
+      renderDynamic(ctx, s, visible, live.currentIdx - startIdx, live.queueSize, live.tier, {
         width, sceneH, shaftX,
       });
       s.raf = requestAnimationFrame(frame);
     }
     stateRef.current.raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(stateRef.current.raf);
-  }, [visible, currentIdx, startIdx, sceneH, width, shaftX, queueSize, tier]);
+  }, [visible, startIdx, sceneH, width, shaftX]);
 
   return (
     <div className={className} style={{ position: "relative", display: "inline-block" }}>
