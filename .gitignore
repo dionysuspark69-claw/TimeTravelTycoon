@@ -7,3 +7,5 @@ vite.config.ts.*
 .env
 .env.local
 create-leaderboard.mjs
+api/server.mjs
+.vercel/
