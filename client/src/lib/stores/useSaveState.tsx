@@ -76,6 +76,15 @@ export const useSaveState = create<SaveState>((set, get) => ({
         body: JSON.stringify({ gameState }),
       });
 
+      if (response.status === 409) {
+        // Server refused because this client's state would erase real
+        // progress (fresh game racing a real save). Adopt the server save.
+        saveDebugLog("Save rejected as regressive — applying server save instead", "WARN");
+        await get().loadGame(0);
+        await get().loadProfile();
+        return;
+      }
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || "Failed to save game");
@@ -166,10 +175,31 @@ export const useSaveState = create<SaveState>((set, get) => ({
         return false;
       }
 
-      const serverLastPlay: number = data.gameState.lastPlayTime || 0;
-      if (localLastPlayTime > 0 && serverLastPlay <= localLastPlayTime) {
-        saveDebugLog(`Server save (${serverLastPlay}) not newer than local (${localLastPlayTime}), keeping local state`, "INFO");
-        return false;
+      // Decide which save wins. Progress (prestige level, then lifetime
+      // earnings) beats recency: a brand-new session always has a newer
+      // timestamp than a real save, so "newest wins" would let a fresh game
+      // wipe months of progress. localLastPlayTime === 0 forces server apply.
+      if (localLastPlayTime > 0) {
+        const local = useIdleGame.getState();
+        const localPrestige = Number(local.prestigeLevel) || 0;
+        const localEarned = Number(local.totalEarned) || 0;
+        const serverPrestige = Number(data.gameState.prestigeLevel) || 0;
+        const serverEarned = Number(data.gameState.totalEarned) || 0;
+        const serverLastPlay: number = data.gameState.lastPlayTime || 0;
+
+        const serverWins =
+          serverPrestige > localPrestige ||
+          (serverPrestige === localPrestige &&
+            (serverEarned > localEarned ||
+              (serverEarned === localEarned && serverLastPlay > localLastPlayTime)));
+
+        if (!serverWins) {
+          saveDebugLog(
+            `Keeping local state (prestige ${localPrestige}, earned ${localEarned}) over server (prestige ${serverPrestige}, earned ${serverEarned})`,
+            "INFO"
+          );
+          return false;
+        }
       }
 
       const validated = validateAndSanitizeGameState(data.gameState);

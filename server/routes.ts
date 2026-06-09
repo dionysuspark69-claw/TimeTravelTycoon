@@ -282,9 +282,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .limit(1);
 
       if (existingSaves.length > 0) {
-        // Preserve _profile so saveGame doesn't overwrite what saveProfile wrote
         const existing = existingSaves[0].gameState as any;
-        const merged = { ...gameState, _profile: existing?._profile };
+
+        // Wipe guard: a save that erases >99.9% of substantial lifetime
+        // earnings without a prestige is a fresh client clobbering a real
+        // save (e.g. a new device autosaving before the server save applied),
+        // never legitimate play. Refuse it; the client reloads the server save.
+        const existingEarned = Number(existing?.totalEarned) || 0;
+        const incomingEarned = Number(gameState?.totalEarned) || 0;
+        const existingPrestige = Number(existing?.prestigeLevel) || 0;
+        const incomingPrestige = Number(gameState?.prestigeLevel) || 0;
+        if (existingEarned > 1_000_000 && incomingEarned < existingEarned / 1000 && incomingPrestige <= existingPrestige) {
+          console.warn(`[SAVE] Refused regressive save for user ${req.user.id}: totalEarned ${existingEarned} -> ${incomingEarned}`);
+          return res.status(409).json({ message: "Save rejected: it would erase existing progress", code: "SAVE_REGRESSION" });
+        }
+
+        // Preserve _profile so saveGame doesn't overwrite what saveProfile
+        // wrote, and keep the highest-progress historical state in _backup so
+        // any accidental overwrite can be undone via /api/restore-backup.
+        const { _profile, _backup: prevBackup, _profileBackup, ...prevState } = existing || {};
+        const keepBackup =
+          (Number((prevState as any)?.totalEarned) || 0) >= (Number(prevBackup?.totalEarned) || 0)
+            ? prevState
+            : prevBackup;
+        const merged = { ...gameState, _profile, _profileBackup, _backup: keepBackup };
         await db
           .update(gameSaves)
           .set({
@@ -467,7 +488,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "No save found" });
       }
 
-      const gameState = saves[0].gameState;
+      // _backup/_profileBackup are server-side recovery data, _profile travels via /api/load-profile
+      const { _backup, _profile, _profileBackup, ...gameState } = (saves[0].gameState as any) || {};
       console.log(`[LOAD] Returning save for user ${req.user.id}, keys: ${gameState ? Object.keys(gameState).length : 0}`);
 
       res.set("Cache-Control", "no-store");
@@ -475,6 +497,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("[LOAD] Error:", error);
       res.status(500).json({ message: "Failed to load progress" });
+    }
+  });
+
+  // Swaps the live save with its _backup slot (the highest-progress state
+  // ever seen for this user). Lets a player undo an accidental overwrite.
+  app.post("/api/restore-backup", requireAuth, saveLimiter, async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const saves = await db
+        .select()
+        .from(gameSaves)
+        .where(eq(gameSaves.userId, req.user.id))
+        .limit(1);
+      if (saves.length === 0) {
+        return res.status(404).json({ message: "No save found" });
+      }
+      const { _backup, _profile, _profileBackup, ...current } = (saves[0].gameState as any) || {};
+      if (!_backup || typeof _backup !== "object") {
+        return res.status(404).json({ message: "No backup available for this save" });
+      }
+      // Swap: backups become live, the replaced state/profile become the new backups.
+      const merged = {
+        ..._backup,
+        _profile: _profileBackup || _profile,
+        _profileBackup: _profileBackup ? _profile : undefined,
+        _backup: current,
+      };
+      await db
+        .update(gameSaves)
+        .set({ gameState: merged, lastUpdated: new Date() })
+        .where(eq(gameSaves.userId, req.user.id));
+      console.log(`[RESTORE] User ${req.user.id} restored backup save (totalEarned ${(_backup as any)?.totalEarned})`);
+      res.set("Cache-Control", "no-store");
+      res.json({ gameState: _backup });
+    } catch (error) {
+      console.error("[RESTORE] Error:", error);
+      res.status(500).json({ message: "Failed to restore backup" });
     }
   });
 
@@ -488,8 +549,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const existing = await db.select().from(gameSaves).where(eq(gameSaves.userId, req.user.id)).limit(1);
       if (existing.length > 0) {
         const current = (existing[0].gameState as any) || {};
+        // Keep the richest profile ever seen in _profileBackup (same rationale
+        // as the game-state _backup: a fresh client must not silently erase
+        // managers/achievements/artifacts).
+        const richness = (p: any) =>
+          Object.keys(p?.managers || {}).length +
+          (p?.unlockedAchievements?.length || 0) +
+          (p?.artifactDiscoveries?.length || 0);
+        const prevProfile = current._profile;
+        const profileBackup =
+          richness(prevProfile) >= richness(current._profileBackup) ? prevProfile : current._profileBackup;
         await db.update(gameSaves).set({
-          gameState: { ...current, _profile: profileState },
+          gameState: { ...current, _profile: profileState, _profileBackup: profileBackup },
           lastUpdated: new Date(),
         }).where(eq(gameSaves.userId, req.user.id));
       } else {
