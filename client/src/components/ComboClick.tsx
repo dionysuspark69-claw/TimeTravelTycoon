@@ -37,6 +37,7 @@ export function ComboClick() {
 
   useEffect(() => {
     drainRef.current = setInterval(() => {
+      if (document.hidden) return; // don't drain the meter in a backgrounded tab
       barRef.current = Math.max(0, barRef.current - DRAIN_PER_TICK);
       const rounded = Math.round(barRef.current);
       setBar(rounded);

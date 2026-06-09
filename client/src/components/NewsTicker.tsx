@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useIsMobile } from "@/hooks/use-is-mobile";
 
 const MESSAGES = [
   "BREAKING: Local man accidentally books round trip to the Jurassic Period. Dinosaur not impressed.",
@@ -21,9 +22,13 @@ const MESSAGES = [
 export function NewsTicker() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [visible, setVisible] = useState(true);
+  const isMobile = useIsMobile();
 
+  // The ticker is hidden on mobile (hidden md:flex) — don't run its timers there.
   useEffect(() => {
+    if (isMobile) return;
     const interval = setInterval(() => {
+      if (document.hidden) return;
       setVisible(false);
       setTimeout(() => {
         setCurrentIndex((prev) => (prev + 1) % MESSAGES.length);
@@ -32,7 +37,9 @@ export function NewsTicker() {
     }, 8000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [isMobile]);
+
+  if (isMobile) return null;
 
   return (
     <div className="hidden md:flex absolute bottom-0 left-0 right-0 z-10 h-7 bg-black/70 items-center gap-2 px-3">
