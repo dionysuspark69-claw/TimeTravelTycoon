@@ -25,6 +25,7 @@ import {
   CHAR_W, CHAR_H, TILE, LANDMARK_H, ELEV_W, ELEV_H,
   drawSprite, drawLandmark, drawSky, drawElevator, getEraPalette,
 } from "../lib/pixelEngine";
+import { GAME_STRATA } from "../lib/strataOrder";
 
 const STRATUM_WINDOW = 3; // strata visible at once
 const STRATUM_H = 84;     // px per stratum
@@ -60,7 +61,7 @@ export default function AntFarmScene({
   onArriveRef.current = onArrive;
 
   const currentIdx = useMemo(
-    () => Math.max(0, STRATA.findIndex(s => s.era === currentEra)),
+    () => Math.max(0, GAME_STRATA.findIndex(s => s.era === currentEra)),
     [currentEra],
   );
 
@@ -86,7 +87,7 @@ export default function AntFarmScene({
     ctx.imageSmoothingEnabled = false;
     ctx.scale(dpr, dpr);
 
-    const maxCamY = (STRATA.length - visibleWindow) * STRATUM_H;
+    const maxCamY = (GAME_STRATA.length - visibleWindow) * STRATUM_H;
     const cameraTarget = (idx: number) =>
       Math.max(0, Math.min(maxCamY, (idx - 1) * STRATUM_H));
     const elevatorTarget = (idx: number) =>
@@ -112,7 +113,7 @@ export default function AntFarmScene({
     const ensureCache = (start: number) => {
       if (start === cacheStart) return;
       cacheStart = start;
-      cacheSlice = STRATA.slice(start, start + cacheStrata);
+      cacheSlice = GAME_STRATA.slice(start, start + cacheStrata);
       renderStatic(cctx, cacheSlice, { width, sceneH: STRATUM_H * cacheSlice.length, shaftX, absStart: start });
     };
 
@@ -142,10 +143,10 @@ export default function AntFarmScene({
       const stratIdx = Math.round((s.elevY - (STRATUM_H - ELEV_H) / 2) / STRATUM_H);
       if (Math.abs(elevDelta) < 1.5 && stratIdx !== s.lastStratum) {
         s.lastStratum = stratIdx;
-        onArriveRef.current?.(STRATA[stratIdx]?.era);
+        onArriveRef.current?.(GAME_STRATA[stratIdx]?.era);
       }
 
-      const start = Math.max(0, Math.min(STRATA.length - visibleWindow, Math.floor(s.camY / STRATUM_H)));
+      const start = Math.max(0, Math.min(GAME_STRATA.length - visibleWindow, Math.floor(s.camY / STRATUM_H)));
       ensureCache(start);
       const offset = s.camY - cacheStart * STRATUM_H;
 
@@ -197,7 +198,7 @@ export default function AntFarmScene({
         }}
       >
         <span style={{ width: 6, height: 6, background: pal.A, boxShadow: `0 0 6px ${pal.A}` }} />
-        STRATUM {String(currentIdx + 1).padStart(2, "0")} · {(ERA_META[currentEra]?.label ?? STRATA[currentIdx]?.era ?? "—").toUpperCase()} · {STRATA[currentIdx]?.depth ?? ""}
+        STRATUM {String(currentIdx + 1).padStart(2, "0")} · {(ERA_META[currentEra]?.label ?? GAME_STRATA[currentIdx]?.era ?? "—").toUpperCase()} · {GAME_STRATA[currentIdx]?.depth ?? ""}
       </div>
     </div>
   );

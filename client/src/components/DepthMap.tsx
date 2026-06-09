@@ -6,7 +6,8 @@
  * current. Highlights the in-viewport window and the current stratum.
  */
 
-import { STRATA, ERA_PALETTES, ERA_META } from "../lib/pixelEngine";
+import { ERA_PALETTES, ERA_META } from "../lib/pixelEngine";
+import { GAME_STRATA } from "../lib/strataOrder";
 
 interface Props {
   currentEra: string;
@@ -25,9 +26,9 @@ export default function DepthMap({
   onSelect,
   className,
 }: Props) {
-  const currentIdx = STRATA.findIndex(s => s.era === currentEra);
-  const startIdx = Math.max(0, Math.min(STRATA.length - visibleWindow, currentIdx - 1));
-  const unlocked = new Set(unlockedEras ?? STRATA.map(s => s.era));
+  const currentIdx = GAME_STRATA.findIndex(s => s.era === currentEra);
+  const startIdx = Math.max(0, Math.min(GAME_STRATA.length - visibleWindow, currentIdx - 1));
+  const unlocked = new Set(unlockedEras ?? GAME_STRATA.map(s => s.era));
 
   return (
     <div
@@ -56,7 +57,7 @@ export default function DepthMap({
           display: "flex", flexDirection: "column",
         }}
       >
-        {STRATA.map((s, i) => {
+        {GAME_STRATA.map((s, i) => {
           const p = ERA_PALETTES[s.era];
           const isCurrent = i === currentIdx;
           const inViewport = i >= startIdx && i < startIdx + visibleWindow;
