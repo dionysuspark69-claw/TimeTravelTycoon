@@ -8,3 +8,5 @@ vite.config.ts.*
 .env.local
 create-leaderboard.mjs
 .vercel/
+logging
+attached_assets

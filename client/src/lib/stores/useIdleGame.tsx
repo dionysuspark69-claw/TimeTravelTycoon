@@ -1010,7 +1010,11 @@ export const useIdleGame = create<IdleGameState>()(
         return Math.min(result, Number.MAX_SAFE_INTEGER);
       }
       const firstCost = baseCost * Math.pow(multiplier, currentLevel - 1);
-      const sum = firstCost * (Math.pow(multiplier, quantity) - 1) / (multiplier - 1);
+      // Guard the geometric-series denominator: multiplier === 1 would divide
+      // by zero (→ Infinity, which Math.min won't clamp).
+      const sum = Math.abs(multiplier - 1) < 1e-9
+        ? firstCost * quantity
+        : firstCost * (Math.pow(multiplier, quantity) - 1) / (multiplier - 1);
       return Math.min(Math.round(sum), Number.MAX_SAFE_INTEGER);
     },
     
@@ -1302,9 +1306,12 @@ export const useIdleGame = create<IdleGameState>()(
         customerGenerationRate: 1,
         queueSize: 1,
         boardingSpeed: 1,
-        vipChance: 0.05,
-        turnaroundTime: 10,
-        autoDispatch: 0,
+        // Run-local upgrades reset to their base (1), matching a fresh game.
+        // Previously vipChance reset to 0.05 — below the `vipChance > 1` spawn
+        // gate — so VIPs never spawned again after a prestige.
+        vipChance: 1,
+        turnaroundTime: 1,
+        autoDispatch: 1,
         coinsPerSecond: 0,
         _pendingOfflineEarnings: 0,
         waitingCustomers: 0,
@@ -1312,6 +1319,8 @@ export const useIdleGame = create<IdleGameState>()(
         tripEndTime: null,
         customerEntities: [],
         nextCustomerId: 0,
+        lastTemporalBeaconTime: 0,
+        lastClickBoostTime: undefined,
         unlockedDestinations: [startId],
         currentDestination: startId,
         lastPlayTime: Date.now(),
@@ -1578,7 +1587,7 @@ export const useIdleGame = create<IdleGameState>()(
           const colorIndex = nextId % 5;
           // VIP rate: 1% base + 1% per level above 1, capped at 20% (level 20)
           const vipRate = Math.min(0.20, Math.max(0.01, 0.01 + (state.vipChance - 1) * 0.01));
-          const isVIP = perks.hasVIP ? Math.random() < vipRate : (state.vipChance > 1 && Math.random() < vipRate);
+          const isVIP = (perks.hasVIP || state.vipChance > 1) && Math.random() < vipRate;
           newEntities.push({
             id,
             state: "spawning",

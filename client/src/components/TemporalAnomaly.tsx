@@ -63,13 +63,12 @@ export function TemporalAnomaly() {
     };
   }, []);
 
-  // Countdown ticker
+  // Countdown ticker — 1s granularity is enough for a seconds display.
   useEffect(() => {
     if (!anomaly) return;
-    const interval = setInterval(() => {
-      const remaining = Math.max(0, anomaly.expiresAt - Date.now());
-      setTimeLeft(Math.ceil(remaining / 1000));
-    }, 200);
+    const tick = () => setTimeLeft(Math.ceil(Math.max(0, anomaly.expiresAt - Date.now()) / 1000));
+    tick();
+    const interval = setInterval(() => { if (!document.hidden) tick(); }, 1000);
     return () => clearInterval(interval);
   }, [anomaly]);
 

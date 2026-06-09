@@ -7,18 +7,20 @@ export function ActiveEventsDisplay() {
   const [timeRemaining, setTimeRemaining] = useState<Record<string, number>>({});
   
   useEffect(() => {
-    const interval = setInterval(() => {
+    if (activeEvents.length === 0) return;
+    const update = () => {
       const now = Date.now();
       const newTimeRemaining: Record<string, number> = {};
-      
       activeEvents.forEach(activeEvent => {
-        const remaining = Math.max(0, Math.floor((activeEvent.endsAt - now) / 1000));
-        newTimeRemaining[activeEvent.event.id] = remaining;
+        newTimeRemaining[activeEvent.event.id] = Math.max(0, Math.floor((activeEvent.endsAt - now) / 1000));
       });
-      
       setTimeRemaining(newTimeRemaining);
-    }, 100);
-    
+    };
+    update();
+    // A countdown only needs 1s granularity; pause entirely when tab hidden.
+    const interval = setInterval(() => {
+      if (!document.hidden) update();
+    }, 1000);
     return () => clearInterval(interval);
   }, [activeEvents]);
   
