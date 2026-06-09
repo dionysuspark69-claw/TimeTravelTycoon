@@ -1,11 +1,12 @@
 import { useIdleGame, TIME_PERIODS } from "@/lib/stores/useIdleGame";
 import { Button } from "./ui/button";
 import { useAudio } from "@/lib/stores/useAudio";
-import { Volume2, VolumeX, Trophy } from "lucide-react";
+import { Volume2, VolumeX, Trophy, User as UserIcon } from "lucide-react";
 import { StatsPanel } from "./StatsPanel";
 import { SettingsDialog } from "./SettingsDialog";
 import { useIsMobile } from "@/hooks/use-is-mobile";
 import { useAdBoosts } from "@/lib/stores/useAdBoosts";
+import { useAuth } from "@/lib/stores/useAuth";
 import { useState, useEffect } from "react";
 import { formatChronoValue } from "@/lib/utils";
 
@@ -25,6 +26,7 @@ export function GameUI() {
   const { isMuted, toggleMute } = useAudio();
   const isMobile = useIsMobile();
   const { activeBoosts } = useAdBoosts();
+  const { isAuthenticated, user, loginWithGoogle } = useAuth();
   const [, setTick] = useState(0);
 
   useEffect(() => {
@@ -92,8 +94,18 @@ export function GameUI() {
             <span className="text-green-400 text-xs">Trip <span className="text-white font-semibold">{processingCustomers}</span></span>
             <span className="text-purple-400 text-xs">Done <span className="text-white font-semibold">{formatChronoValue(totalCustomersServed)}</span></span>
             {boostTimer && (
-              <span className="text-yellow-300 text-xs ml-auto">Boost {formatTime(boostTimer)}</span>
+              <span className="text-yellow-300 text-xs">Boost {formatTime(boostTimer)}</span>
             )}
+            {/* Signed-in-as: shows the active account, or prompts sign-in as a guest. */}
+            <button
+              type="button"
+              onClick={() => { if (!isAuthenticated) loginWithGoogle(); }}
+              className={`ml-auto flex items-center gap-1 text-xs ${isAuthenticated ? "text-gray-300 cursor-default" : "text-cyan-300 hover:text-cyan-200"}`}
+              title={isAuthenticated ? `Signed in as ${user?.username}` : "Sign in to save your progress"}
+            >
+              <UserIcon className="w-3 h-3" />
+              <span className="max-w-[90px] truncate">{isAuthenticated ? user?.username : "Guest · Sign in"}</span>
+            </button>
           </div>
         </div>
       </div>
