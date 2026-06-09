@@ -44,4 +44,32 @@ describe("audit fix verification", () => {
     expect(Number.isFinite(cost)).toBe(true);
     expect(cost).toBe(5000); // 100 * 50, linear when multiplier is 1
   });
+
+  it("daily reward: claim grants coins once per day, builds a streak, blocks re-claim", async () => {
+    const { useIdleGame } = await import("../lib/stores/useIdleGame");
+    const { useDailyReward } = await import("../lib/stores/useDailyReward");
+    useIdleGame.setState({ chronocoins: 0, totalEarned: 1_000_000, coinsPerSecond: 100 });
+
+    expect(useDailyReward.getState().canClaim()).toBe(true);
+    const reward = useDailyReward.getState().claim();
+    expect(reward).toBeGreaterThan(0);
+    expect(useIdleGame.getState().chronocoins).toBe(reward);
+    expect(useDailyReward.getState().streak).toBe(1);
+
+    // Second claim same day is a no-op.
+    expect(useDailyReward.getState().canClaim()).toBe(false);
+    expect(useDailyReward.getState().claim()).toBe(0);
+
+    // Simulate "yesterday" so the next claim continues the streak.
+    const DAY = 24 * 60 * 60 * 1000;
+    useDailyReward.setState({ lastClaimedDay: Math.floor(Date.now() / DAY) - 1 });
+    expect(useDailyReward.getState().canClaim()).toBe(true);
+    expect(useDailyReward.getState().nextStreak()).toBe(2);
+    useDailyReward.getState().claim();
+    expect(useDailyReward.getState().streak).toBe(2);
+
+    // A missed day resets the streak to 1.
+    useDailyReward.setState({ lastClaimedDay: Math.floor(Date.now() / DAY) - 3 });
+    expect(useDailyReward.getState().nextStreak()).toBe(1);
+  });
 });

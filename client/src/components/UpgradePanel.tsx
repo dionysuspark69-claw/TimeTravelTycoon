@@ -3,13 +3,15 @@ import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
-import { ArrowUp, MapPin, Users, Trophy, Settings, Plus, Minus, Sparkles, ChevronDown, ChevronUp, Medal, Star, RefreshCcw } from "lucide-react";
+import { ArrowUp, MapPin, Users, Trophy, Settings, Plus, Minus, Sparkles, ChevronDown, ChevronUp, Medal, Star, RefreshCcw, Target } from "lucide-react";
 import { ManagersPanel } from "./ManagersPanel";
 import { AchievementsPanel } from "./AchievementsPanel";
 import { MissionsPanel } from "./MissionsPanel";
 import { CollectionsPanel } from "./CollectionsPanel";
 import { AdBoostPanel } from "./AdBoostPanel";
 import { LeaderboardPanel } from "./LeaderboardPanel";
+import { DailyRewardCard } from "./DailyRewardCard";
+import { useDailyReward } from "@/lib/stores/useDailyReward";
 import { useAchievements } from "@/lib/stores/useAchievements";
 import { useArtifacts, ARTIFACT_COLLECTIONS } from "@/lib/stores/useArtifacts";
 import { useState } from "react";
@@ -307,7 +309,12 @@ export function UpgradePanel() {
   
   const { getUnclaimedAchievements } = useAchievements();
   const unclaimedCount = getUnclaimedAchievements().length;
-  
+
+  // Subscribe to the daily-reward day so the tab dot updates on claim; the
+  // actual availability is a time-based check.
+  useDailyReward(s => s.lastClaimedDay);
+  const questsDot = useDailyReward.getState().canClaim();
+
   const timeMachineEffectiveMultiplier = multiplier === 'max' 
     ? computeMaxAffordable(100, 1.7, timeMachineLevel, chronocoins)
     : multiplier;
@@ -365,18 +372,25 @@ export function UpgradePanel() {
       {isExpanded && (
         <div className="p-2 md:p-4">
           <Tabs defaultValue="upgrades" className="w-full">
-        <TabsList className="grid w-full grid-cols-5 bg-gray-900">
+        <TabsList className="grid w-full grid-cols-6 bg-gray-900">
           <TabsTrigger value="upgrades" className="flex items-center gap-2 text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
             <Settings className="w-4 h-4" />
             <span className="hidden sm:inline">Upgrades</span>
+          </TabsTrigger>
+          <TabsTrigger value="destinations" className="flex items-center gap-2 text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
+            <MapPin className="w-4 h-4" />
+            <span className="hidden sm:inline">Travel</span>
           </TabsTrigger>
           <TabsTrigger value="team" className="flex items-center gap-2 text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
             <Users className="w-4 h-4" />
             <span className="hidden sm:inline">Team</span>
           </TabsTrigger>
-          <TabsTrigger value="destinations" className="flex items-center gap-2 text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
-            <MapPin className="w-4 h-4" />
-            <span className="hidden sm:inline">Destinations</span>
+          <TabsTrigger value="quests" className="flex items-center gap-2 relative text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
+            <Target className="w-4 h-4" />
+            <span className="hidden sm:inline">Quests</span>
+            {questsDot && (
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-purple-400 rounded-full border border-gray-900" />
+            )}
           </TabsTrigger>
           <TabsTrigger value="awards" className="flex items-center gap-2 relative text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
             <Trophy className="w-4 h-4" />
@@ -777,11 +791,15 @@ export function UpgradePanel() {
         
         <TabsContent value="team" className="space-y-2 mt-4 max-h-[40vh] md:max-h-[45vh] overflow-y-auto pr-2 pb-4">
           <ManagersPanel />
+        </TabsContent>
+
+        <TabsContent value="quests" className="space-y-2 mt-4 max-h-[40vh] md:max-h-[45vh] overflow-y-auto pr-2 pb-4">
+          <DailyRewardCard />
           <div className="border-t border-cyan-500/20 my-2 pt-2">
             <MissionsPanel />
           </div>
         </TabsContent>
-        
+
         <TabsContent value="awards" className="space-y-2 mt-4 max-h-[40vh] md:max-h-[45vh] overflow-y-auto pr-2 pb-4">
           {/* Prestige Progress Card */}
           <PrestigeCard />
