@@ -16,7 +16,9 @@ import passport from "./passport-config";
 import { registerRoutes } from "./routes";
 
 if (process.env.NODE_ENV === "production" && !process.env.SESSION_SECRET) {
-  console.warn("WARNING: SESSION_SECRET env var is not set in production. Using insecure default.");
+  // Hard-fail rather than silently using a forgeable default: a missing secret
+  // in production means every session cookie can be signed by anyone.
+  throw new Error("SESSION_SECRET must be set in production. Refusing to start with an insecure default.");
 }
 
 export async function buildApp() {

@@ -3,7 +3,6 @@ import { createServer, type Server } from "http";
 import { eq, desc, or, sql, asc } from "drizzle-orm";
 import rateLimit from "express-rate-limit";
 import passport from "./passport-config";
-import { getUserInfo } from "@replit/repl-auth";
 import bcrypt from "bcryptjs";
 import { db } from "./db";
 import { gameSaves, users, leaderboardEntries, type User } from "@shared/schema";
@@ -42,6 +41,23 @@ function requireAuth(req: Request, res: Response, next: NextFunction) {
     return next();
   }
   res.status(401).json({ message: "Unauthorized" });
+}
+
+// Reject obviously-malformed client payloads before they touch the DB. Not a
+// cheat-proof gate (clients are authoritative in this game), but it stops
+// non-objects, non-finite numbers, and oversized JSON from being persisted.
+const MAX_SAVE_BYTES = 256 * 1024;
+function isValidStatePayload(state: unknown): boolean {
+  if (state === null || typeof state !== "object" || Array.isArray(state)) return false;
+  for (const v of Object.values(state as Record<string, unknown>)) {
+    if (typeof v === "number" && !Number.isFinite(v)) return false;
+  }
+  try {
+    if (JSON.stringify(state).length > MAX_SAVE_BYTES) return false;
+  } catch {
+    return false; // circular / non-serializable
+  }
+  return true;
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -172,57 +188,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/auth/replit", async (req, res) => {
-    try {
-      const replitUserInfo = getUserInfo(req);
-
-      if (!replitUserInfo || !replitUserInfo.id) {
-        return res.status(401).json({ message: "Not authenticated with Replit" });
-      }
-
-      const replitUserId = replitUserInfo.id;
-      const replitUserName = replitUserInfo.name || "Replit User";
-
-      const existingUsers = await db
-        .select()
-        .from(users)
-        .where(eq(users.replitUserId, replitUserId))
-        .limit(1);
-
-      let user: User;
-      if (existingUsers.length > 0) {
-        user = existingUsers[0];
-      } else {
-        const newUsers = await db
-          .insert(users)
-          .values({
-            replitUserId,
-            username: replitUserName,
-            email: null,
-            googleId: null,
-          })
-          .returning();
-        user = newUsers[0];
-      }
-
-      req.login(user, (err) => {
-        if (err) {
-          console.error("Replit Auth login error:", err);
-          return res.status(500).json({ message: "Failed to log in" });
-        }
-        req.session.save((saveErr) => {
-          if (saveErr) {
-            console.error("Replit Auth session save error:", saveErr);
-            return res.status(500).json({ message: "Failed to persist session" });
-          }
-          res.json({ success: true, user: { id: user.id, username: user.username, replitUserId: user.replitUserId, googleId: user.googleId } });
-        });
-      });
-    } catch (error) {
-      console.error("Replit Auth error:", error);
-      res.status(500).json({ message: "Failed to authenticate" });
-    }
-  });
 
   app.get("/api/auth/user", async (req, res) => {
     try {
@@ -257,13 +222,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/db/test", async (req, res) => {
+  // Health check — returns only liveness, never DB internals or error text.
+  app.get("/api/db/test", async (_req, res) => {
     try {
-      const result = await db.execute(sql`SELECT NOW()`);
-      res.json({ ok: true, result });
+      await db.execute(sql`SELECT 1`);
+      res.json({ ok: true });
     } catch (error) {
       console.error("Database test error:", error);
-      res.status(500).json({ ok: false, error: error instanceof Error ? error.message : "Database connection failed" });
+      res.status(500).json({ ok: false });
     }
   });
 
@@ -274,6 +240,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { gameState } = req.body;
+
+      if (!isValidStatePayload(gameState)) {
+        return res.status(400).json({ message: "Invalid game state payload" });
+      }
 
       const existingSaves = await db
         .select()
@@ -637,6 +607,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       if (!req.user) return res.status(401).json({ message: "Unauthorized" });
       const { profileState } = req.body;
+
+      if (!isValidStatePayload(profileState)) {
+        return res.status(400).json({ message: "Invalid profile state payload" });
+      }
 
       const existing = await db.select().from(gameSaves).where(eq(gameSaves.userId, req.user.id)).limit(1);
       if (existing.length > 0) {
