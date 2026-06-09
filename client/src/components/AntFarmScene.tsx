@@ -52,7 +52,10 @@ export default function AntFarmScene({
   onArrive,
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const stateRef = useRef({ frame: 0, elevY: STRATUM_H, dir: 1, lastStratum: -1, raf: 0 });
+  // camY/elevY live in WORLD coordinates (stratum k spans k*H .. (k+1)*H) so
+  // both the camera and the capsule glide continuously across era changes
+  // instead of teleporting when the visible window used to swap.
+  const stateRef = useRef({ frame: 0, camY: -1, elevY: -1, lastStratum: -1, raf: 0 });
   const onArriveRef = useRef(onArrive);
   onArriveRef.current = onArrive;
 
@@ -61,23 +64,11 @@ export default function AntFarmScene({
     [currentEra],
   );
 
-  // Window of visible strata, centered on currentEra. Split into two memos so
-  // `visible` keeps a stable reference while the elevator scrubs within the
-  // same window — the static cache then only rebuilds on actual window changes.
-  const startIdx = useMemo(
-    () => Math.max(0, Math.min(STRATA.length - visibleWindow, currentIdx - 1)),
-    [currentIdx, visibleWindow],
-  );
-  const visible = useMemo(
-    () => STRATA.slice(startIdx, startIdx + visibleWindow),
-    [startIdx, visibleWindow],
-  );
-
-  // Live values consumed by the per-frame loop without rebuilding the cache.
+  // Live values consumed by the per-frame loop without restarting the effect.
   const liveRef = useRef({ currentIdx, queueSize, tier });
   liveRef.current = { currentIdx, queueSize, tier };
 
-  const sceneH = STRATUM_H * visible.length;
+  const sceneH = STRATUM_H * visibleWindow;
   const shaftX = width - 130;
   const pal = getEraPalette(currentEra);
 
@@ -95,47 +86,87 @@ export default function AntFarmScene({
     ctx.imageSmoothingEnabled = false;
     ctx.scale(dpr, dpr);
 
-    // Pre-paint static layers (terrain, landmarks, stratum labels, shaft
-    // body) to an offscreen canvas. Rebuilt whenever this effect re-runs —
-    // i.e. when `visible`/`width`/`sceneH` change.
+    const maxCamY = (STRATA.length - visibleWindow) * STRATUM_H;
+    const cameraTarget = (idx: number) =>
+      Math.max(0, Math.min(maxCamY, (idx - 1) * STRATUM_H));
+    const elevatorTarget = (idx: number) =>
+      idx * STRATUM_H + (STRATUM_H - ELEV_H) / 2;
+
+    // First mount: start at the current stratum, no scroll-in.
+    if (stateRef.current.camY < 0) {
+      stateRef.current.camY = cameraTarget(liveRef.current.currentIdx);
+      stateRef.current.elevY = elevatorTarget(liveRef.current.currentIdx);
+    }
+    stateRef.current.camY = Math.max(0, Math.min(maxCamY, stateRef.current.camY));
+
+    // Static cache holds one stratum more than the viewport so the camera can
+    // sit between strata mid-scroll. Rebuilt only when its start index moves.
+    const cacheStrata = visibleWindow + 1;
     const cache = document.createElement("canvas");
     cache.width = width;
-    cache.height = sceneH;
+    cache.height = STRATUM_H * cacheStrata;
     const cctx = cache.getContext("2d", { alpha: false })!;
     cctx.imageSmoothingEnabled = false;
-    renderStatic(cctx, visible, { width, sceneH, shaftX });
-
-    const minY = 4;
-    const maxY = sceneH - ELEV_H - 4;
-    stateRef.current.elevY = Math.min(Math.max(minY, stateRef.current.elevY), maxY);
+    let cacheStart = -1;
+    let cacheSlice: typeof STRATA = [];
+    const ensureCache = (start: number) => {
+      if (start === cacheStart) return;
+      cacheStart = start;
+      cacheSlice = STRATA.slice(start, start + cacheStrata);
+      renderStatic(cctx, cacheSlice, { width, sceneH: STRATUM_H * cacheSlice.length, shaftX, absStart: start });
+    };
 
     function frame() {
       const s = stateRef.current;
       const live = liveRef.current;
       s.frame = (s.frame + 1) % 10000;
 
-      // Drift elevator toward current stratum's middle.
-      const targetStratum = live.currentIdx - startIdx;
-      const targetY = targetStratum * STRATUM_H + (STRATUM_H - ELEV_H) / 2;
-      const delta = targetY - s.elevY;
-      s.elevY += Math.sign(delta) * Math.min(Math.abs(delta), 1.4);
-
-      // Fire onArrive when settled on a new stratum.
-      const stratIdx = Math.round(s.elevY / STRATUM_H);
-      if (Math.abs(delta) < 1.5 && stratIdx !== s.lastStratum) {
-        s.lastStratum = stratIdx;
-        onArriveRef.current?.(visible[stratIdx]?.era);
+      // Ease the camera toward the current stratum: proportional easing reads
+      // as fast departure + soft landing; min step keeps short hops crisp.
+      const camDelta = cameraTarget(live.currentIdx) - s.camY;
+      if (Math.abs(camDelta) > 0.5) {
+        s.camY += Math.sign(camDelta) * Math.min(Math.abs(camDelta), Math.max(0.8, Math.abs(camDelta) * 0.08));
+      } else {
+        s.camY += camDelta;
       }
 
-      ctx.drawImage(cache, 0, 0);
-      renderDynamic(ctx, s, visible, live.currentIdx - startIdx, live.queueSize, live.tier, {
-        width, sceneH, shaftX,
-      });
+      // The capsule rides slightly ahead of the camera toward the same goal.
+      const elevDelta = elevatorTarget(live.currentIdx) - s.elevY;
+      if (Math.abs(elevDelta) > 0.5) {
+        s.elevY += Math.sign(elevDelta) * Math.min(Math.abs(elevDelta), Math.max(1.2, Math.abs(elevDelta) * 0.09));
+      } else {
+        s.elevY += elevDelta;
+      }
+
+      // Fire onArrive when the capsule settles on a new stratum.
+      const stratIdx = Math.round((s.elevY - (STRATUM_H - ELEV_H) / 2) / STRATUM_H);
+      if (Math.abs(elevDelta) < 1.5 && stratIdx !== s.lastStratum) {
+        s.lastStratum = stratIdx;
+        onArriveRef.current?.(STRATA[stratIdx]?.era);
+      }
+
+      const start = Math.max(0, Math.min(STRATA.length - visibleWindow, Math.floor(s.camY / STRATUM_H)));
+      ensureCache(start);
+      const offset = s.camY - cacheStart * STRATUM_H;
+
+      ctx.drawImage(cache, 0, -offset);
+      ctx.save();
+      ctx.translate(0, -offset);
+      renderDynamic(
+        ctx,
+        { frame: s.frame, elevY: s.elevY - cacheStart * STRATUM_H },
+        cacheSlice,
+        live.currentIdx - cacheStart,
+        live.queueSize,
+        live.tier,
+        { width, sceneH: STRATUM_H * cacheSlice.length, shaftX, absStart: cacheStart },
+      );
+      ctx.restore();
       s.raf = requestAnimationFrame(frame);
     }
     stateRef.current.raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(stateRef.current.raf);
-  }, [visible, startIdx, sceneH, width, shaftX]);
+  }, [sceneH, width, shaftX, visibleWindow]);
 
   return (
     <div className={className} style={{ position: "relative", display: "inline-block" }}>
@@ -178,9 +209,9 @@ export default function AntFarmScene({
 function renderStatic(
   ctx: CanvasRenderingContext2D,
   strata: typeof STRATA,
-  geom: { width: number; sceneH: number; shaftX: number },
+  geom: { width: number; sceneH: number; shaftX: number; absStart: number },
 ) {
-  const { width: W, sceneH: H, shaftX } = geom;
+  const { width: W, sceneH: H, shaftX, absStart } = geom;
 
   ctx.fillStyle = "#06040a";
   ctx.fillRect(0, 0, W, H);
@@ -212,8 +243,9 @@ function renderStatic(
     ctx.fillStyle = "rgba(0,0,0,0.4)";
     ctx.fillRect(0, yTop + skyH + 1, W, STRATUM_H - skyH - 1);
 
-    // Landmark
-    drawLandmark(ctx, stratum.landmark, 80 + (i * 40) % 200, yTop + skyH - LANDMARK_H, pal);
+    // Landmark — position salted by the stratum's ABSOLUTE index so it stays
+    // put as the scrolling cache window shifts.
+    drawLandmark(ctx, stratum.landmark, 80 + ((absStart + i) * 40) % 200, yTop + skyH - LANDMARK_H, pal);
 
     // Stratum label tab
     ctx.fillStyle = pal.B; ctx.fillRect(4, yTop + 4, 100, 14);
@@ -259,9 +291,9 @@ function renderDynamic(
   currentRelIdx: number,
   queueSize: number,
   tier: number,
-  geom: { width: number; sceneH: number; shaftX: number },
+  geom: { width: number; sceneH: number; shaftX: number; absStart: number },
 ) {
-  const { width: W, sceneH: H, shaftX } = geom;
+  const { width: W, sceneH: H, shaftX, absStart } = geom;
 
   for (let i = 0; i < strata.length; i++) {
     const stratum = strata[i];
@@ -277,9 +309,9 @@ function renderDynamic(
     const surfY = yTop + skyH - CHAR_H + 1;
     const count = i === currentRelIdx ? Math.min(4, Math.max(1, queueSize)) : 1;
     for (let p = 0; p < count; p++) {
-      const cx = 20 + p * 18 + (i * 60) % 200;
+      const cx = 20 + p * 18 + ((absStart + i) * 60) % 200;
       if (cx + CHAR_W > shaftX) continue;
-      const f = (state.frame / 12 + i + p) | 0;
+      const f = (state.frame / 12 + absStart + i + p) | 0;
       drawSprite(ctx, CHARACTERS[era][f % 3], cx, surfY, pal);
     }
   }
