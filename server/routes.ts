@@ -539,6 +539,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Disaster recovery: rebuilds a wiped save from the player's own leaderboard
+  // highs (which are max-kept and survive wipes). Only fires when the live
+  // save has lost >99.9% of the earnings the leaderboard proves they had, so
+  // it can't be used to inflate progress. GET so a player can trigger it by
+  // visiting the URL while signed in.
+  const RESCUE_DESTINATIONS = [
+    "dinosaur", "egypt", "rome", "medieval", "viking", "renaissance",
+    "industrial", "wildwest", "roaring20s", "spaceage", "future", "cyberpunk",
+  ];
+  app.get("/api/rescue", requireAuth, async (req, res) => {
+    try {
+      if (!req.user) return res.status(401).json({ message: "Unauthorized" });
+
+      const html = (title: string, body: string) =>
+        `<!DOCTYPE html><html><body style="font-family:sans-serif;max-width:520px;margin:48px auto;padding:24px;background:#111827;color:#e5e7eb;border-radius:12px;">
+          <h2 style="color:#22d3ee;">${title}</h2><p>${body}</p>
+          <a href="/" style="color:#22d3ee;">→ Back to the game</a></body></html>`;
+
+      const [entry] = await db
+        .select()
+        .from(leaderboardEntries)
+        .where(eq(leaderboardEntries.userId, req.user.id))
+        .limit(1);
+      if (!entry) {
+        return res.status(404).send(html("No record found", "There is no leaderboard history for this account to rebuild from."));
+      }
+
+      const lbEarned = parseFloat(String(entry.totalEarned || 0));
+      const saves = await db.select().from(gameSaves).where(eq(gameSaves.userId, req.user.id)).limit(1);
+      const current = (saves[0]?.gameState as any) || {};
+      const currentEarned = Number(current.totalEarned) || 0;
+
+      if (!(lbEarned > 1_000_000 && currentEarned < lbEarned / 1000)) {
+        return res.status(409).send(html(
+          "Nothing to rescue",
+          `Your live save (${currentEarned.toExponential(2)} earned) is not far below your leaderboard record (${lbEarned.toExponential(2)}), so no rebuild is needed.`
+        ));
+      }
+
+      const unlockedCount = Math.max(1, Math.min(RESCUE_DESTINATIONS.length, Number(entry.unlockedDestinationsCount) || 1));
+      const unlocked = RESCUE_DESTINATIONS.slice(0, unlockedCount);
+      const rebuilt = {
+        chronocoins: Math.floor(lbEarned * 0.5),
+        totalEarned: lbEarned,
+        totalTripsCompleted: Number(entry.totalTripsCompleted) || 0,
+        totalCustomersServed: Number(entry.totalCustomersServed) || 0,
+        totalManagerUpgrades: 0,
+        timeMachineLevel: 1,
+        timeMachineCapacity: 1,
+        timeMachineSpeed: 1,
+        timeMachineCount: Math.max(1, Number(entry.timeMachineCount) || 1),
+        customerGenerationRate: 1,
+        queueSize: 1,
+        boardingSpeed: 1,
+        vipChance: 1,
+        turnaroundTime: 1,
+        artifactScanner: 1,
+        offlineInfra: 1,
+        autoDispatch: 1,
+        eraExpertise: 1,
+        waitingCustomers: 0,
+        processingCustomers: 0,
+        nextCustomerId: (Number(entry.totalCustomersServed) || 0) + 1,
+        unlockedDestinations: unlocked,
+        currentDestination: unlocked[unlocked.length - 1],
+        prestigeLevel: Number(entry.prestigeLevel) || 0,
+        prestigePoints: 0,
+        tutorialShown: true,
+        lastPlayTime: Date.now(),
+        coinsPerSecond: 0,
+        _profile: current._profile,
+        _profileBackup: current._profileBackup,
+        _backup: current._backup,
+      };
+
+      if (saves.length > 0) {
+        await db.update(gameSaves).set({ gameState: rebuilt, lastUpdated: new Date() }).where(eq(gameSaves.userId, req.user.id));
+      } else {
+        await db.insert(gameSaves).values({ userId: req.user.id, gameState: rebuilt });
+      }
+      console.log(`[RESCUE] Rebuilt save for user ${req.user.id} from leaderboard: earned ${lbEarned}, coins ${rebuilt.chronocoins}`);
+      res.set("Cache-Control", "no-store");
+      res.send(html(
+        "Save rebuilt ✓",
+        `Restored from your leaderboard record: <b>${lbEarned.toLocaleString()} lifetime earnings</b>, ${Number(entry.totalTripsCompleted).toLocaleString()} trips, ${Number(entry.totalCustomersServed).toLocaleString()} customers, ${entry.timeMachineCount} machines, ${unlockedCount} eras — plus <b>${rebuilt.chronocoins.toLocaleString()} chronocoins</b> to re-buy your upgrades. Reload the game on a signed-in device to pick it up.`
+      ));
+    } catch (error) {
+      console.error("[RESCUE] Error:", error);
+      res.status(500).json({ message: "Failed to rebuild save" });
+    }
+  });
+
   // Profile save/load - separate endpoint for managers, achievements, artifacts, missions, perks
   // Stored as profileState inside the same gameSaves row
   app.post("/api/save-profile", requireAuth, async (req, res) => {
