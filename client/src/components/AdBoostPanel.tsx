@@ -8,7 +8,8 @@ const AD_CLIENT = "ca-pub-7190597981311614";
 
 declare global {
   interface Window {
-    adsbygoogle: { push: (config: object) => void }[];
+    // AdSense's global is an array you push ad-unit config objects onto.
+    adsbygoogle: object[];
   }
 }
 
