@@ -9,7 +9,7 @@
  * actual store. Comments show the assumed shape.
  */
 
-import { useCallback } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import AntFarmScene from "./AntFarmScene";
 import DepthMap from "./DepthMap";
 
@@ -37,38 +37,78 @@ export default function AntFarmViewport() {
     [setDestination],
   );
 
-  // The viewport is sized to be drop-in for the current GameScene area
-  // (50–60vh in your current code). Tune the width prop here for your layout.
+  // Measure the space GameScene gives us (the 50–60vh box) and scale the
+  // scene to fill it. Phones get a narrower logical scene with one extra
+  // stratum so the art renders ~2x bigger instead of shrinking a 720px strip.
+  const measureRef = useRef<HTMLDivElement | null>(null);
+  const [avail, setAvail] = useState({ w: 0, h: 0 });
+  useLayoutEffect(() => {
+    const el = measureRef.current;
+    if (!el) return;
+    const update = () => setAvail({ w: el.clientWidth, h: el.clientHeight });
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const RAIL_W = 56;
+  const STRATUM_H = 84;
+  const isNarrow = avail.w > 0 && avail.w < 640;
+  const sceneW = isNarrow ? Math.max(320, Math.min(420, avail.w - RAIL_W)) : 720;
+  const strataWindow = isNarrow ? 4 : 3;
+  const naturalW = sceneW + RAIL_W;
+  const naturalH = STRATUM_H * strataWindow;
+  const scale = avail.w > 0
+    ? Math.min(3, Math.max(0.5, Math.min(avail.w / naturalW, avail.h / naturalH)))
+    : 1;
+
   return (
     <div
+      ref={measureRef}
       style={{
-        position: "relative",
-        display: "flex",
-        background: "#000",
-        border: "1px solid #1d1b26",
         width: "100%",
-        maxWidth: 720 + 56,
+        height: "100%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        overflow: "hidden",
       }}
     >
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <AntFarmScene
+      <div
+        style={{
+          position: "relative",
+          display: "flex",
+          background: "#000",
+          border: "1px solid #1d1b26",
+          width: naturalW,
+          height: naturalH,
+          flexShrink: 0,
+          transform: `scale(${scale})`,
+          transformOrigin: "center center",
+        }}
+      >
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <AntFarmScene
+            currentEra={currentEra}
+            unlockedEras={unlocked}
+            queueSize={queueSize}
+            tier={tier}
+            width={sceneW}
+            visibleWindow={strataWindow}
+            onArrive={() => {
+              // Hook for SFX, particle bursts, achievement triggers, etc.
+            }}
+          />
+        </div>
+        <DepthMap
           currentEra={currentEra}
           unlockedEras={unlocked}
-          queueSize={queueSize}
-          tier={tier}
-          width={720}
-          onArrive={() => {
-            // Hook for SFX, particle bursts, achievement triggers, etc.
-          }}
+          visibleWindow={strataWindow}
+          height={naturalH}
+          onSelect={onSelect}
         />
       </div>
-      <DepthMap
-        currentEra={currentEra}
-        unlockedEras={unlocked}
-        visibleWindow={3}
-        height={84 * 3}
-        onSelect={onSelect}
-      />
     </div>
   );
 }

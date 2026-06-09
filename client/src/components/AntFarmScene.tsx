@@ -36,6 +36,7 @@ interface Props {
   queueSize?: number;
   tier?: 1 | 2 | 3 | 4 | 5;
   width?: number;
+  visibleWindow?: number;
   className?: string;
   onArrive?: (era: string) => void;
 }
@@ -46,6 +47,7 @@ export default function AntFarmScene({
   queueSize = 3,
   tier = 2,
   width = 720,
+  visibleWindow = STRATUM_WINDOW,
   className,
   onArrive,
 }: Props) {
@@ -63,12 +65,12 @@ export default function AntFarmScene({
   // `visible` keeps a stable reference while the elevator scrubs within the
   // same window — the static cache then only rebuilds on actual window changes.
   const startIdx = useMemo(
-    () => Math.max(0, Math.min(STRATA.length - STRATUM_WINDOW, currentIdx - 1)),
-    [currentIdx],
+    () => Math.max(0, Math.min(STRATA.length - visibleWindow, currentIdx - 1)),
+    [currentIdx, visibleWindow],
   );
   const visible = useMemo(
-    () => STRATA.slice(startIdx, startIdx + STRATUM_WINDOW),
-    [startIdx],
+    () => STRATA.slice(startIdx, startIdx + visibleWindow),
+    [startIdx, visibleWindow],
   );
 
   // Live values consumed by the per-frame loop without rebuilding the cache.
