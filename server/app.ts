@@ -22,6 +22,16 @@ if (process.env.NODE_ENV === "production" && !process.env.SESSION_SECRET) {
 export async function buildApp() {
   const app = express();
   app.set("trust proxy", 1);
+
+  // The game moved to Vercel. If this code is still serving the old Render
+  // domain (stale bookmarks, PWA shortcuts, search results), send players to
+  // the live deployment instead of a stale build.
+  app.use((req, res, next) => {
+    if (req.hostname && req.hostname.endsWith(".onrender.com")) {
+      return res.redirect(301, `https://time-travel-tycoon.vercel.app${req.originalUrl}`);
+    }
+    next();
+  });
   app.use(helmet({
     contentSecurityPolicy: false,
     crossOriginOpenerPolicy: false,

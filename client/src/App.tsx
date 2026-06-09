@@ -21,19 +21,22 @@ import { OnboardingTutorial } from "./components/OnboardingTutorial";
 import { PrestigePerkChoiceModal } from "./components/PrestigePerkChoiceModal";
 import { ManagerPerkChoiceModal } from "./components/ManagerPerkChoiceModal";
 
-class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean; errorMessage: string }> {
   constructor(props: { children: ReactNode }) {
     super(props);
-    this.state = { hasError: false };
+    this.state = { hasError: false, errorMessage: "" };
   }
-  static getDerivedStateFromError() {
-    return { hasError: true };
+  static getDerivedStateFromError(error: unknown) {
+    return { hasError: true, errorMessage: error instanceof Error ? error.message : String(error) };
   }
   render() {
     if (this.state.hasError) {
       return (
-        <div className="w-full h-full flex flex-col items-center justify-center bg-gray-900 text-white gap-4">
+        <div className="w-full h-full flex flex-col items-center justify-center bg-gray-900 text-white gap-4 p-6">
           <div className="text-2xl font-bold">Something went wrong</div>
+          <div className="text-sm text-gray-400 max-w-md text-center break-words">
+            Your save is safe. Error: {this.state.errorMessage || "unknown"}
+          </div>
           <button
             className="px-4 py-2 bg-cyan-600 rounded hover:bg-cyan-500"
             onClick={() => window.location.reload()}

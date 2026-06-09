@@ -9,8 +9,8 @@
     <meta property="og:title" content="ChronoTransit - Time Travel Idle Game" />
     <meta property="og:description" content="Transport customers through history in this free idle incremental game. Upgrade your time machine, unlock new eras, and build a chrono-empire." />
     <meta property="og:type" content="website" />
-    <link rel="canonical" href="https://timetraveltycoon.onrender.com/" />
-    <meta property="og:url" content="https://timetraveltycoon.onrender.com/" />
+    <link rel="canonical" href="https://time-travel-tycoon.vercel.app/" />
+    <meta property="og:url" content="https://time-travel-tycoon.vercel.app/" />
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -22,7 +22,7 @@
       "applicationCategory": "Game",
       "operatingSystem": "Any",
       "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-      "url": "https://timetraveltycoon.onrender.com"
+      "url": "https://time-travel-tycoon.vercel.app"
     }
     </script>
     <!-- AdSense loaded after page content is ready, not on initial shell -->
@@ -71,6 +71,36 @@
           u.searchParams.set("cb", Date.now().toString(36));
           window.location.replace(u.toString());
         }, true);
+      })();
+    </script>
+    <script>
+      // Blank-screen failsafe: a blank page is undebuggable for players. If the
+      // app hasn't rendered anything into #root within 8s, show what went wrong
+      // and offer recovery actions. Never touches the game save.
+      (function () {
+        var firstError = null;
+        window.addEventListener("error", function (e) {
+          if (!firstError) firstError = (e.error && e.error.stack) || e.message || "Unknown script error";
+        });
+        window.addEventListener("unhandledrejection", function (e) {
+          if (!firstError) firstError = (e.reason && (e.reason.stack || e.reason.message)) || "Unhandled promise rejection";
+        });
+        setTimeout(function () {
+          var root = document.getElementById("root");
+          if (root && root.childElementCount > 0) return; // app rendered, all good
+          var detail = firstError ? String(firstError).slice(0, 800) : "No script error was caught — the app bundle may not have loaded (network or cache issue).";
+          root.innerHTML =
+            '<div style="font-family:sans-serif;max-width:560px;margin:48px auto;padding:24px;background:#111827;color:#e5e7eb;border-radius:12px;">' +
+            '<h2 style="color:#22d3ee;margin-top:0;">ChronoTransit could not start</h2>' +
+            '<p>Your save data is safe. Something prevented the game from loading:</p>' +
+            '<pre style="white-space:pre-wrap;word-break:break-word;background:#1f2937;padding:12px;border-radius:8px;font-size:12px;max-height:200px;overflow:auto;">' +
+            detail.replace(/&/g, "&amp;").replace(/</g, "&lt;") +
+            "</pre>" +
+            '<button onclick="location.reload()" style="margin-right:8px;padding:8px 16px;background:#0891b2;color:#fff;border:0;border-radius:8px;cursor:pointer;">Reload</button>' +
+            '<button onclick="var u=new URL(location.href);u.searchParams.set(\'cb\',Date.now().toString(36));location.replace(u)" style="padding:8px 16px;background:#374151;color:#fff;border:0;border-radius:8px;cursor:pointer;">Hard refresh (bypass cache)</button>' +
+            '<p style="font-size:12px;color:#9ca3af;">If this keeps happening, screenshot this message — it tells us exactly what broke.</p>' +
+            "</div>";
+        }, 8000);
       })();
     </script>
     <script type="module" src="/src/main.tsx"></script>

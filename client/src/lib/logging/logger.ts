@@ -13,8 +13,15 @@ export function saveDebugLog(message: string, level: LogLevel = "INFO", data?: a
   // For immediate debugging, we can also store in a localStorage key and provide a "download log" button.
   // To keep things simple, we'll just console and maybe localStorage.
   try {
-    const existing = localStorage.getItem("save_debug_buffer") || "";
-    localStorage.setItem("save_debug_buffer", existing + logEntry + "\n");
+    // Cap the buffer at ~64KB (keep the newest entries). Unbounded growth
+    // eventually exhausts the localStorage quota, which silently breaks the
+    // game-state persistence that shares it.
+    const MAX_BUFFER = 64 * 1024;
+    let buffer = (localStorage.getItem("save_debug_buffer") || "") + logEntry + "\n";
+    if (buffer.length > MAX_BUFFER) {
+      buffer = buffer.slice(buffer.length - MAX_BUFFER);
+    }
+    localStorage.setItem("save_debug_buffer", buffer);
   } catch (e) {
     // ignore
   }
