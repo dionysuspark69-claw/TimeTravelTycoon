@@ -2,8 +2,8 @@ import { useIdleGame, TIME_PERIODS } from "@/lib/stores/useIdleGame";
 import { Button } from "./ui/button";
 import { useAudio } from "@/lib/stores/useAudio";
 import { Volume2, VolumeX, Trophy, User as UserIcon } from "lucide-react";
-import { StatsPanel } from "./StatsPanel";
 import { SettingsDialog } from "./SettingsDialog";
+import { PrestigeDialog } from "./PrestigeDialog";
 import { useIsMobile } from "@/hooks/use-is-mobile";
 import { useAdBoosts } from "@/lib/stores/useAdBoosts";
 import { useAuth } from "@/lib/stores/useAuth";
@@ -60,7 +60,7 @@ export function GameUI() {
     <>
       {/* Fixed settings - always on top right */}
       <div className="fixed top-2 right-2 z-50 pointer-events-auto flex gap-1" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-        {!isMobile && <StatsPanel />}
+        <PrestigeDialog />
         {!isMobile && (
           <Button onClick={toggleMute} variant="outline" size="icon" className="bg-black/80 backdrop-blur-sm border-cyan-500/30 h-9 w-9">
             {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}

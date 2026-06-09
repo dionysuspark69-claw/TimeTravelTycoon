@@ -33,6 +33,15 @@ export function getPrestigeRequirements(prestigeLevel: number) {
   return { earnReq, levelReq, countReq };
 }
 
+// Prestige points on a square-root curve (diminishing returns) so the reward
+// stays meaningful without exploding. Calibrated so a normal first prestige
+// (~50M lifetime earnings) yields ~5 points — matching the old linear formula
+// at the threshold — while a 2.9T balance gives ~1200 instead of ~290,000.
+export function getPrestigePoints(totalEarned: number): number {
+  const safe = Math.max(0, Number(totalEarned) || 0);
+  return Math.max(1, Math.floor(Math.sqrt(safe / 2_000_000)));
+}
+
 export function formatChronoValue(num: number, decimals: number = 2): string {
   if (num < 1000) {
     return Math.floor(num).toString();

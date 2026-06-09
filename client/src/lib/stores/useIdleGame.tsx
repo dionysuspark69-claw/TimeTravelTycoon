@@ -6,7 +6,7 @@ import { useAudio } from "./useAudio";
 import { useChronoMeter } from "./useChronoMeter";
 import { usePrestigePerks } from "./usePrestigePerks";
 import { toast } from "sonner";
-import { getPrestigeRequirements } from "../utils";
+import { getPrestigeRequirements, getPrestigePoints } from "../utils";
 
 export interface TimePeriod {
   id: string;
@@ -1283,7 +1283,7 @@ export const useIdleGame = create<IdleGameState>()(
       if (state.timeMachineLevel < levelReq) return;
       if (state.timeMachineCount < countReq) return;
 
-      const points = Math.max(1, Math.floor(state.totalEarned / 10000000));
+      const points = getPrestigePoints(state.totalEarned);
       const startId = TIME_PERIODS[0].id;
 
       // Clear claimed achievements so players can't re-farm them across prestiges
