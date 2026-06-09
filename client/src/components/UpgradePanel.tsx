@@ -3,7 +3,7 @@ import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
-import { ArrowUp, MapPin, Users, Trophy, Settings, Plus, Minus, Sparkles, ChevronDown, ChevronUp, Medal, Star, RefreshCcw, Target } from "lucide-react";
+import { ArrowUp, MapPin, Users, Trophy, Settings, Plus, Minus, Sparkles, ChevronDown, ChevronUp, Medal, Target } from "lucide-react";
 import { ManagersPanel } from "./ManagersPanel";
 import { AchievementsPanel } from "./AchievementsPanel";
 import { MissionsPanel } from "./MissionsPanel";
@@ -15,71 +15,8 @@ import { useDailyReward } from "@/lib/stores/useDailyReward";
 import { useAchievements } from "@/lib/stores/useAchievements";
 import { useArtifacts, ARTIFACT_COLLECTIONS } from "@/lib/stores/useArtifacts";
 import { useState } from "react";
-import { formatChronoValue, getPrestigeRequirements } from "@/lib/utils";
+import { formatChronoValue } from "@/lib/utils";
 import { useEconomyEngine, type RecommendationKey } from "@/lib/useEconomyEngine";
-
-function PrestigeCard() {
-  const { totalEarned, timeMachineLevel, timeMachineCount, prestigeLevel, prestigePoints, prestige } = useIdleGame();
-
-  const { earnReq: EARN_REQ, levelReq: LEVEL_REQ, countReq: COUNT_REQ } = getPrestigeRequirements(prestigeLevel);
-
-  const earnPct   = Math.min(1, totalEarned / EARN_REQ);
-  const levelPct  = Math.min(1, timeMachineLevel / LEVEL_REQ);
-  const countPct  = Math.min(1, timeMachineCount / COUNT_REQ);
-  const ready     = totalEarned >= EARN_REQ && timeMachineLevel >= LEVEL_REQ && timeMachineCount >= COUNT_REQ;
-  const projectedPoints = Math.max(1, Math.floor(totalEarned / 10_000_000));
-
-  return (
-    <Card className={`p-3 border ${ready ? "border-yellow-500/60 bg-gradient-to-br from-yellow-900/40 to-amber-900/30" : "border-cyan-500/20 bg-black/30"}`}>
-      <div className="flex items-center gap-2 mb-2">
-        <Trophy className={`w-4 h-4 ${ready ? "text-yellow-400" : "text-gray-500"}`} />
-        <span className={`text-sm font-bold ${ready ? "text-yellow-300" : "text-gray-300"}`}>Prestige</span>
-        {prestigeLevel > 0 && (
-          <span className="ml-auto text-xs text-purple-300 bg-purple-900/40 border border-purple-500/30 px-2 py-0.5 rounded-full">
-            Level {prestigeLevel} - +{prestigePoints * 10}% revenue
-          </span>
-        )}
-      </div>
-
-      {ready ? (
-        <div className="space-y-2">
-          <p className="text-xs text-yellow-200">You're ready to prestige! You'll earn <span className="font-bold text-yellow-400">+{projectedPoints * 10}% revenue</span> permanently.</p>
-          <div className="text-xs text-gray-400 bg-black/30 rounded p-2 space-y-0.5">
-            <div className="flex items-center gap-1"><RefreshCcw className="w-3 h-3 text-red-400" /> You lose: coins, upgrades, machines, destinations</div>
-            <div className="flex items-center gap-1"><Star className="w-3 h-3 text-yellow-400" /> You keep: prestige bonuses (stacks forever)</div>
-          </div>
-          <Button
-            onClick={prestige}
-            className="w-full bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700 font-bold text-sm min-h-[40px]"
-          >
-            <Trophy className="w-4 h-4 mr-2" /> Prestige Now (+{projectedPoints * 10}% revenue)
-          </Button>
-        </div>
-      ) : (
-        <div className="space-y-1.5">
-          <p className="text-xs text-gray-400 mb-2">
-            Complete all 3 requirements to unlock <span className="text-cyan-400 font-semibold">Prestige {prestigeLevel + 1}</span>:
-          </p>
-          {[
-            { label: `Earn ${formatChronoValue(EARN_REQ)} CC`, pct: earnPct, done: totalEarned >= EARN_REQ, val: formatChronoValue(totalEarned) },
-            { label: `Time Machine Lv.${LEVEL_REQ}`, pct: levelPct, done: timeMachineLevel >= LEVEL_REQ, val: `Lv.${timeMachineLevel}` },
-            { label: `Own ${COUNT_REQ} Machines`, pct: countPct, done: timeMachineCount >= COUNT_REQ, val: `${timeMachineCount}` },
-          ].map(r => (
-            <div key={r.label}>
-              <div className="flex justify-between text-xs mb-0.5">
-                <span className={r.done ? "text-green-400" : "text-gray-400"}>{r.done ? "[+]" : "[ ]"} {r.label}</span>
-                <span className={r.done ? "text-green-400" : "text-gray-500"}>{r.val}</span>
-              </div>
-              <div className="h-1 bg-gray-700 rounded-full overflow-hidden">
-                <div className={`h-full rounded-full transition-all ${r.done ? "bg-green-500" : "bg-cyan-500"}`} style={{ width: `${r.pct * 100}%` }} />
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </Card>
-  );
-}
 
 function DestinationsList() {
   const {
@@ -394,7 +331,7 @@ export function UpgradePanel() {
           </TabsTrigger>
           <TabsTrigger value="awards" className="flex items-center gap-2 relative text-xs sm:text-sm px-1 sm:px-3 min-h-[44px]">
             <Trophy className="w-4 h-4" />
-            <span className="hidden sm:inline">Awards</span>
+            <span className="hidden sm:inline">Collection</span>
             {unclaimedCount > 0 && (
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border border-gray-900" />
             )}
@@ -800,13 +737,25 @@ export function UpgradePanel() {
           </div>
         </TabsContent>
 
-        <TabsContent value="awards" className="space-y-2 mt-4 max-h-[40vh] md:max-h-[45vh] overflow-y-auto pr-2 pb-4">
-          {/* Prestige Progress Card */}
-          <PrestigeCard />
-          <AchievementsPanel />
-          <div className="border-t border-cyan-500/20 my-2 pt-2">
-            <CollectionsPanel />
-          </div>
+        <TabsContent value="awards" className="mt-4 max-h-[40vh] md:max-h-[45vh] overflow-y-auto pr-2 pb-4">
+          {/* Achievements and Artifacts are co-equal collectible tracks. */}
+          <Tabs defaultValue="achievements" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 bg-gray-800/70 mb-2">
+              <TabsTrigger value="achievements" className="relative text-xs min-h-[40px]">
+                Achievements
+                {unclaimedCount > 0 && (
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border border-gray-900" />
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="artifacts" className="text-xs min-h-[40px]">Artifacts</TabsTrigger>
+            </TabsList>
+            <TabsContent value="achievements" className="space-y-2">
+              <AchievementsPanel />
+            </TabsContent>
+            <TabsContent value="artifacts" className="space-y-2">
+              <CollectionsPanel />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
         
         <TabsContent value="destinations" className="space-y-2 mt-4 max-h-[40vh] md:max-h-[45vh] overflow-y-auto pr-2 pb-4">

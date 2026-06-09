@@ -45,6 +45,19 @@ describe("audit fix verification", () => {
     expect(cost).toBe(5000); // 100 * 50, linear when multiplier is 1
   });
 
+  it("prestige points use a bounded sqrt curve (no runaway at high earnings)", async () => {
+    const { getPrestigePoints } = await import("../lib/utils");
+    // ~50M first-prestige threshold ≈ old linear value of 5.
+    expect(getPrestigePoints(50_000_000)).toBe(5);
+    // A 2.9T balance must NOT yield ~290k points (old linear); sqrt keeps it ~1k.
+    const whale = getPrestigePoints(2_908_256_962_379);
+    expect(whale).toBeGreaterThan(500);
+    expect(whale).toBeLessThan(5000);
+    // Monotonic and always at least 1.
+    expect(getPrestigePoints(0)).toBe(1);
+    expect(getPrestigePoints(1e9)).toBeGreaterThan(getPrestigePoints(1e8));
+  });
+
   it("daily reward: claim grants coins once per day, builds a streak, blocks re-claim", async () => {
     const { useIdleGame } = await import("../lib/stores/useIdleGame");
     const { useDailyReward } = await import("../lib/stores/useDailyReward");
