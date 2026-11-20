@@ -1,0 +1,10 @@
+{
+  "appId": "com.timetraveltycoon.app",
+  "appName": "Time Travel Tycoon",
+  "webDir": "mobile-www",
+  "server": {
+    "url": "https://time-travel-tycoon.vercel.app",
+    "cleartext": false
+  },
+  "android": { "allowMixedContent": false }
+}
